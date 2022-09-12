@@ -1,4 +1,6 @@
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -31,8 +33,8 @@ public enum Type {
     INTCON("[0-9]+"),
     STRCON("\".*?\""),
 
-    SINGCOM("//.*"),
-    MULTCOM("/\\*(.|\\n|\\r)*?\\*/"),
+    // SINGCOM("//.*"),
+    // MULTCOM("/\\*(.|\\n|\\r)*?\\*/"),
     AND("&&"),
     OR("\\|\\|"),
     LEQ("<="),
@@ -55,8 +57,7 @@ public enum Type {
     LBRACK("\\["),
     RBRACK("]"),
     LBRACE("\\{"),
-    RBRACE("}"),
-    SPACE("\\s+");
+    RBRACE("}");
 
     private final String pattern;
 
@@ -64,15 +65,28 @@ public enum Type {
         this.pattern = "^" + pattern;
     }
 
-    private String getPattern() {
+    public String getPattern() {
         return pattern;
     }
 
-    private static final String allString = Arrays.stream(Type.values())
-            .map(t -> "(?<" + t.toString() + ">" + t.getPattern() + ")")
-            .reduce((s1, s2) -> s1 + "|" + s2).toString();
-    // assert allString.isPresent();
-    public static final Pattern allPattern = Pattern.compile(allString);
+    // public static final HashMap<Type, Pattern> allPattern = new HashMap<Type, Pattern>(){{
+    //     for (Type t : Type.values()) {
+    //         put(t, Pattern.compile("^" + t.getPattern()));
+    //     }
+    // }};
+
+    // public static HashMap<String, Pattern> getAllPattern() {
+    //     for (Type t : Type.values()) {
+    //         allPattern.put(t.toString(), Pattern.compile("^" + t.getPattern()));
+    //     }
+    //     return allPattern;
+    // }
+
+    // private static final String allString = Arrays.stream(Type.values())
+    //         .map(t -> "(?<" + t.toString() + ">" + t.getPattern() + ")")
+    //         .reduce((s1, s2) -> s1 + "|" + s2).toString();
+    // // assert allString.isPresent();
+    // public static final Pattern allPattern = Pattern.compile(allString);
 }
 // public enum Type {
 //     MAINTK("MAINTK", "main"),
