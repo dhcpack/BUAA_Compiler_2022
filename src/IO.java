@@ -6,18 +6,18 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class IO {
-    public static InputBuffer input() throws IOException {
-        InputBuffer inputBuffer = new InputBuffer();
+    public static InputHandler input() throws IOException {
+        InputHandler inputHandler = new InputHandler();
         File file = new File(Config.inputFile);
         if (!file.exists()) {
             System.out.println("input file not exists");
-            return inputBuffer;
+            return inputHandler;
         }
         BufferedReader reader = new BufferedReader(new FileReader(file));
         String line;
         while ((line = reader.readLine()) != null)
-            inputBuffer.add(line);
-        return inputBuffer;
+            inputHandler.add(line);
+        return inputHandler;
     }
 
     public static void output(String string) throws IOException {
