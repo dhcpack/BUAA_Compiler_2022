@@ -1,5 +1,3 @@
-import java.util.regex.Pattern;
-
 public class Token {
     private final Type type;
     private final int line;
@@ -17,5 +15,9 @@ public class Token {
 
     public String getContent() {
         return this.content;
+    }
+
+    public int getLine() {
+        return line;
     }
 }

@@ -16,7 +16,7 @@ public class InputHandler {
     public boolean moveForward(int step) {
         if (pointer + step < currentLength()) {
             pointer += step;
-            return true;
+            return false;
         }
         step = step - (currentLength() - pointer);
         pointer = 0;
@@ -26,7 +26,7 @@ public class InputHandler {
             line++;
         }
         pointer += step;
-        return !reachEnd();
+        return reachEnd();
     }
 
     public String getForwardWord(int step) {
