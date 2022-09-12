@@ -5,10 +5,11 @@ public class Parser {
     public static TokenList parse(InputHandler inputHandler) {
         TokenList tokenList = new TokenList();
         while (!inputHandler.reachEnd()) {
-            if (inputHandler.skipBlanks()) {
-                break;
-            }
-            // System.out.println(inputHandler.getCurrentLine());
+            // skip blanks
+            if (inputHandler.skipBlanks()) break;
+            if (Config.debugMode) System.out.println(inputHandler.getCurrentLine());
+
+            // skip comments
             if (inputHandler.getForwardWord(2).equals("//")) {
                 inputHandler.moveNextLine();
                 continue;
@@ -21,6 +22,8 @@ public class Parser {
                 inputHandler.moveForward(2);
                 continue;
             }
+
+            // parse
             for (Type type : Type.values()) {
                 Matcher matcher = Pattern.compile(type.getPattern()).matcher(inputHandler.getCurrentLine());
                 if (matcher.find()) {
