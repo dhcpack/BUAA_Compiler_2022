@@ -41,8 +41,20 @@ public class InputHandler {
         return line == lines.size();
     }
 
+    public boolean moveNextLine() {
+        line++;
+        pointer = 0;
+        moveForward(0);  // 跳过接下来的空行
+        return !reachEnd();
+    }
+
+    public int getLineNumber() {
+        return line + 1;
+    }
+
+    // skip blanks and return true if reach end
     public boolean skipBlanks() {
-        while (!reachEnd() && getCurrentLine().length() == 0){
+        while (!reachEnd() && getCurrentLine().length() == 0) {
             moveNextLine();
         }
         while (!reachEnd() && (getForwardWord(1).equals(" ") || getForwardWord(1).equals("\t"))) {
@@ -54,14 +66,22 @@ public class InputHandler {
         return reachEnd();
     }
 
-    public boolean moveNextLine() {
-        line++;
-        pointer = 0;
-        moveForward(0);
-        return !reachEnd();
-    }
-
-    public int getLine() {
-        return line + 1;
+    // skip comments and return true if encounter comments
+    public boolean skipComments() {
+        // encounter '//'
+        if (getForwardWord(2).equals("//")) {
+            moveNextLine();
+            return true;
+        }
+        // encounter '/*'
+        if (getForwardWord(2).equals("/*")) {
+            moveForward(2);
+            while (!getForwardWord(2).equals("*/")) {
+                if (moveForward(1)) break;
+            }
+            moveForward(2);
+            return true;
+        }
+        return false;
     }
 }

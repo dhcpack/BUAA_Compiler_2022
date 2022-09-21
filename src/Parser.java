@@ -10,24 +10,13 @@ public class Parser {
             if (Config.debugMode) System.out.println(inputHandler.getCurrentLine());
 
             // skip comments
-            if (inputHandler.getForwardWord(2).equals("//")) {
-                inputHandler.moveNextLine();
-                continue;
-            }
-            if (inputHandler.getForwardWord(2).equals("/*")) {
-                inputHandler.moveForward(2);
-                while (!inputHandler.getForwardWord(2).equals("*/")) {
-                    if (inputHandler.moveForward(1)) break;
-                }
-                inputHandler.moveForward(2);
-                continue;
-            }
+            if (inputHandler.skipComments()) continue;
 
-            // parse
+            // traverse all patterns and make regex match
             for (Type type : Type.values()) {
                 Matcher matcher = Pattern.compile(type.getPattern()).matcher(inputHandler.getCurrentLine());
                 if (matcher.find()) {
-                    tokenList.add(new Token(type, matcher.group(0), inputHandler.getLine()));
+                    tokenList.add(new Token(type, matcher.group(0), inputHandler.getLineNumber()));
                     inputHandler.moveForward(matcher.group(0).length());
                     break;
                 }
