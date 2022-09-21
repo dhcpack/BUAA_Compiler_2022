@@ -1,3 +1,5 @@
+package Config;
+
 public class Config {
     public static boolean debugMode = false;
     private static final String[] inputFiles = {"../2021testfiles/full/A/testfile21.txt", "testfile.txt"};

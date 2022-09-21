@@ -1,3 +1,8 @@
+package Config;
+
+import Config.Config;
+import Lexer.InputHandler;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -6,6 +11,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class IO {
+    public static String string;
+
     public static InputHandler input() throws IOException {
         InputHandler inputHandler = new InputHandler();
         File file = new File(Config.inputFile);
@@ -20,7 +27,12 @@ public class IO {
         return inputHandler;
     }
 
-    public static void output(String string) throws IOException {
+    public static void print(String s) {
+        string += s;
+        string += "\n";
+    }
+
+    public static void flush() throws IOException {
         if (Config.outputFile.equals("")) {
             System.out.println("output file not exists");
             System.out.println();

@@ -1,3 +1,5 @@
+package Lexer;
+
 public class Token {
     private final Type type;
     private final int line;
@@ -7,6 +9,10 @@ public class Token {
         this.type = type;
         this.content = content;
         this.line = line;
+    }
+
+    public Type getType() {
+        return this.type;
     }
 
     public String getTypeName() {
@@ -19,5 +25,9 @@ public class Token {
 
     public int getLine() {
         return line;
+    }
+
+    public String toString() {
+        return String.format("%s %s\n", this.type.toString(), this.content);
     }
 }
