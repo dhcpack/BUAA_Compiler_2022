@@ -1,8 +1,11 @@
+package Lexer;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import Config.Config;
 
-public class Parser {
-    public static TokenList parse(InputHandler inputHandler) {
+public class Lexer {
+    public static TokenList lex(InputHandler inputHandler) {
         TokenList tokenList = new TokenList();
         while (!inputHandler.reachEnd()) {
             // skip blanks

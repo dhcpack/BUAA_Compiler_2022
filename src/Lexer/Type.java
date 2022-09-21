@@ -1,3 +1,5 @@
+package Lexer;
+
 public enum Type {
     MAINTK("main(?![a-zA-Z0-9_])"),
     CONSTTK("const(?![a-zA-Z0-9_])"),

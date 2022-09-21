@@ -1,3 +1,5 @@
+package Lexer;
+
 import java.util.ArrayList;
 
 public class InputHandler {

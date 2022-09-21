@@ -1,3 +1,7 @@
+package Lexer;
+
+import Lexer.Token;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -6,6 +10,14 @@ public class TokenList {
 
     public void add(Token token) {
         this.tokenList.add(token);
+    }
+
+    public Token get(int index) {
+        return tokenList.get(index);
+    }
+
+    public int getSize() {
+        return tokenList.size();
     }
 
     public String toString() {
