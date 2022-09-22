@@ -4,7 +4,6 @@ import Lexer.Token;
 import Lexer.Type;
 import Parser.TokenHandler;
 import Parser.decl.DeclParser;
-import Parser.decl.types.Decl;
 import Parser.expr.ExprParser;
 import Parser.expr.types.Cond;
 import Parser.expr.types.Exp;
@@ -99,7 +98,7 @@ public class StmtParser {
                         return new Stmt(new AssignStmt(lVal, assign, exp), semicn);
                     }
                 }
-                if (token.getType() == Type.SEMICN) {
+                else if (token.getType() == Type.SEMICN) {
                     tokenHandler.retract(step);
                     // Exp ';'
                     ExpStmt expStmt = new ExpStmt(new ExprParser(tokenHandler).parseExp());

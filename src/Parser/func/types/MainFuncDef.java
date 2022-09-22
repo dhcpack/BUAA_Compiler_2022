@@ -24,7 +24,7 @@ public class MainFuncDef implements Output {
 
     @Override
     public void output() {
-        funcDef.printNormal();
+        funcDef.printNormal(true);
         IO.print("<MainFuncDef>");
     }
 }
