@@ -2,11 +2,8 @@ package Parser.stmt.types;
 
 import Parser.expr.types.Exp;
 
-public class ExpStmt extends Stmt {
-    private Exp exp = null;
-
-    public ExpStmt() {
-    }
+public class ExpStmt implements StmtInterface {
+    private final Exp exp;
 
     public ExpStmt(Exp exp) {
         this.exp = exp;
@@ -14,5 +11,10 @@ public class ExpStmt extends Stmt {
 
     public boolean isEmpty() {
         return exp == null;
+    }
+
+    @Override
+    public void output() {
+
     }
 }

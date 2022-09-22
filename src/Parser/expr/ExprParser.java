@@ -4,10 +4,13 @@ import Lexer.Token;
 import Lexer.Type;
 import Parser.TokenHandler;
 import Parser.expr.types.AddExp;
+import Parser.expr.types.BraceExp;
 import Parser.expr.types.Cond;
+import Parser.expr.types.ConstExp;
 import Parser.expr.types.EqExp;
 import Parser.expr.types.Exp;
 import Parser.expr.types.FuncExp;
+import Parser.expr.types.FuncRParams;
 import Parser.expr.types.LAndExp;
 import Parser.expr.types.LOrExp;
 import Parser.expr.types.LVal;
@@ -17,6 +20,8 @@ import Parser.expr.types.PrimaryExp;
 import Parser.expr.types.RelExp;
 import Parser.expr.types.UnaryExp;
 import Parser.expr.types.UnaryOp;
+
+import java.util.ArrayList;
 
 public class ExprParser {
     /*
@@ -47,18 +52,22 @@ public class ExprParser {
 
     // LVal → Ident {'[' Exp ']'}
     public LVal parseLVal() {
-        LVal lVal = new LVal(tokenHandler.getTokenAndMove());
+        // LVal lVal = new LVal(tokenHandler.getTokenAndMove());
+        Token ident = tokenHandler.getTokenAndMove();
         Token token = tokenHandler.getForwardToken();
+        ArrayList<Token> bracs = new ArrayList<>();
+        ArrayList<Exp> exps = new ArrayList<>();
         if (token.getType() != Type.LBRACK) {
-            return lVal;
+            return new LVal(ident, exps, bracs);
         }
         while (token.getType() == Type.LBRACK) {
-            tokenHandler.moveForward(1);  // pass [
-            lVal.addDim(parseExp());
-            tokenHandler.moveForward(1);  // pass ]
+            bracs.add(tokenHandler.getTokenAndMove());  // pass [
+            exps.add(parseExp());
+            bracs.add(tokenHandler.getTokenAndMove());  // pass ]
+            // tokenHandler.moveForward(1);
             tokenHandler.getForwardToken();
         }
-        return lVal;
+        return new LVal(token, exps, bracs);
     }
 
     // Number → IntConst
@@ -93,10 +102,10 @@ public class ExprParser {
     public PrimaryExp parsePrimaryExp() {
         Token token = tokenHandler.getForwardToken();
         if (token.getType() == Type.LPARENT) {
-            tokenHandler.moveForward(1);
-            PrimaryExp primaryExp = new PrimaryExp(parseExp());
-            tokenHandler.moveForward(1);
-            return primaryExp;
+            Token left = tokenHandler.getTokenAndMove();
+            Exp exp = parseExp();
+            Token right = tokenHandler.getTokenAndMove();
+            return new PrimaryExp(new BraceExp(left, exp, right));
         } else if (token.getType() == Type.IDENFR) {
             return new PrimaryExp(parseLVal());
         } else {
@@ -104,44 +113,56 @@ public class ExprParser {
         }
     }
 
-    // FuncExp -> Ident '(' {Exp} ')'
+    // Ident ‘(’ FuncRParams ‘)’
     public FuncExp parseFuncExp() {
-        FuncExp funcExp = new FuncExp(tokenHandler.getTokenAndMove());
-        tokenHandler.moveForward(1);
-        Token token = tokenHandler.getForwardToken();
-        if (token.getType() != Type.RPARENT) {
-            while (token.getType() != Type.RPARENT) {  // not ) means there is an Exp
-                funcExp.addParam(parseExp());
-                token = tokenHandler.getTokenAndMove();  // , or ).  if , continue the loop.(already move forward)
-            }
-        } else {
-            tokenHandler.moveForward(1);  // detect ), move forward
+        Token ident = tokenHandler.getTokenAndMove();
+        Token left = tokenHandler.getTokenAndMove();
+        FuncRParams funcRParams = parseFuncRParams();
+        Token right = tokenHandler.getTokenAndMove();
+        return new FuncExp(ident, left, right, funcRParams);
+    }
+
+    public FuncRParams parseFuncRParams() {
+        // 函数实参表 FuncRParams → Exp { ',' Exp } // 1.花括号内重复0次 2.花括号内重复多次 3. Exp需要覆盖数组传参和部分数组传参
+        Exp exp = parseExp();
+        Token sep = tokenHandler.getForwardToken();
+        ArrayList<Exp> exps = new ArrayList<>();
+        ArrayList<Token> seps = new ArrayList<>();
+        exps.add(exp);
+        while (sep.getType() == Type.COMMA) {
+            seps.add(tokenHandler.getTokenAndMove());
+            exps.add(parseExp());
+            sep = tokenHandler.getForwardToken();
         }
-        return funcExp;
+        return new FuncRParams(exps, seps);
     }
 
     public AddExp parseAddExp() {
-        // AddExp addExp = new AddExp(parseMulExp());
-        // Token token = tokenHandler.getForwardToken();
-        // while (token.getType() == Type.PLUS || token.getType() == Type.MINU) {
-        //     tokenHandler.moveForward(1);  // skip + or -
-        //     addExp.add(token, parseMulExp());
-        //     token = tokenHandler.getForwardToken();  // refresh token
-        // }
-        // return addExp;
-        return (AddExp) parseExp();
-    }
-
-    public Exp parseExp() {
-        // return (Exp) parseAddExp();
-        Exp exp = new Exp(parseMulExp());
+        AddExp addExp = new AddExp(parseMulExp());
         Token token = tokenHandler.getForwardToken();
         while (token.getType() == Type.PLUS || token.getType() == Type.MINU) {
             tokenHandler.moveForward(1);  // skip + or -
-            exp.add(token, parseMulExp());
+            addExp.add(token, parseMulExp());
             token = tokenHandler.getForwardToken();  // refresh token
         }
-        return exp;
+        return addExp;
+        // return (AddExp) parseExp();
+    }
+
+    public Exp parseExp() {
+        return new Exp(parseAddExp());
+        // Exp exp = new Exp(parseMulExp());
+        // Token token = tokenHandler.getForwardToken();
+        // while (token.getType() == Type.PLUS || token.getType() == Type.MINU) {
+        //     tokenHandler.moveForward(1);  // skip + or -
+        //     exp.add(token, parseMulExp());
+        //     token = tokenHandler.getForwardToken();  // refresh token
+        // }
+        // return exp;
+    }
+
+    public ConstExp parseConstExp() {
+        return new ConstExp(parseAddExp());
     }
 
     public MulExp parseMulExp() {

@@ -10,6 +10,7 @@ public class MulExp extends ExpGroup {
 
     public MulExp(ExpGroup expGroup) {
         getExpGroups().add(expGroup);
+        setTag("<MulExp>");
     }
 
     // public void add(Token token, ExpGroup expGroup) {

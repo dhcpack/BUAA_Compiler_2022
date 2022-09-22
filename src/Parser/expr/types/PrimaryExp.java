@@ -7,4 +7,9 @@ public class PrimaryExp implements UnaryExpInterface {
     public PrimaryExp(PrimaryExpInterface primaryExpInterface) {
         this.primaryExpInterface = primaryExpInterface;
     }
+
+    @Override
+    public void output() {
+        primaryExpInterface.output();
+    }
 }
