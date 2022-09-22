@@ -1,11 +1,7 @@
 package Parser.func.types;
 
-import Lexer.Token;
-import Lexer.Type;
+import Config.IO;
 import Parser.Output;
-import Parser.stmt.types.BlockStmt;
-
-import java.util.ArrayList;
 
 public class MainFuncDef implements Output {
     // // FuncDef → FuncType Ident '(' [FuncFParams] ')' Block // 1.无形参 2.有形参
@@ -28,6 +24,7 @@ public class MainFuncDef implements Output {
 
     @Override
     public void output() {
-
+        funcDef.printNormal();
+        IO.print("<MainFuncDef>");
     }
 }

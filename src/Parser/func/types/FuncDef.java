@@ -2,7 +2,6 @@ package Parser.func.types;
 
 import Config.IO;
 import Lexer.Token;
-import Lexer.Type;
 import Parser.Output;
 import Parser.stmt.types.BlockStmt;
 
@@ -29,22 +28,30 @@ public class FuncDef implements Output {
         this.seps = seps;
     }
 
-    @Override
-    public void output() {
+    public void printNormal(){
         IO.print(funcType.toString());
         IO.print(ident.toString());
         IO.print(left.toString());
         if (funcFParams.size() != 0) {
             funcFParams.get(0).output();
+            int index = 1;
+            for (Token sep : seps) {
+                IO.print(sep.toString());
+                funcFParams.get(index++).output();
+            }
+            IO.print("<FuncFParams>");
         }
-        int index = 1;
-        for (Token sep : seps) {
-            IO.print(sep.toString());
-            funcFParams.get(index++).output();
-        }
-        IO.print("<FuncFParams>");
         IO.print(right.toString());
         blockStmt.output();
+    }
+
+    private void printTag() {
         IO.print("<FuncDef>");
+    }
+
+    @Override
+    public void output() {
+        printNormal();
+        printTag();
     }
 }

@@ -1,9 +1,19 @@
 package Parser.expr.types;
 
-public class Cond extends LOrExp{
-    public Cond(ExpGroup expGroup) {
-        super(expGroup);
-        setTag("<Cond>");
+import Config.IO;
+import Parser.Output;
+
+public class Cond implements Output {
+    private final LOrExp lOrExp;
+
+    public Cond(LOrExp lOrExp){
+        this.lOrExp = lOrExp;
     }
-    // LOrExp = (LOrExp) Cond
+
+
+    @Override
+    public void output() {
+        lOrExp.output();
+        IO.print("<Cond>");
+    }
 }
