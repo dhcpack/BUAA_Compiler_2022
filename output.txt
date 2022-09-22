@@ -1,0 +1,42 @@
+nullCONSTTK const
+INTTK int
+IDENFR a1
+ASSIGN =
+<ConstExp>
+<InitVal>
+<ConstDef>
+COMMA ,
+IDENFR a2
+ASSIGN =
+<ConstExp>
+<InitVal>
+<ConstDef>
+COMMA ,
+IDENFR a3
+ASSIGN =
+<ConstExp>
+<InitVal>
+<ConstDef>
+SEMICN ;
+<ConstDecl>
+INTTK int
+IDENFR b1
+ASSIGN =
+<Exp>
+<InitVal>
+<VarDef>
+COMMA ,
+IDENFR b2
+ASSIGN =
+<Exp>
+<InitVal>
+<VarDef>
+COMMA ,
+IDENFR b3
+ASSIGN =
+<Exp>
+<InitVal>
+<VarDef>
+SEMICN ;
+<VarDecl>
+<CompUnit>

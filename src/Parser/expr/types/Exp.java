@@ -1,8 +1,18 @@
 package Parser.expr.types;
 
-public class Exp extends AddExp implements PrimaryExpInterface {
-    public Exp(ExpGroup expGroup) {
-        super(expGroup);
+import Config.IO;
+import Parser.Output;
+
+public class Exp implements Output {
+    private final AddExp addExp;
+
+    public Exp(AddExp addExp){
+        this.addExp = addExp;
     }
-    // AddExp = (Exp) AddExp
+
+    @Override
+    public void output() {
+        addExp.output();
+        IO.print("<Exp>");
+    }
 }

@@ -1,6 +1,5 @@
 package Config;
 
-import Config.Config;
 import Lexer.InputHandler;
 
 import java.io.BufferedReader;
@@ -29,7 +28,9 @@ public class IO {
 
     public static void print(String s) {
         string += s;
-        string += "\n";
+        if (string.charAt(string.length() - 1) != '\n') {
+            string += "\n";
+        }
     }
 
     public static void flush() throws IOException {

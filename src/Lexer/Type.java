@@ -51,4 +51,5 @@ public enum Type {
     public String getPattern() {
         return pattern;
     }
+
 }

@@ -10,6 +10,7 @@ public class RelExp extends ExpGroup {
 
     public RelExp(ExpGroup expGroup) {
         getExpGroups().add(expGroup);
+        setTag("<RelExp>");
     }
 
     // public void add(Token token, ExpGroup expGroup) {
