@@ -1,5 +1,7 @@
 package Parser.expr.types;
 
+import Config.IO;
+
 public class PrimaryExp implements UnaryExpInterface {
     private final PrimaryExpInterface primaryExpInterface;
 
@@ -11,5 +13,6 @@ public class PrimaryExp implements UnaryExpInterface {
     @Override
     public void output() {
         primaryExpInterface.output();
+        IO.print("<PrimaryExp>");
     }
 }

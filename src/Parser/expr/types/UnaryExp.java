@@ -2,29 +2,19 @@ package Parser.expr.types;
 
 import Config.IO;
 
-import java.util.ArrayList;
-
-public class UnaryExp extends ExpGroup implements UnaryExpInterface {
-    private final ArrayList<UnaryOp> ops = new ArrayList<>();
+public class UnaryExp implements UnaryExpInterface {
+    private final UnaryOp op;
     // PrimaryExp | FuncExp | UnaryExp
-    private UnaryExpInterface unaryExpInterface;
+    private final UnaryExpInterface unaryExpInterface;
 
-    public UnaryExp() {
-        setTag("<UnaryExp>");
-    }
-
-    public void addOp(UnaryOp op) {
-        this.ops.add(op);
-    }
-
-    public void addContent(UnaryExpInterface unaryExpInterface) {
+    public UnaryExp(UnaryOp op, UnaryExpInterface unaryExpInterface) {
+        this.op = op;
         this.unaryExpInterface = unaryExpInterface;
     }
 
     @Override
     public void output() {
-        // super.output();
-        for (UnaryOp op:ops){
+        if (op != null) {
             op.output();
         }
         unaryExpInterface.output();

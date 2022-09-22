@@ -79,23 +79,25 @@ public class ExprParser {
     // PrimaryExp -> LVal -> Indent {'[' Exp ']'}
     // FuncExp -> Ident '(' [FuncRParams] ')'
     public UnaryExp parseUnaryExp() {
-        UnaryExp unaryExp = new UnaryExp();
         Token token = tokenHandler.getForwardToken();
-        while (token.getType() == Type.PLUS || token.getType() == Type.MINU || token.getType() == Type.NOT) {
-            unaryExp.addOp(new UnaryOp(tokenHandler.getTokenAndMove()));
-            token = tokenHandler.getForwardToken();
+        if (token.getType() == Type.PLUS || token.getType() == Type.MINU || token.getType() == Type.NOT) {
+            UnaryOp unaryOp = new UnaryOp(tokenHandler.getTokenAndMove());
+            return new UnaryExp(unaryOp, parseUnaryExp());
         }
         if (tokenHandler.getForwardToken().getType() == Type.IDENFR) {
             tokenHandler.moveForward(1);
             token = tokenHandler.getForwardToken();
             tokenHandler.retract(1);
             if (token.getType() == Type.LPARENT) {
-                unaryExp.addContent(parseFuncExp());
-                return unaryExp;
+                return new UnaryExp(null, parseFuncExp());
+                // UnaryExpInterface unaryExpInterface = parseFuncExp();
+                // unaryExp.addContent(parseFuncExp());
+                // return unaryExp;
             }
         }
-        unaryExp.addContent(parsePrimaryExp());
-        return unaryExp;
+        return new UnaryExp(null, parsePrimaryExp());
+        // unaryExp.addContent(parsePrimaryExp());
+        // return unaryExp;
     }
 
     // PrimaryExp → '(' Exp ')' | LVal | Number
@@ -138,15 +140,16 @@ public class ExprParser {
     }
 
     public AddExp parseAddExp() {
-        AddExp addExp = new AddExp(parseMulExp());
+        MulExp mulExp = parseMulExp();
+        ArrayList<MulExp> exps = new ArrayList<>();
+        ArrayList<Token> seps = new ArrayList<>();
         Token token = tokenHandler.getForwardToken();
         while (token.getType() == Type.PLUS || token.getType() == Type.MINU) {
-            tokenHandler.moveForward(1);  // skip + or -
-            addExp.add(token, parseMulExp());
+            seps.add(tokenHandler.getTokenAndMove());
+            exps.add(parseMulExp());
             token = tokenHandler.getForwardToken();  // refresh token
         }
-        return addExp;
-        // return (AddExp) parseExp();
+        return new AddExp(mulExp, exps, seps);
     }
 
     public Exp parseExp() {
@@ -166,61 +169,71 @@ public class ExprParser {
     }
 
     public MulExp parseMulExp() {
-        MulExp mulExp = new MulExp(parseUnaryExp());
+        UnaryExp firstExp = parseUnaryExp();
         Token token = tokenHandler.getForwardToken();
+        ArrayList<UnaryExp> exps = new ArrayList<>();
+        ArrayList<Token> seps = new ArrayList<>();
         while (token.getType() == Type.MULT || token.getType() == Type.DIV || token.getType() == Type.MOD) {
-            tokenHandler.moveForward(1);  // skip * or / or %
-            mulExp.add(token, parseUnaryExp());
-            token = tokenHandler.getForwardToken();  // refresh token
+            seps.add(tokenHandler.getTokenAndMove());
+            exps.add(parseUnaryExp());
+            token = tokenHandler.getForwardToken();
         }
-        return mulExp;
+        return new MulExp(firstExp, exps, seps);
     }
 
     public RelExp parseRelExp() {
-        RelExp relExp = new RelExp(parseAddExp());
+        AddExp firstExp = parseAddExp();
         Token token = tokenHandler.getForwardToken();
+        ArrayList<AddExp> exps = new ArrayList<>();
+        ArrayList<Token> seps = new ArrayList<>();
         while (token.getType() == Type.GEQ || token.getType() == Type.GRE || token.getType() == Type.LEQ || token.getType() == Type.LSS) {
-            tokenHandler.moveForward(1);  // skip >= or > or <= or <
-            relExp.add(token, parseAddExp());
-            token = tokenHandler.getForwardToken();  // refresh token
+            seps.add(tokenHandler.getTokenAndMove());
+            exps.add(parseAddExp());
+            token = tokenHandler.getForwardToken();
         }
-        return relExp;
+        return new RelExp(firstExp, exps, seps);
     }
 
     public EqExp parseEqExp() {
-        EqExp eqExp = new EqExp(parseRelExp());
+        RelExp firstExp = parseRelExp();
         Token token = tokenHandler.getForwardToken();
+        ArrayList<RelExp> exps = new ArrayList<>();
+        ArrayList<Token> seps = new ArrayList<>();
         while (token.getType() == Type.EQL || token.getType() == Type.NEQ) {
-            tokenHandler.moveForward(1);  // skip == or !=
-            eqExp.add(token, parseRelExp());
-            token = tokenHandler.getForwardToken();  // refresh token
+            seps.add(tokenHandler.getTokenAndMove());
+            exps.add(parseRelExp());
+            token = tokenHandler.getForwardToken();
         }
-        return eqExp;
+        return new EqExp(firstExp, exps, seps);
     }
 
     public LAndExp parseLAndExp() {
-        LAndExp lAndExp = new LAndExp(parseEqExp());
+        EqExp firstExp = parseEqExp();
         Token token = tokenHandler.getForwardToken();
+        ArrayList<EqExp> exps = new ArrayList<>();
+        ArrayList<Token> seps = new ArrayList<>();
         while (token.getType() == Type.AND) {
-            tokenHandler.moveForward(1);  // skip &&
-            lAndExp.add(token, parseEqExp());
-            token = tokenHandler.getForwardToken();  // refresh token
+            seps.add(tokenHandler.getTokenAndMove());
+            exps.add(parseEqExp());
+            token = tokenHandler.getForwardToken();
         }
-        return lAndExp;
+        return new LAndExp(firstExp, exps, seps);
     }
 
     public LOrExp parseLOrExp() {
-        return (LOrExp) parseCond();
+        LAndExp firstExp = parseLAndExp();
+        Token token = tokenHandler.getForwardToken();
+        ArrayList<LAndExp> exps = new ArrayList<>();
+        ArrayList<Token> seps = new ArrayList<>();
+        while (token.getType() == Type.OR) {
+            seps.add(tokenHandler.getTokenAndMove());
+            exps.add(parseLAndExp());
+            token = tokenHandler.getForwardToken();
+        }
+        return new LOrExp(firstExp, exps, seps);
     }
 
     public Cond parseCond() {
-        Cond cond = new Cond(parseLAndExp());
-        Token token = tokenHandler.getForwardToken();
-        while (token.getType() == Type.OR) {
-            tokenHandler.moveForward(1);  // skip ||
-            cond.add(token, parseLAndExp());
-            token = tokenHandler.getForwardToken();  // refresh token
-        }
-        return cond;
+        return new Cond(parseLOrExp());
     }
 }

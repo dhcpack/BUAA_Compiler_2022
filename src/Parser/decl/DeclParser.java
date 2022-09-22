@@ -9,7 +9,6 @@ import Parser.decl.types.InitVal;
 import Parser.decl.types.Var;
 import Parser.expr.ExprParser;
 import Parser.expr.types.ConstExp;
-import Parser.expr.types.Exp;
 
 import java.util.ArrayList;
 
@@ -23,7 +22,6 @@ public class DeclParser {
     // 常量声明 ConstDecl → 'const' BType ConstDef { ',' ConstDef } ';'
     // 变量声明 VarDecl → BType VarDef { ',' VarDef } ';'
     public Decl parseDecl() {
-        ArrayList<Decl> decls = new ArrayList<>();
         boolean isConst = tokenHandler.getForwardToken().getType() == Type.CONSTTK;
         Token constToken = null;
         if (isConst) constToken = tokenHandler.getTokenAndMove();  // skip const
@@ -71,24 +69,24 @@ public class DeclParser {
 
     // 变量初值 InitVal → Exp | '{' [ InitVal { ',' InitVal } ] '}'   // const or not
     public InitVal parseInitVal(boolean isConst) {
-        Token token = tokenHandler.getTokenAndMove();
+        Token token = tokenHandler.getForwardToken();
         // {{init, init}, {init, init}}, {{init, init}, {init, init}}
         if (token.getType() == Type.LBRACE) {
-            InitVal initVal = new InitVal(isConst);
-            initVal.addInitVal(parseInitVal(isConst));
-            tokenHandler.moveForward(2);
-            token = tokenHandler.getForwardToken();
-            while (token.getType() == Type.RBRACE) {
-                initVal.addInitVal(parseInitVal(isConst));
-                tokenHandler.moveForward(2);
-                token = tokenHandler.getForwardToken();
+            Token left = tokenHandler.getTokenAndMove();
+            ArrayList<InitVal> initVals = new ArrayList<>();
+            ArrayList<Token> seps = new ArrayList<>();
+            initVals.add(parseInitVal(isConst));
+            Token sep = tokenHandler.getForwardToken();  // check is , or not
+            while (sep.getType() != Type.RBRACE) {
+                seps.add(tokenHandler.getTokenAndMove());
+                initVals.add(parseInitVal(isConst));
+                sep = tokenHandler.getForwardToken();
             }
-            return initVal;
+            return new InitVal(left, sep, initVals, seps, isConst);
         } else {
-            tokenHandler.retract(1);
-            if(isConst){
+            if (isConst) {
                 return new InitVal(new ExprParser(tokenHandler).parseConstExp());
-            } else{
+            } else {
                 return new InitVal(new ExprParser(tokenHandler).parseExp());
             }
         }

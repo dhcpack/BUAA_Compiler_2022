@@ -19,10 +19,6 @@ public class LVal implements PrimaryExpInterface, Output {
         this.bracs = bracs;
     }
 
-    // public void addDim(Exp exp) {
-    //     dims.add(exp);
-    // }
-
     public int CountDim() {
         return exps.size();  // int--> dim = 0;
     }

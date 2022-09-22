@@ -1,20 +1,32 @@
 package Parser.expr.types;
 
+import Config.IO;
 import Lexer.Token;
+import Parser.Output;
 
 import java.util.ArrayList;
 
-public class RelExp extends ExpGroup {
-    // private final ArrayList<ExpGroup> expGroups = new ArrayList<>();
-    // private final ArrayList<Token> ops = new ArrayList<>();
+public class RelExp implements Output {
+    // RelExp → AddExp {('<' | '>' | '<=' | '>=') AddExp} // 1.AddExp 2.< 3.> 4.<= 5.>= 均需覆盖
+    private final AddExp firstExp;
+    private final ArrayList<AddExp> exps;
+    private final ArrayList<Token> seps;
 
-    public RelExp(ExpGroup expGroup) {
-        getExpGroups().add(expGroup);
-        setTag("<RelExp>");
+    public RelExp(AddExp firstExp, ArrayList<AddExp> exps, ArrayList<Token> seps) {
+        this.firstExp = firstExp;
+        this.exps = exps;
+        this.seps = seps;
     }
 
-    // public void add(Token token, ExpGroup expGroup) {
-    //     this.expGroups.add(expGroup);
-    //     this.ops.add(token);
-    // }
+
+    @Override
+    public void output() {
+        firstExp.output();
+        IO.print("<RelExp>");
+        for (int i=0;i<exps.size();i++){
+            IO.print(seps.get(i).toString());
+            exps.get(i).output();
+            IO.print("<RelExp>");
+        }
+    }
 }

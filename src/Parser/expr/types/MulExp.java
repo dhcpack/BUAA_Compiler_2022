@@ -1,20 +1,31 @@
 package Parser.expr.types;
 
+import Config.IO;
 import Lexer.Token;
+import Parser.Output;
 
 import java.util.ArrayList;
 
-public class MulExp extends ExpGroup {
-    // private final ArrayList<ExpGroup> expGroups = new ArrayList<>();
-    // private final ArrayList<Token> ops = new ArrayList<>();
+public class MulExp implements Output {
+    // MulExp → UnaryExp {('*' | '/' | '%') UnaryExp} // 1.UnaryExp 2.* 3./ 4.% 均需覆盖
+    private final UnaryExp firstExp;
+    private final ArrayList<UnaryExp> exps;
+    private final ArrayList<Token> seps;
 
-    public MulExp(ExpGroup expGroup) {
-        getExpGroups().add(expGroup);
-        setTag("<MulExp>");
+    public MulExp(UnaryExp firstExp, ArrayList<UnaryExp> exps, ArrayList<Token> seps) {
+        this.firstExp = firstExp;
+        this.exps = exps;
+        this.seps = seps;
     }
 
-    // public void add(Token token, ExpGroup expGroup) {
-    //     this.expGroups.add(expGroup);
-    //     this.ops.add(token);
-    // }
+    @Override
+    public void output() {
+        firstExp.output();
+        IO.print("<MulExp>");
+        for (int i=0;i<exps.size();i++){
+            IO.print(seps.get(i).toString());
+            exps.get(i).output();
+            IO.print("<MulExp>");
+        }
+    }
 }

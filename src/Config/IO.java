@@ -10,7 +10,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class IO {
-    public static String string;
+    public static String string = "";
 
     public static InputHandler input() throws IOException {
         InputHandler inputHandler = new InputHandler();
