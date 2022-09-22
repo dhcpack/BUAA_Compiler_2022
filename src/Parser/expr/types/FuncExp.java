@@ -3,8 +3,6 @@ package Parser.expr.types;
 import Config.IO;
 import Lexer.Token;
 
-import java.util.ArrayList;
-
 public class FuncExp implements UnaryExpInterface {
     // 函数调用形式是 Ident ‘(’ FuncRParams ‘)’，
     // 函数实参表 FuncRParams → Exp { ',' Exp }
@@ -25,7 +23,9 @@ public class FuncExp implements UnaryExpInterface {
     public void output() {
         IO.print(ident.toString());
         IO.print(left.toString());
-        params.output();
+        if (params != null) {
+            params.output();
+        }
         IO.print(right.toString());
     }
 }

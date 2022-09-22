@@ -28,8 +28,11 @@ public class FuncDef implements Output {
         this.seps = seps;
     }
 
-    public void printNormal(){
+    public void printNormal(boolean isMain) {
         IO.print(funcType.toString());
+        if (!isMain) {
+            IO.print("<FuncType>");
+        }
         IO.print(ident.toString());
         IO.print(left.toString());
         if (funcFParams.size() != 0) {
@@ -51,7 +54,7 @@ public class FuncDef implements Output {
 
     @Override
     public void output() {
-        printNormal();
+        printNormal(false);
         printTag();
     }
 }

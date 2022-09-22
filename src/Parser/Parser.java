@@ -43,9 +43,13 @@ public class Parser {
         while (!tokenHandler.reachEnd()) {
             if (first.getType() == Type.INTTK && second.getType() == Type.MAINTK) {
                 mainFunction = new FuncParser(tokenHandler).parseMainFuncDef();
+                break;
             } else {
                 functions.add(new FuncParser(tokenHandler).parseFuncDef());
             }
+            first = tokenHandler.getTokenAndMove();
+            second = tokenHandler.getForwardToken();
+            tokenHandler.retract(1);
         }
         return new CompUnit(globalVariables, functions, mainFunction);
     }

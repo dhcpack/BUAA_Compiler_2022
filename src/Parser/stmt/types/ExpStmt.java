@@ -9,12 +9,8 @@ public class ExpStmt implements StmtInterface {
         this.exp = exp;
     }
 
-    public boolean isEmpty() {
-        return exp == null;
-    }
-
     @Override
     public void output() {
-
+        exp.output();
     }
 }

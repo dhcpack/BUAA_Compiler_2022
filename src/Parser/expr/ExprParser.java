@@ -65,9 +65,9 @@ public class ExprParser {
             exps.add(parseExp());
             bracs.add(tokenHandler.getTokenAndMove());  // pass ]
             // tokenHandler.moveForward(1);
-            tokenHandler.getForwardToken();
+            token = tokenHandler.getForwardToken();
         }
-        return new LVal(token, exps, bracs);
+        return new LVal(ident, exps, bracs);
     }
 
     // Number → IntConst
@@ -119,7 +119,11 @@ public class ExprParser {
     public FuncExp parseFuncExp() {
         Token ident = tokenHandler.getTokenAndMove();
         Token left = tokenHandler.getTokenAndMove();
-        FuncRParams funcRParams = parseFuncRParams();
+        Token token = tokenHandler.getForwardToken();
+        FuncRParams funcRParams = null;
+        if(token.getType() != Type.RPARENT){
+            funcRParams = parseFuncRParams();
+        }
         Token right = tokenHandler.getTokenAndMove();
         return new FuncExp(ident, left, right, funcRParams);
     }
