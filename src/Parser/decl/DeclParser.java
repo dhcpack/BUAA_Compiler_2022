@@ -75,15 +75,19 @@ public class DeclParser {
             Token left = tokenHandler.getTokenAndMove();
             ArrayList<InitVal> initVals = new ArrayList<>();
             ArrayList<Token> seps = new ArrayList<>();
-            initVals.add(parseInitVal(isConst));
-            Token sep = tokenHandler.getForwardToken();  // check is , or not
-            while (sep.getType() != Type.RBRACE) {
-                seps.add(tokenHandler.getTokenAndMove());
+            if (tokenHandler.getForwardToken().getType() != Type.RBRACE) {
                 initVals.add(parseInitVal(isConst));
-                sep = tokenHandler.getForwardToken();
+                Token sep = tokenHandler.getForwardToken();  // check is , or not
+                while (sep.getType() != Type.RBRACE) {
+                    seps.add(tokenHandler.getTokenAndMove());
+                    initVals.add(parseInitVal(isConst));
+                    sep = tokenHandler.getForwardToken();
+                }
+                Token right = tokenHandler.getTokenAndMove();
+                return new InitVal(left, right, initVals, seps, isConst);
+            } else {
+                return new InitVal(left, tokenHandler.getTokenAndMove(), initVals, seps, isConst);
             }
-            Token right = tokenHandler.getTokenAndMove();
-            return new InitVal(left, right, initVals, seps, isConst);
         } else {
             if (isConst) {
                 return new InitVal(new ExprParser(tokenHandler).parseConstExp());
