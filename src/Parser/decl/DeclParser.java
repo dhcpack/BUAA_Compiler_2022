@@ -82,7 +82,8 @@ public class DeclParser {
                 initVals.add(parseInitVal(isConst));
                 sep = tokenHandler.getForwardToken();
             }
-            return new InitVal(left, sep, initVals, seps, isConst);
+            Token right = tokenHandler.getTokenAndMove();
+            return new InitVal(left, right, initVals, seps, isConst);
         } else {
             if (isConst) {
                 return new InitVal(new ExprParser(tokenHandler).parseConstExp());
