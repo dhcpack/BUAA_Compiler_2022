@@ -17,6 +17,7 @@ public class Parser {
         Token second = tokenHandler.getForwardToken();
         tokenHandler.retract(1);
 
+        // parse global variables
         ArrayList<Decl> globalVariables = new ArrayList<>();
         while (!tokenHandler.reachEnd()) {
             if (first.getType() == Type.CONSTTK && second.getType() == Type.INTTK) {
@@ -38,11 +39,12 @@ public class Parser {
             tokenHandler.retract(1);
         }
 
+        // parse functions
         ArrayList<FuncDef> functions = new ArrayList<>();
         MainFuncDef mainFunction = null;
         while (!tokenHandler.reachEnd()) {
             if (first.getType() == Type.INTTK && second.getType() == Type.MAINTK) {
-                mainFunction = new FuncParser(tokenHandler).parseMainFuncDef();
+                mainFunction = new FuncParser(tokenHandler).parseMainFuncDef();  // encounter main function
                 break;
             } else {
                 functions.add(new FuncParser(tokenHandler).parseFuncDef());

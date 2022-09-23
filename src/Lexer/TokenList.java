@@ -1,7 +1,5 @@
 package Lexer;
 
-import Lexer.Token;
-
 import java.util.ArrayList;
 import java.util.List;
 

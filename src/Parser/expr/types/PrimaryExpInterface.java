@@ -1,6 +1,6 @@
 package Parser.expr.types;
 
-// PrimaryExp → '(' Exp ')' | LVal | Number
+// PrimaryExp → BraceExp | LVal | Number
 public interface PrimaryExpInterface {
-    public void output();
+    void output();
 }

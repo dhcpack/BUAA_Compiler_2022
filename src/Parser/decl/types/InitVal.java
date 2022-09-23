@@ -20,7 +20,7 @@ public class InitVal implements Output {
     private final boolean isConst;
 
     public InitVal(Token left, Token right, ArrayList<InitVal> initVals, ArrayList<Token> seps,
-                   boolean isConst) {  // empty constructor and addInitVal
+                   boolean isConst) {  // initial value
         this.exp = null;
         this.constExp = null;
         this.isConst = isConst;

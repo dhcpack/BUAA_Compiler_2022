@@ -4,6 +4,7 @@ import Config.IO;
 import Parser.Output;
 
 public class Exp implements Output {
+    // Exp -> AddExp
     private final AddExp addExp;
 
     public Exp(AddExp addExp){

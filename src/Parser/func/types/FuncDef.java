@@ -8,7 +8,7 @@ import Parser.stmt.types.BlockStmt;
 import java.util.ArrayList;
 
 public class FuncDef implements Output {
-    // FuncDef → FuncType Ident '(' [FuncFParams] ')' Block // 1.无形参 2.有形参
+    // FuncDef → FuncType Ident '(' [FuncFParams] ')' Block
     private final Token funcType;
     private final Token ident;
     private final Token left;
@@ -30,12 +30,12 @@ public class FuncDef implements Output {
 
     public void printNormal(boolean isMain) {
         IO.print(funcType.toString());
-        if (!isMain) {
+        if (!isMain) {  // if not main, print <FuncType>
             IO.print("<FuncType>");
         }
         IO.print(ident.toString());
         IO.print(left.toString());
-        if (funcFParams.size() != 0) {
+        if (funcFParams.size() != 0) {  // if has formal Params
             funcFParams.get(0).output();
             int index = 1;
             for (Token sep : seps) {
@@ -48,13 +48,9 @@ public class FuncDef implements Output {
         blockStmt.output();
     }
 
-    private void printTag() {
-        IO.print("<FuncDef>");
-    }
-
     @Override
     public void output() {
         printNormal(false);
-        printTag();
+        IO.print("<FuncDef>");
     }
 }

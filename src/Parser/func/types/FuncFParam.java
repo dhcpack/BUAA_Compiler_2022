@@ -2,11 +2,8 @@ package Parser.func.types;
 
 import Config.IO;
 import Lexer.Token;
-import Lexer.Type;
 import Parser.Output;
-import Parser.expr.types.Cond;
 import Parser.expr.types.ConstExp;
-import Parser.expr.types.Exp;
 
 import java.util.ArrayList;
 

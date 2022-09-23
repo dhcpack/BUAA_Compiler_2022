@@ -4,6 +4,7 @@ import Config.IO;
 import Lexer.Token;
 
 public class BraceExp implements PrimaryExpInterface{
+    // BraceExp -> '(' Exp ')'
     private final Token left;
     private final Token right;
     private final Exp exp;
@@ -13,7 +14,6 @@ public class BraceExp implements PrimaryExpInterface{
         this.exp = exp;
         this.right = right;
     }
-
 
     @Override
     public void output() {

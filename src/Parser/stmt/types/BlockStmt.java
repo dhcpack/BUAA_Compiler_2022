@@ -27,12 +27,4 @@ public class BlockStmt implements StmtInterface,Output {
         IO.print(right.toString());
         IO.print("<Block>");
     }
-
-    // public void addBlockItem(BlockItem blockItem) {
-    //     this.blockItems.add(blockItem);
-    // }
-
-    // public void addAllBlockItem(ArrayList<BlockItem> blockItems){
-    //     this.blockItems.addAll(blockItems);
-    // }
 }

@@ -4,8 +4,8 @@ import Config.IO;
 import Lexer.Token;
 import Parser.expr.types.Cond;
 
-
 public class WhileStmt implements StmtInterface {
+    // 'while' '(' Cond ')' Stmt
     private final Token whileToken;
     private final Token left;
     private final Token right;

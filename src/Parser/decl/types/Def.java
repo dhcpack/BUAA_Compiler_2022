@@ -33,7 +33,7 @@ public class Def implements Output {
     @Override
     public void output() {
         var.output();
-        if (hasInitVal()) {
+        if (hasInitVal()) {  // check have initial value or not
             IO.print(assign.toString());
             initVal.output();
         }

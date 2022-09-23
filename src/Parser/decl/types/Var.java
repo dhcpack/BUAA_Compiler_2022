@@ -4,7 +4,6 @@ import Config.IO;
 import Lexer.Token;
 import Parser.Output;
 import Parser.expr.types.ConstExp;
-import Parser.expr.types.Exp;
 
 import java.util.ArrayList;
 
@@ -24,7 +23,7 @@ public class Var implements Output {
     public void output() {
         IO.print(ident.toString());
         int index = 0;
-        for (ConstExp constExp : constExps) {
+        for (ConstExp constExp : constExps) {  // print arrays
             IO.print(bracks.get(index++).toString());
             constExp.output();
             IO.print(bracks.get(index++).toString());

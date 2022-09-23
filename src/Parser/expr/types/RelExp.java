@@ -7,7 +7,7 @@ import Parser.Output;
 import java.util.ArrayList;
 
 public class RelExp implements Output {
-    // RelExp → AddExp {('<' | '>' | '<=' | '>=') AddExp} // 1.AddExp 2.< 3.> 4.<= 5.>= 均需覆盖
+    // RelExp → AddExp {('<' | '>' | '<=' | '>=') AddExp}
     private final AddExp firstExp;
     private final ArrayList<AddExp> exps;
     private final ArrayList<Token> seps;
@@ -17,7 +17,6 @@ public class RelExp implements Output {
         this.exps = exps;
         this.seps = seps;
     }
-
 
     @Override
     public void output() {
