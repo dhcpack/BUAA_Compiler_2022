@@ -7,7 +7,7 @@ import Parser.Output;
 import java.util.ArrayList;
 
 public class AddExp implements Output {
-    // AddExp → MulExp {('+' | '−') MulExp} // 1.MulExp 2.+ 需覆盖 3.- 需覆盖
+    // AddExp → MulExp {('+' | '−') MulExp}
     private final MulExp firstExp;
     private final ArrayList<MulExp> exps;
     private final ArrayList<Token> seps;
@@ -21,7 +21,7 @@ public class AddExp implements Output {
     @Override
     public void output() {
         firstExp.output();
-        IO.print("<AddExp>");
+        IO.print("<AddExp>");  // correctly print BNF
         for (int i = 0; i < exps.size(); i++) {
             IO.print(seps.get(i).toString());
             exps.get(i).output();

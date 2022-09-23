@@ -8,6 +8,7 @@ import Parser.expr.types.Cond;
 import java.util.ArrayList;
 
 public class IfStmt implements StmtInterface, Output {
+    // 'if' '(' Cond ')' Stmt [ 'else' Stmt ]
     private final Token ifToken;
     private final Token left;
     private final Token right;
@@ -25,7 +26,7 @@ public class IfStmt implements StmtInterface, Output {
     }
 
     public boolean hasElse() {
-        return this.stmts.size() == 2;
+        return this.elses.size() != 0;
     }
 
     @Override

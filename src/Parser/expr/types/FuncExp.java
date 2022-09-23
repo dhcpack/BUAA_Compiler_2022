@@ -4,7 +4,7 @@ import Config.IO;
 import Lexer.Token;
 
 public class FuncExp implements UnaryExpInterface {
-    // 函数调用形式是 Ident ‘(’ FuncRParams ‘)’，
+    // 函数调用 FuncExp --> Ident '(' [FuncRParams] ')'
     // 函数实参表 FuncRParams → Exp { ',' Exp }
     private final Token ident;
     private final Token left;
@@ -23,7 +23,7 @@ public class FuncExp implements UnaryExpInterface {
     public void output() {
         IO.print(ident.toString());
         IO.print(left.toString());
-        if (params != null) {
+        if (params != null) {  // params could be null
             params.output();
         }
         IO.print(right.toString());

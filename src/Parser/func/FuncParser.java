@@ -5,7 +5,6 @@ import Lexer.Type;
 import Parser.TokenHandler;
 import Parser.expr.ExprParser;
 import Parser.expr.types.ConstExp;
-import Parser.expr.types.Exp;
 import Parser.func.types.FuncDef;
 import Parser.func.types.FuncFParam;
 import Parser.func.types.MainFuncDef;
@@ -16,11 +15,13 @@ import java.util.ArrayList;
 public class FuncParser {
     /*
         // functions
-        函数定义 FuncDef → FuncType Ident '(' [FuncFParams] ')' Block // 1.无形参 2.有形参
-        主函数定义 MainFuncDef → 'int' 'main' '(' ')' Block // 存在main函数
-        函数类型 FuncType → 'void' | 'int' // 覆盖两种类型的函数
-        函数形参表 FuncFParams → FuncFParam { ',' FuncFParam } // 1.花括号内重复0次 2.花括号 内重复多次
-        函数形参 FuncFParam → BType Ident ['[' ']' { '[' ConstExp ']' }] // 1.普通变量 2.一维数组变量 3.二维数组变量
+        函数定义 FuncDef → FuncType Ident '(' [FuncFParams] ')' Block
+        主函数定义 MainFuncDef → 'int' 'main' '(' ')' Block
+
+        函数类型 FuncType → 'void' | 'int'
+
+        函数形参表 FuncFParams → FuncFParam { ',' FuncFParam }
+        函数形参 FuncFParam → BType Ident ['[' ']' { '[' ConstExp ']' }]
     * */
     public final TokenHandler tokenHandler;
 
@@ -42,7 +43,7 @@ public class FuncParser {
                 funcFParams.add(parseFuncFParam());
                 right = tokenHandler.getTokenAndMove();  // get , or ) and already skip
             }
-            seps.remove(0);
+            seps.remove(0);  // first element is not a sep
         } else {
             right = tokenHandler.getTokenAndMove();  // skip )
         }
@@ -54,7 +55,7 @@ public class FuncParser {
         return new MainFuncDef(parseFuncDef());
     }
 
-    // FuncFParam → BType Ident ['[' ']' { '[' ConstExp ']' }] // 1.普通变量 2.一维数组变量 3.二维数组变量
+    // FuncFParam → BType Ident ['[' ']' { '[' ConstExp ']' }]
     public FuncFParam parseFuncFParam() {
         Token BType = tokenHandler.getTokenAndMove();  // skip BType
         Token ident = tokenHandler.getTokenAndMove();
@@ -63,14 +64,11 @@ public class FuncParser {
         if (token.getType() == Type.LBRACK) {
             bracs.add(tokenHandler.getTokenAndMove());  // skip [
             bracs.add(tokenHandler.getTokenAndMove());  // skip ]
-            // tokenHandler.moveForward(2);  // point to next [ or end
             token = tokenHandler.getForwardToken();
             ArrayList<ConstExp> constExps = new ArrayList<>();
             while (token.getType() == Type.LBRACK) {
                 bracs.add(tokenHandler.getTokenAndMove());  // skip [ and point to ConstExp
-                // tokenHandler.moveForward(1);  // skip [ and point to ConstExp
                 constExps.add(new ExprParser(tokenHandler).parseConstExp());
-                // tokenHandler.moveForward(1);  // skip ]
                 bracs.add(tokenHandler.getTokenAndMove());  // skip ]
                 token = tokenHandler.getForwardToken();
             }

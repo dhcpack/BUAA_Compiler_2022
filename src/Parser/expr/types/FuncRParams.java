@@ -7,7 +7,7 @@ import Parser.Output;
 import java.util.ArrayList;
 
 public class FuncRParams implements Output {
-    // 函数实参表 FuncRParams → Exp { ',' Exp } // 1.花括号内重复0次 2.花括号内重复多次 3. Exp需要覆盖数组传参和部分数组传参
+    // 函数实参表 FuncRParams → Exp { ',' Exp }
     private final ArrayList<Exp> exps;
     private final ArrayList<Token> seps;
 

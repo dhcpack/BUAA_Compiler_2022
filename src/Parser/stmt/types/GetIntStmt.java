@@ -5,6 +5,7 @@ import Lexer.Token;
 import Parser.expr.types.LVal;
 
 public class GetIntStmt implements StmtInterface {
+    // LVal '=' 'getint''('')'
     private final LVal lVal;
     private final Token assign;
     private final Token getint;

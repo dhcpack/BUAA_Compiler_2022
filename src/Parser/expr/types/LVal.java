@@ -7,8 +7,7 @@ import Parser.Output;
 import java.util.ArrayList;
 
 public class LVal implements PrimaryExpInterface, Output {
-    // LVal → Ident {'[' Exp ']'} //1.普通变量 2.一维数组 3.二维数组
-    // private final String tag = "<LVal>";
+    // LVal → Ident {'[' Exp ']'}
     private final Token ident;
     private final ArrayList<Exp> exps;
     private final ArrayList<Token> bracs;

@@ -7,7 +7,7 @@ import Parser.Output;
 import java.util.ArrayList;
 
 public class MulExp implements Output {
-    // MulExp → UnaryExp {('*' | '/' | '%') UnaryExp} // 1.UnaryExp 2.* 3./ 4.% 均需覆盖
+    // MulExp → UnaryExp {('*' | '/' | '%') UnaryExp}
     private final UnaryExp firstExp;
     private final ArrayList<UnaryExp> exps;
     private final ArrayList<Token> seps;

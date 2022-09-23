@@ -1,8 +1,9 @@
 package Lexer;
 
+import Config.Config;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import Config.Config;
 
 public class Lexer {
     public static TokenList lex(InputHandler inputHandler) {
