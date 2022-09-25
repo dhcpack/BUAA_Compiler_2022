@@ -73,7 +73,7 @@ public class StmtParser {
                 token = tokenHandler.getTokenAndMove();
                 step++;
                 if (token.getType() == Type.ASSIGN) {  // encounter '='
-                    tokenHandler.retract(step);
+                    tokenHandler.retract(step);  // retract to begin place
                     LVal lVal = new ExprParser(tokenHandler).parseLVal();  // point to =
                     Token assign = tokenHandler.getTokenAndMove();
                     token = tokenHandler.getForwardToken();  // check  it
@@ -81,20 +81,17 @@ public class StmtParser {
                         // LVal '=' 'getint''('')'';'
                         GetIntStmt getIntStmt = new GetIntStmt(lVal, assign, tokenHandler.getTokenAndMove(),
                                 tokenHandler.getTokenAndMove(), tokenHandler.getTokenAndMove());
-                        Token semicn = tokenHandler.getTokenAndMove();
-                        return new Stmt(getIntStmt, semicn);
+                        return new Stmt(getIntStmt, tokenHandler.getTokenAndMove());
                     } else {
                         // LVal '=' Exp ';'
                         Exp exp = new ExprParser(tokenHandler).parseExp();
-                        Token semicn = tokenHandler.getTokenAndMove();
-                        return new Stmt(new AssignStmt(lVal, assign, exp), semicn);
+                        return new Stmt(new AssignStmt(lVal, assign, exp), tokenHandler.getTokenAndMove());
                     }
                 } else if (token.getType() == Type.SEMICN) {
                     tokenHandler.retract(step);
                     // Exp ';'
                     ExpStmt expStmt = new ExpStmt(new ExprParser(tokenHandler).parseExp());
-                    Token semicn = tokenHandler.getTokenAndMove();
-                    return new Stmt(expStmt, semicn);
+                    return new Stmt(expStmt, tokenHandler.getTokenAndMove());
                 }
             }
         }
