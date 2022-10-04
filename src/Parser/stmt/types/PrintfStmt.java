@@ -44,8 +44,11 @@ public class PrintfStmt implements StmtInterface {
                     (int) content.charAt(i) == 37 || 40 <= (int) content.charAt(i) && (int) content.charAt(i) <= 126)) {
                 return false;
             }
-            if (((int) content.charAt(i) == 92) && (i == content.length() - 1 || (int) content.charAt(i) != 110)) {
-                return false;
+            if (((int) content.charAt(i) == 92) && (i == content.length() - 1 || (int) content.charAt(i + 1) != 110)) {
+                return false;  // check for \n
+            }
+            if (((int) content.charAt(i) == 37) && (i == content.length() - 1 || (int) content.charAt(i + 1) != 100)) {
+                return false;  // check for %d
             }
         }
         return true;
