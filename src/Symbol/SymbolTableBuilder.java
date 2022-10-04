@@ -100,9 +100,11 @@ public class SymbolTableBuilder {
     }
 
     public void checkVar(Var var) {
+        boolean redefine = false;
         Token ident = var.getIdent();
         if (currSymbolTable.contains(ident.getContent(), false)) {
             errors.add(new RedefinedTokenException(ident.getLine()));
+            redefine = true;
         }
         if (var.missRBrack()) {
             errors.add(new MissRbrackException(ident.getLine()));
@@ -112,7 +114,9 @@ public class SymbolTableBuilder {
             checkConstExp(constExp);
         }
         SymbolType symbolType = dims.size() == 0 ? SymbolType.INT : SymbolType.ARRAY;
-        currSymbolTable.addSymbol(new Symbol(symbolType, var.getBracks(), dims, ident, var.isConst()));
+        if (!redefine) {
+            currSymbolTable.addSymbol(new Symbol(symbolType, var.getBracks(), dims, ident, var.isConst()));
+        }
     }
 
     public void checkInitVal(InitVal initVal) {
@@ -130,8 +134,10 @@ public class SymbolTableBuilder {
 
     public void checkFunc(FuncDef funcDef) {
         Token ident = funcDef.getIdent();
+        boolean redefine = false;
         if (currSymbolTable.contains(ident.getContent(), false)) {
             errors.add(new RedefinedTokenException(ident.getLine()));
+            redefine = true;
             // return;  // stop here or not?
         }
 
@@ -147,8 +153,10 @@ public class SymbolTableBuilder {
             checkFuncFParam(funcFParam);
         }
         Token funcType = funcDef.getFuncType();
-        currSymbolTable.getParent().addSymbol(new Symbol(SymbolType.FUNCTION,  // func 加到父符号表中
-                funcType.getType() == TokenType.INTTK ? SymbolType.INT : SymbolType.VOID, params, ident));
+        if (!redefine) {
+            currSymbolTable.getParent().addSymbol(new Symbol(SymbolType.FUNCTION,  // func 加到父符号表中
+                    funcType.getType() == TokenType.INTTK ? SymbolType.INT : SymbolType.VOID, params, ident));
+        }
         checkBlockStmt(funcDef.getBlockStmt());
         boolean returnInt = funcDef.returnInt();
         if (funcType.getType() == TokenType.VOIDTK && returnInt) {
@@ -165,8 +173,10 @@ public class SymbolTableBuilder {
     }
 
     public void checkFuncFParam(FuncFParam funcFParam) {
+        boolean redefine = false;
         Token ident = funcFParam.getIdent();
         if (currSymbolTable.contains(ident.getContent(), false)) {
+            redefine = true;
             errors.add(new RedefinedTokenException(ident.getLine()));
         }
         if (funcFParam.missRBrack()) {
@@ -174,7 +184,9 @@ public class SymbolTableBuilder {
         }
         ArrayList<ConstExp> dims = funcFParam.getDims();
         SymbolType symbolType = dims.size() == 0 ? SymbolType.INT : SymbolType.ARRAY;
-        currSymbolTable.addSymbol(new Symbol(symbolType, funcFParam.getBracks(), dims, ident, false));
+        if (!redefine) {
+            currSymbolTable.addSymbol(new Symbol(symbolType, funcFParam.getBracks(), dims, ident, false));
+        }
     }
 
     public void checkBlockItem(BlockItem blockItem) {
