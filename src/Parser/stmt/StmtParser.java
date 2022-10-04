@@ -69,6 +69,8 @@ public class StmtParser {
             return new Stmt(null, tokenHandler);  // a single ';'
         } else {
             int step = 0;
+            Token ident = tokenHandler.getTokenAndMove();  // skip ident
+            step++;
             while (true) {
                 token = tokenHandler.getTokenAndMove();
                 step++;
@@ -90,6 +92,11 @@ public class StmtParser {
                 } else if (token.getType() == TokenType.SEMICN) {
                     tokenHandler.retract(step);
                     // Exp ';'
+                    ExpStmt expStmt = new ExpStmt(new ExprParser(tokenHandler).parseExp());
+                    return new Stmt(expStmt, tokenHandler);
+                } else if (token.getLine() != ident.getLine()) {
+                    tokenHandler.retract(step);
+                    // Exp and miss a ';'
                     ExpStmt expStmt = new ExpStmt(new ExprParser(tokenHandler).parseExp());
                     return new Stmt(expStmt, tokenHandler);
                 }
@@ -145,7 +152,8 @@ public class StmtParser {
     // 'return' [Exp] ';'
     public ReturnStmt parseReturnStmt() {
         Token returnToken = tokenHandler.getTokenAndMove();
-        if (tokenHandler.getForwardToken().getType() == TokenType.SEMICN) {
+        if (tokenHandler.getForwardToken().getType() == TokenType.SEMICN ||
+                tokenHandler.getForwardToken().getType() == TokenType.RBRACE) {  // 可能缺失分号
             return new ReturnStmt(returnToken);
         } else {
             return new ReturnStmt(returnToken, new ExprParser(tokenHandler).parseExp());
@@ -165,7 +173,7 @@ public class StmtParser {
             exps.add(new ExprParser(tokenHandler).parseExp());
             token = tokenHandler.getTokenAndMove();  // get , or ). point to exp or ;
         }
-        if(token.getType() != TokenType.RPARENT){
+        if (token.getType() != TokenType.RPARENT) {
             token = null;
             tokenHandler.retract(1);
         }
