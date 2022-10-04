@@ -34,7 +34,6 @@ import Parser.expr.types.PrimaryExp;
 import Parser.expr.types.PrimaryExpInterface;
 import Parser.expr.types.UnaryExp;
 import Parser.expr.types.UnaryExpInterface;
-import Parser.expr.types.UnaryOp;
 import Parser.func.types.FuncDef;
 import Parser.func.types.FuncFParam;
 import Parser.func.types.MainFuncDef;
@@ -113,7 +112,7 @@ public class SymbolTableBuilder {
             checkConstExp(constExp);
         }
         SymbolType symbolType = dims.size() == 0 ? SymbolType.INT : SymbolType.ARRAY;
-        currSymbolTable.addSymbol(new Symbol(symbolType, dims, ident, var.isConst()));
+        currSymbolTable.addSymbol(new Symbol(symbolType, var.getBracks(), dims, ident, var.isConst()));
     }
 
     public void checkInitVal(InitVal initVal) {
@@ -147,9 +146,10 @@ public class SymbolTableBuilder {
             params.add(funcFParam.toSymbol());
             checkFuncFParam(funcFParam);
         }
-        currSymbolTable.getParent().addSymbol(new Symbol(SymbolType.FUNCTION, params, ident));  // func 加到父符号表中
-        checkBlockStmt(funcDef.getBlockStmt());
         Token funcType = funcDef.getFuncType();
+        currSymbolTable.getParent().addSymbol(new Symbol(SymbolType.FUNCTION,  // func 加到父符号表中
+                funcType.getType() == TokenType.INTTK ? SymbolType.INT : SymbolType.VOID, params, ident));
+        checkBlockStmt(funcDef.getBlockStmt());
         boolean returnInt = funcDef.returnInt();
         if (funcType.getType() == TokenType.VOIDTK && returnInt) {
             errors.add(new IllegalReturnException(funcDef.getReturn().getLine()));
@@ -174,7 +174,7 @@ public class SymbolTableBuilder {
         }
         ArrayList<ConstExp> dims = funcFParam.getDims();
         SymbolType symbolType = dims.size() == 0 ? SymbolType.INT : SymbolType.ARRAY;
-        currSymbolTable.addSymbol(new Symbol(symbolType, dims, ident, false));
+        currSymbolTable.addSymbol(new Symbol(symbolType, funcFParam.getBracks(), dims, ident, false));
     }
 
     public void checkBlockItem(BlockItem blockItem) {
@@ -374,6 +374,7 @@ public class SymbolTableBuilder {
         if (lVal.missRBrack()) {
             errors.add(new MissRbrackException(ident.getLine()));
         }
+        lVal.setSymbol(symbol);
         return lVal;
     }
 
@@ -392,22 +393,33 @@ public class SymbolTableBuilder {
             errors.add(new UndefinedTokenException(ident.getLine()));
             return null;  // error
         }
-        ArrayList<Symbol> Fparams = symbol.getParams();
+        assert symbol.isFunc();
+        funcExp.setReturnType(symbol.getReturnType());  // 设置function的returnType
+
+        ArrayList<Symbol> Fparams = symbol.getParams();  // 形参表
         FuncRParams funcRParams = funcExp.getParams();
-        // LeafNode is LVal or Number
-        ArrayList<LeafNode> Rparams = new ArrayList<>();
-        for (Exp exp : funcRParams.getExps()) {
-            Rparams.add(checkExp(exp));
+        // LeafNode is LVal or Number or funcExp
+        ArrayList<LeafNode> Rparams = new ArrayList<>();  // 实参表
+        if(funcRParams != null){
+            for (Exp exp : funcRParams.getExps()) {
+                Rparams.add(checkExp(exp));
+            }
         }
 
         // match check
-        if (Fparams.size() != Rparams.size()) {
+        if (Fparams.size() != Rparams.size()) {  // param count mismatch
             errors.add(new MismatchParamCountException(funcExp.getLine()));
-        }
-        for (int i = 0; i < Fparams.size(); i++) {
-            if (Fparams.get(i).getSymbolType() != Rparams.get(i).getSymbolType()) {
-                errors.add(new MismatchParamTypeException(funcRParams.getLine()));
-                break;
+        } else {
+            for (int i = 0; i < Fparams.size(); i++) {  // param type mismatch
+                if (Fparams.get(i).getSymbolType() != Rparams.get(i).getSymbolType()) {
+                    errors.add(new MismatchParamTypeException(funcRParams.getLine()));
+                    break;
+                }
+                if (Fparams.get(i).getSymbolType() == SymbolType.ARRAY &&
+                        (Fparams.get(i).getDimsCount() != Rparams.get(i).getDimCount())){
+                    errors.add(new MismatchParamTypeException(funcRParams.getLine()));
+                    break;
+                }
             }
         }
         return funcExp;

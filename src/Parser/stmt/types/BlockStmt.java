@@ -23,8 +23,12 @@ public class BlockStmt implements StmtInterface, Output {
             return false;
         }
         BlockItem blockItem = blockItems.get(blockItems.size() - 1);
-        if (blockItem instanceof ReturnStmt) {
-            return ((ReturnStmt) blockItem).returnInt();
+        if (!(blockItem instanceof Stmt)) {
+            return false;
+        }
+        Stmt stmt = (Stmt) blockItem;
+        if (stmt.getStmt() instanceof ReturnStmt) {
+            return ((ReturnStmt) stmt.getStmt()).returnInt();
         }
         return false;
     }
@@ -33,8 +37,20 @@ public class BlockStmt implements StmtInterface, Output {
         return this.right;
     }
 
+    // BlockItem -> Stmt(StmtInterface) -> ReturnStmt
     public Token getReturn() {
-        return ((ReturnStmt) blockItems.get(blockItems.size() - 1)).getReturnToken();
+        if (blockItems.size() == 0) {
+            return null;
+        }
+        BlockItem blockItem = blockItems.get(blockItems.size() - 1);
+        if (!(blockItem instanceof Stmt)) {
+            return null;
+        }
+        Stmt stmt = (Stmt) blockItem;
+        if (stmt.getStmt() instanceof ReturnStmt) {
+            return ((ReturnStmt) stmt.getStmt()).getReturnToken();
+        }
+        return null;
     }
 
     public ArrayList<BlockItem> getBlockItems() {

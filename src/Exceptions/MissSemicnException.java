@@ -3,7 +3,7 @@ package Exceptions;
 import Config.Config;
 
 public class MissSemicnException implements MyException{
-    private ErrorType errorType = ErrorType.MISSMATCH_PRINTF;
+    private ErrorType errorType = ErrorType.MISS_SEMICN;
     private final int line;
 
     public MissSemicnException(int line) {

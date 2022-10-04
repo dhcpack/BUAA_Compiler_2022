@@ -6,6 +6,7 @@ import Parser.Output;
 
 import java.util.ArrayList;
 
+// Warning: FuncRParams in FuncExp might be null
 public class FuncRParams implements Output {
     // 函数实参表 FuncRParams → Exp { ',' Exp }
     private final ArrayList<Exp> exps;
@@ -20,6 +21,7 @@ public class FuncRParams implements Output {
         return exps;
     }
 
+    // already check size
     public int getLine() {
         return exps.get(exps.size() - 1).getLine();
     }
@@ -29,7 +31,7 @@ public class FuncRParams implements Output {
         int index = 0;
         exps.get(index++).output();
 
-        for (Token sep:seps){
+        for (Token sep : seps) {
             IO.print(sep.toString());
             exps.get(index++).output();
         }

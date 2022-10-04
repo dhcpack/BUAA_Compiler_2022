@@ -28,6 +28,10 @@ public class Var implements Output {
         return false;
     }
 
+    public ArrayList<Token> getBracks() {
+        return bracks;
+    }
+
     public Token getIdent() {
         return this.ident;
     }

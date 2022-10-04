@@ -2,9 +2,12 @@ package Parser.expr.types;
 
 import Symbol.SymbolType;
 
-// 表达式的叶子节点，包括LVal和Number
+// 表达式的叶子节点，包括LVal,Number和funcExp  真正落到实处的叶子节点
 public interface LeafNode {
     SymbolType getSymbolType();
 
-    int getDims();
+    // Warning: for LVal, it is using Dim!!!
+    // int a[1][2];
+    // when using a[0], getDimCount() -> 1;
+    int getDimCount();
 }

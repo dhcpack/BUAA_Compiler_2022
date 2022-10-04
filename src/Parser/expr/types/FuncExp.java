@@ -10,7 +10,8 @@ public class FuncExp implements UnaryExpInterface, LeafNode {
     private final Token ident;
     private final Token left;
     private final Token right;    // error check: right could be null
-    private final FuncRParams params;
+    private final FuncRParams params;  // Waining: params could be null
+    private SymbolType returnType;
 
     public FuncExp(Token token, Token left, Token right, FuncRParams params) {
         this.ident = token;
@@ -24,7 +25,9 @@ public class FuncExp implements UnaryExpInterface, LeafNode {
     }
 
     public int getLine() {
-        if (params.getExps().size() != 0) {
+        if (params == null) {
+            return left.getLine();
+        } else if (params.getExps().size() != 0) {
             return this.params.getLine();
         } else {
             return this.left.getLine();
@@ -35,8 +38,18 @@ public class FuncExp implements UnaryExpInterface, LeafNode {
         return ident;
     }
 
+    // Warning: params could be null
     public FuncRParams getParams() {
         return params;
+    }
+
+    public SymbolType getReturnType() {
+        assert returnType != null;
+        return returnType;
+    }
+
+    public void setReturnType(SymbolType returnType) {
+        this.returnType = returnType;
     }
 
     @Override
@@ -52,11 +65,12 @@ public class FuncExp implements UnaryExpInterface, LeafNode {
     @Override
     public SymbolType getSymbolType() {
         // function 一定不是 void， 返回类型一定要是int
-        return SymbolType.INT;
+        assert returnType != null;
+        return returnType;
     }
 
     @Override
-    public int getDims() {
-        return 0;
+    public int getDimCount() {
+        return 0;  //
     }
 }
