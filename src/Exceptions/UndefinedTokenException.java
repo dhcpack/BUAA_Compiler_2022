@@ -3,7 +3,7 @@ package Exceptions;
 import Config.Config;
 
 public class UndefinedTokenException implements MyException {
-    private ErrorType errorType = ErrorType.UNDEFINED_TOKEN;
+    private final ErrorType errorType = ErrorType.UNDEFINED_TOKEN;
     private final int line;
 
     public UndefinedTokenException(int line) {

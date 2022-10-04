@@ -3,7 +3,7 @@ package Exceptions;
 import Config.Config;
 
 public class MismatchPrintfException implements MyException{
-    private ErrorType errorType = ErrorType.MISSMATCH_PRINTF;
+    private final ErrorType errorType = ErrorType.MISSMATCH_PRINTF;
     private final int line;
 
     public MismatchPrintfException(int line) {

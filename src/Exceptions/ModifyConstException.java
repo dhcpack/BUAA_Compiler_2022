@@ -3,7 +3,7 @@ package Exceptions;
 import Config.Config;
 
 public class ModifyConstException implements MyException{
-    private ErrorType errorType = ErrorType.MODIFY_CONST;
+    private final ErrorType errorType = ErrorType.MODIFY_CONST;
     private final int line;
 
     public ModifyConstException(int line) {

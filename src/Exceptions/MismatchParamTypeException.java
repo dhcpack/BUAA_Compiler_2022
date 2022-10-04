@@ -3,7 +3,7 @@ package Exceptions;
 import Config.Config;
 
 public class MismatchParamTypeException implements MyException{
-    private ErrorType errorType = ErrorType.MISMATCH_PARAM_TYPE;
+    private final ErrorType errorType = ErrorType.MISMATCH_PARAM_TYPE;
     private final int line;
 
     public MismatchParamTypeException(int line) {

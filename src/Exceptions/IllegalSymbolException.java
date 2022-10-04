@@ -3,7 +3,7 @@ package Exceptions;
 import Config.Config;
 
 public class IllegalSymbolException implements MyException {
-    private ErrorType errorType = ErrorType.ILLEGAL_SYMBOL;
+    private final ErrorType errorType = ErrorType.ILLEGAL_SYMBOL;
     private final int line;
 
     public IllegalSymbolException(int line) {

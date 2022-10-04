@@ -3,7 +3,7 @@ package Exceptions;
 import Config.Config;
 
 public class IllegalReturnException implements MyException{
-    private ErrorType errorType = ErrorType.ILLEGAL_RETURN;
+    private final ErrorType errorType = ErrorType.ILLEGAL_RETURN;
     private final int line;
 
     public IllegalReturnException(int line) {

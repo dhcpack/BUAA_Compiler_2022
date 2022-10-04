@@ -3,7 +3,7 @@ package Exceptions;
 import Config.Config;
 
 public class MissRparentException implements MyException{
-    private ErrorType errorType = ErrorType.MISS_RPARENT;
+    private final ErrorType errorType = ErrorType.MISS_RPARENT;
     private final int line;
 
     public MissRparentException(int line) {
