@@ -37,8 +37,8 @@ public class FuncParser {
         Token left = tokenHandler.getTokenAndMove();  // skip (
         Token right = tokenHandler.getForwardToken();  // get FuncFParam or ). point to same place
         ArrayList<Token> seps = new ArrayList<>();
-        if (right.getType() != TokenType.RPARENT) {
-            while (right.getType() != TokenType.RPARENT) {
+        if (right.getType() != TokenType.RPARENT && right.getType() != TokenType.LBRACE) {
+            while (right.getType() != TokenType.RPARENT && right.getType() != TokenType.LBRACE) {
                 seps.add(right);
                 funcFParams.add(parseFuncFParam());
                 right = tokenHandler.getTokenAndMove();  // get , or ) and already skip

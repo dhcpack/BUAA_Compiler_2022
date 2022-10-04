@@ -3,6 +3,7 @@ package Parser.expr.types;
 import Config.IO;
 import Lexer.Token;
 import Parser.Output;
+import Symbol.Symbol;
 import Symbol.SymbolType;
 
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ public class LVal implements PrimaryExpInterface, Output, LeafNode {
     private final Token ident;
     private final ArrayList<Exp> exps;
     private final ArrayList<Token> bracks;
+    private Symbol symbol;
 
     public LVal(Token token, ArrayList<Exp> exps, ArrayList<Token> bracks) {
         this.ident = token;
@@ -39,6 +41,14 @@ public class LVal implements PrimaryExpInterface, Output, LeafNode {
         return this.ident.getLine();
     }
 
+    public Symbol getSymbol() {
+        return symbol;
+    }
+
+    public void setSymbol(Symbol symbol) {
+        this.symbol = symbol;
+    }
+
     @Override
     public void output() {
         IO.print(ident.toString());
@@ -53,15 +63,19 @@ public class LVal implements PrimaryExpInterface, Output, LeafNode {
 
     @Override
     public SymbolType getSymbolType() {
-        if (getDims() == 0) {
+        if (getDimCount() == 0) {
             return SymbolType.INT;
         } else {
             return SymbolType.ARRAY;
         }
     }
 
+    // Warning: for LVal, it is using Dim!!!
+    // int a[1][2];
+    // when using a[0], getDimCount() -> 1;
+    // generally used in funcRParam
     @Override
-    public int getDims() {
-        return exps.size();
+    public int getDimCount() {
+        return symbol.getDimsCount() - bracks.size() / 2;
     }
 }

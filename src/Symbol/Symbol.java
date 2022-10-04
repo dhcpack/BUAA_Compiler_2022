@@ -7,25 +7,31 @@ import java.util.ArrayList;
 
 public class Symbol {
     private final SymbolType symbolType;
-    private final ArrayList<ConstExp> dims;  // 数组维数（定义时的Const Exp，未经过化简计算）
+    private final ArrayList<ConstExp> dims;
+    private final ArrayList<Token> bracks;  // 数组维数（定义时的Const Exp，未经过化简计算）
     private final Token ident;
     private final boolean isConst;
 
     private final boolean isFunc;
     private final ArrayList<Symbol> params;
+    private final SymbolType returnType;
 
-    // FuncFParam只用到前两个
-    public Symbol(SymbolType symbolType, ArrayList<ConstExp> dims, Token ident, Boolean isConst) {  // int or array
+    public Symbol(SymbolType symbolType, ArrayList<Token> bracks, ArrayList<ConstExp> dims, Token ident,
+                  Boolean isConst) {  // int or array
         this.symbolType = symbolType;
+        this.bracks = bracks;
         this.dims = dims;
         this.ident = ident;
         this.isConst = isConst;
         this.params = null;
         this.isFunc = false;
+        this.returnType = null;
     }
 
-    public Symbol(SymbolType symbolType, ArrayList<Symbol> params, Token ident) {  // function
+    public Symbol(SymbolType symbolType, SymbolType returnType, ArrayList<Symbol> params, Token ident) {  // function
         this.symbolType = symbolType;
+        this.returnType = returnType;
+        this.bracks = null;
         this.dims = null;
         this.ident = ident;
         this.isConst = false;
@@ -34,16 +40,17 @@ public class Symbol {
     }
 
     public int getDimsCount() {
-        return this.dims.size();
+        assert this.bracks != null;
+        return this.bracks.size() / 2;  // 用brack计算更好
     }
 
     public ArrayList<Symbol> getParams() {
         return params;
     }
 
-    public ArrayList<ConstExp> getDims() {
-        return dims;
-    }
+    // public ArrayList<ConstExp> getDims() {
+    //     return dims;
+    // }
 
     public Token getIdent() {
         return ident;
@@ -55,5 +62,13 @@ public class Symbol {
 
     public boolean isConst() {
         return isConst;
+    }
+
+    public boolean isFunc() {
+        return isFunc;
+    }
+
+    public SymbolType getReturnType() {
+        return returnType;
     }
 }

@@ -19,7 +19,11 @@ public class MulExp implements Output {
     }
 
     public int getLine() {
-        return this.exps.get(exps.size() - 1).getLine();
+        if (exps.size() != 0) {
+            return this.exps.get(exps.size() - 1).getLine();
+        } else {
+            return this.firstExp.getLine();
+        }
     }
 
     public UnaryExp getFirstExp() {

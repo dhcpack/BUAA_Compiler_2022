@@ -115,8 +115,11 @@ public class ExprParser {
             return new PrimaryExp(new BraceExp(left, exp, right));
         } else if (token.getType() == TokenType.IDENFR) {
             return new PrimaryExp(parseLVal());
-        } else {
+        } else if (token.getType() == TokenType.INTCON) {
             return new PrimaryExp(parseNum());
+        } else {
+            System.out.println("Warning: bad parse of an expr");
+            return null;  // not an expr  Warning!!!
         }
     }
 
@@ -126,8 +129,12 @@ public class ExprParser {
         Token left = tokenHandler.getTokenAndMove();
         Token token = tokenHandler.getForwardToken();
         FuncRParams funcRParams = null;
-        if (token.getType() != TokenType.RPARENT) {
-            funcRParams = parseFuncRParams();
+        // TODO: check!!! Exp的FIRST集 左括号or常数or标识符orUnaryOp
+        if (token.getType() != TokenType.RPARENT) {  // 不是右括号可能是有实参，也可能是有括号缺失
+            if (token.getType() == TokenType.LPARENT || token.getType() == TokenType.IDENFR || token.getType() == TokenType.INTCON
+                    || token.getType() == TokenType.AND || token.getType() == TokenType.MINU || token.getType() == TokenType.NOT) {
+                funcRParams = parseFuncRParams();
+            }
         }
         Token right = tokenHandler.getTokenAndMove();
         if (right.getType() != TokenType.RPARENT) {

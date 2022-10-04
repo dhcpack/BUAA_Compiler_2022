@@ -27,12 +27,16 @@ public class FuncFParam implements Output {
         this.bracks = bracks;
     }
 
-    public Symbol toSymbol() {
-        return new Symbol(constExps.size() == 0 ? SymbolType.INT : SymbolType.ARRAY, constExps, ident, false);
+    public Symbol toSymbol() {  // 第一维省略exp，因此检查bracks才不会出错
+        return new Symbol(bracks.size() == 0 ? SymbolType.INT : SymbolType.ARRAY, bracks, constExps, ident, false);
     }
 
     public ArrayList<ConstExp> getDims() {
         return this.constExps;
+    }
+
+    public ArrayList<Token> getBracks() {
+        return bracks;
     }
 
     public boolean missRBrack() {

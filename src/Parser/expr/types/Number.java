@@ -27,7 +27,7 @@ public class Number implements PrimaryExpInterface, LeafNode {
     }
 
     @Override
-    public int getDims() {
+    public int getDimCount() {
         return 0;
     }
 }

@@ -3,7 +3,7 @@ package Exceptions;
 import Config.Config;
 
 public class MissRbrackException implements MyException{
-    private ErrorType errorType = ErrorType.MISSMATCH_PRINTF;
+    private ErrorType errorType = ErrorType.MISS_RBRACK;
     private final int line;
 
     public MissRbrackException(int line) {
