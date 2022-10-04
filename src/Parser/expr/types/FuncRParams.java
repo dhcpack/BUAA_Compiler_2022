@@ -16,6 +16,10 @@ public class FuncRParams implements Output {
         this.seps = seps;
     }
 
+    public ArrayList<Exp> getExps() {
+        return exps;
+    }
+
     public int getLine() {
         return exps.get(exps.size() - 1).getLine();
     }

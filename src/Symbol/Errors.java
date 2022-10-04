@@ -7,7 +7,7 @@ import Exceptions.MyException;
 
 
 public class Errors {
-    private final ArrayList<MyException> exceptions = new ArrayList<MyException>();
+    private final ArrayList<MyException> exceptions = new ArrayList<>();
 
     public void add(MyException exception) {
         this.exceptions.add(exception);

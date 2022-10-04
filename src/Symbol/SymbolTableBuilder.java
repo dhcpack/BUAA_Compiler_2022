@@ -3,6 +3,8 @@ package Symbol;
 import Exceptions.IllegalBreakContinueException;
 import Exceptions.IllegalReturnException;
 import Exceptions.IllegalSymbolException;
+import Exceptions.MismatchParamCountException;
+import Exceptions.MismatchParamTypeException;
 import Exceptions.MismatchPrintfException;
 import Exceptions.MissRbrackException;
 import Exceptions.MissReturnException;
@@ -23,7 +25,9 @@ import Parser.expr.types.BraceExp;
 import Parser.expr.types.ConstExp;
 import Parser.expr.types.Exp;
 import Parser.expr.types.FuncExp;
+import Parser.expr.types.FuncRParams;
 import Parser.expr.types.LVal;
+import Parser.expr.types.LeafNode;
 import Parser.expr.types.MulExp;
 import Parser.expr.types.Number;
 import Parser.expr.types.PrimaryExp;
@@ -138,7 +142,7 @@ public class SymbolTableBuilder {
             errors.add(new MissRparentException(funcDef.getLeftParenthesis().getLine()));
         }
         ArrayList<FuncFParam> funcFParams = funcDef.getFuncFParams();
-        ArrayList<Symbol> params = new ArrayList<Symbol>();
+        ArrayList<Symbol> params = new ArrayList<>();
         for (FuncFParam funcFParam : funcFParams) {
             params.add(funcFParam.toSymbol());
             checkFuncFParam(funcFParam);
@@ -292,67 +296,77 @@ public class SymbolTableBuilder {
         checkAddExp(constExp.getAddExp());
     }
 
-    public void checkExp(Exp exp) {
-        checkAddExp(exp.getAddExp());
+    public LeafNode checkExp(Exp exp) {
+        return checkAddExp(exp.getAddExp());
     }
 
-    public void checkAddExp(AddExp addExp) {
-        checkMulExp(addExp.getFirstExp());
+    public LeafNode checkAddExp(AddExp addExp) {
+        // TODO: only deal with first Exp
+        LeafNode first = checkMulExp(addExp.getFirstExp());
         ArrayList<MulExp> mulExps = addExp.getExps();
         for (MulExp mulExp : mulExps) {
             checkMulExp(mulExp);
         }
+        return first;
     }
 
-    public void checkMulExp(MulExp mulExp) {
-        checkUnaryExp(mulExp.getFirstExp());
+    public LeafNode checkMulExp(MulExp mulExp) {
+        // TODO: only deal with first Exp
+        LeafNode first = checkUnaryExp(mulExp.getFirstExp());
         ArrayList<UnaryExp> unaryExps = mulExp.getExps();
         for (UnaryExp unaryExp : unaryExps) {
             checkUnaryExp(unaryExp);
         }
+        return first;
     }
 
-    public void checkUnaryExp(UnaryExp unaryExp) {
-        checkUnaryExpInterFace(unaryExp.getUnaryExpInterface());
+    public LeafNode checkUnaryExp(UnaryExp unaryExp) {
+        return checkUnaryExpInterFace(unaryExp.getUnaryExpInterface());
     }
 
-    public void checkUnaryExpInterFace(UnaryExpInterface unaryExpInterface) {
+    public LeafNode checkUnaryExpInterFace(UnaryExpInterface unaryExpInterface) {
         if (unaryExpInterface instanceof PrimaryExp) {
-            checkPrimaryExp((PrimaryExp) unaryExpInterface);
+            return checkPrimaryExp((PrimaryExp) unaryExpInterface);
         } else if (unaryExpInterface instanceof FuncExp) {
-            checkFuncExp((FuncExp) unaryExpInterface);
+            return checkFuncExp((FuncExp) unaryExpInterface);
         } else if (unaryExpInterface instanceof UnaryExp) {
-            checkUnaryExp((UnaryExp) unaryExpInterface);
+            return checkUnaryExp((UnaryExp) unaryExpInterface);
         }
+        // not output
+        System.out.println("In checkUnaryExpInterFace: this line should not output");
+        return null;
     }
 
-    public void checkPrimaryExp(PrimaryExp primaryExp) {
-        checkPrimaryExpInterFace(primaryExp.getPrimaryExpInterface());
+    public LeafNode checkPrimaryExp(PrimaryExp primaryExp) {
+        return checkPrimaryExpInterFace(primaryExp.getPrimaryExpInterface());
     }
 
-    public void checkPrimaryExpInterFace(PrimaryExpInterface primaryExpInterface) {
+    public LeafNode checkPrimaryExpInterFace(PrimaryExpInterface primaryExpInterface) {
         if (primaryExpInterface instanceof BraceExp) {
-            checkBraceExp((BraceExp) primaryExpInterface);
+            return checkBraceExp((BraceExp) primaryExpInterface);
         } else if (primaryExpInterface instanceof LVal) {
-            checkLVal((LVal) primaryExpInterface);
+            return checkLVal((LVal) primaryExpInterface);
         } else if (primaryExpInterface instanceof Number) {
-            checkNumber((Number) primaryExpInterface);
+            return checkNumber((Number) primaryExpInterface);
         }
+        // not output
+        System.out.println("In checkPrimaryExpInterFace: this line should not output");
+        return null;
     }
 
-    public void checkBraceExp(BraceExp braceExp) {
+    public LeafNode checkBraceExp(BraceExp braceExp) {
         if (braceExp.missRightParenthesis()) {
             errors.add(new MissRparentException(braceExp.getLine()));
         }
-        checkExp(braceExp.getExp());
+        return checkExp(braceExp.getExp());
     }
 
-    public void checkLVal(LVal lVal) {
+    public LeafNode checkLVal(LVal lVal) {
         Token ident = lVal.getIdent();
         Symbol symbol = currSymbolTable.getSymbol(ident.getContent(), true);
         if (symbol == null) {
             errors.add(new UndefinedTokenException(ident.getLine()));
-            return;
+            return null;  // error
         }
         if (symbol.isConst()) {
             errors.add(new ModifyConstException(ident.getLine()));
@@ -360,14 +374,15 @@ public class SymbolTableBuilder {
         if (lVal.missRBrack()) {
             errors.add(new MissRbrackException(ident.getLine()));
         }
+        return lVal;
     }
 
-    public void checkNumber(Number number) {
-        return;
+    public LeafNode checkNumber(Number number) {
+        return number;
     }
 
 
-    public void checkFuncExp(FuncExp funcExp) {
+    public LeafNode checkFuncExp(FuncExp funcExp) {
         if (funcExp.missRightParenthesis()) {
             errors.add(new MissRparentException(funcExp.getLine()));
         }
@@ -375,10 +390,26 @@ public class SymbolTableBuilder {
         Symbol symbol = currSymbolTable.getSymbol(ident.getContent(), true);
         if (symbol == null) {
             errors.add(new UndefinedTokenException(ident.getLine()));
-            return;
+            return null;  // error
         }
-        // assert
         ArrayList<Symbol> Fparams = symbol.getParams();
+        FuncRParams funcRParams = funcExp.getParams();
+        // LeafNode is LVal or Number
+        ArrayList<LeafNode> Rparams = new ArrayList<>();
+        for (Exp exp : funcRParams.getExps()) {
+            Rparams.add(checkExp(exp));
+        }
 
+        // match check
+        if (Fparams.size() != Rparams.size()) {
+            errors.add(new MismatchParamCountException(funcExp.getLine()));
+        }
+        for (int i = 0; i < Fparams.size(); i++) {
+            if (Fparams.get(i).getSymbolType() != Rparams.get(i).getSymbolType()) {
+                errors.add(new MismatchParamTypeException(funcRParams.getLine()));
+                break;
+            }
+        }
+        return funcExp;
     }
 }
