@@ -214,7 +214,7 @@ public class SymbolTableBuilder {
     }
 
     public void checkAssignStmt(AssignStmt assignStmt) {
-        checkLVal(assignStmt.getLVal());
+        checkLVal(assignStmt.getLVal(), true);
         checkExp(assignStmt.getExp());
     }
 
@@ -242,19 +242,21 @@ public class SymbolTableBuilder {
     }
 
     public void checkGetIntStmt(GetIntStmt getIntStmt) {
-        LVal lVal = getIntStmt.getLVal();
-        Token ident = lVal.getIdent();
-        Symbol symbol = currSymbolTable.getSymbol(ident.getContent(), true);
-        if (symbol == null) {
-            errors.add(new UndefinedTokenException(ident.getLine()));
-            return;
-        }
-        if (symbol.isConst()) {
-            errors.add(new ModifyConstException(ident.getLine()));
-        }
-        if (lVal.missRBrack()) {
-            errors.add(new MissRbrackException(ident.getLine()));
-        }
+        // LVal lVal = getIntStmt.getLVal();
+        // Token ident = lVal.getIdent();
+        // Symbol symbol = currSymbolTable.getSymbol(ident.getContent(), true);
+        // if (symbol == null) {
+        //     errors.add(new UndefinedTokenException(ident.getLine()));
+        //     return;
+        // }
+        // if (symbol.isConst()) {
+        //     errors.add(new ModifyConstException(ident.getLine()));
+        // }
+        // if (lVal.missRBrack()) {
+        //     errors.add(new MissRbrackException(ident.getLine()));
+        // }
+        // lVal.setSymbol(symbol);
+        checkLVal(getIntStmt.getLVal(), true);
     }
 
     public void checkIfStmt(IfStmt ifStmt) {
@@ -345,7 +347,7 @@ public class SymbolTableBuilder {
         if (primaryExpInterface instanceof BraceExp) {
             return checkBraceExp((BraceExp) primaryExpInterface);
         } else if (primaryExpInterface instanceof LVal) {
-            return checkLVal((LVal) primaryExpInterface);
+            return checkLVal((LVal) primaryExpInterface, false);
         } else if (primaryExpInterface instanceof Number) {
             return checkNumber((Number) primaryExpInterface);
         }
@@ -361,14 +363,14 @@ public class SymbolTableBuilder {
         return checkExp(braceExp.getExp());
     }
 
-    public LeafNode checkLVal(LVal lVal) {
+    public LeafNode checkLVal(LVal lVal, boolean checkConst) {  // could const occur?
         Token ident = lVal.getIdent();
         Symbol symbol = currSymbolTable.getSymbol(ident.getContent(), true);
         if (symbol == null) {
             errors.add(new UndefinedTokenException(ident.getLine()));
             return null;  // error
         }
-        if (symbol.isConst()) {
+        if (checkConst && symbol.isConst()) {
             errors.add(new ModifyConstException(ident.getLine()));
         }
         if (lVal.missRBrack()) {
@@ -400,7 +402,7 @@ public class SymbolTableBuilder {
         FuncRParams funcRParams = funcExp.getParams();
         // LeafNode is LVal or Number or funcExp
         ArrayList<LeafNode> Rparams = new ArrayList<>();  // 实参表
-        if(funcRParams != null){
+        if (funcRParams != null) {
             for (Exp exp : funcRParams.getExps()) {
                 Rparams.add(checkExp(exp));
             }
@@ -416,7 +418,7 @@ public class SymbolTableBuilder {
                     break;
                 }
                 if (Fparams.get(i).getSymbolType() == SymbolType.ARRAY &&
-                        (Fparams.get(i).getDimsCount() != Rparams.get(i).getDimCount())){
+                        (Fparams.get(i).getDimsCount() != Rparams.get(i).getDimCount())) {
                     errors.add(new MismatchParamTypeException(funcRParams.getLine()));
                     break;
                 }

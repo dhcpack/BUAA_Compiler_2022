@@ -39,9 +39,15 @@ public class PrintfStmt implements StmtInterface {
 
     public boolean checkFormatString() {
         String content = formatString.getContent();
-        for (int i = 0; i < content.length(); i++) {
-            if (!((int) content.charAt(i) == 32 || (int) content.charAt(i) == 33 || (int) content.charAt(i) == 34 ||
-                    (int) content.charAt(i) == 37 || 40 <= (int) content.charAt(i) && (int) content.charAt(i) <= 126)) {
+        if (content.length() < 2) {
+            return false;
+        }
+        if ((int) content.charAt(0) != 34 || (int) content.charAt(content.length() - 1) != 34) {
+            return false;
+        }
+        for (int i = 1; i < content.length() - 1; i++) {
+            if (!((int) content.charAt(i) == 32 || (int) content.charAt(i) == 33 || (int) content.charAt(i) == 37
+                    || 40 <= (int) content.charAt(i) && (int) content.charAt(i) <= 126)) {
                 return false;
             }
             if (((int) content.charAt(i) == 92) && (i == content.length() - 1 || (int) content.charAt(i + 1) != 110)) {

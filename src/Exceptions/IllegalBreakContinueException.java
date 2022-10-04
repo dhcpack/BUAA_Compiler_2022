@@ -3,7 +3,7 @@ package Exceptions;
 import Config.Config;
 
 public class IllegalBreakContinueException implements MyException {
-    private ErrorType errorType = ErrorType.ILLEGAL_BREAK_CONTINUE;
+    private final ErrorType errorType = ErrorType.ILLEGAL_BREAK_CONTINUE;
     private final int line;
 
     public IllegalBreakContinueException(int line) {

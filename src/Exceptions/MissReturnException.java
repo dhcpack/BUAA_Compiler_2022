@@ -3,7 +3,7 @@ package Exceptions;
 import Config.Config;
 
 public class MissReturnException implements MyException{
-    private ErrorType errorType = ErrorType.MISS_RETURN;
+    private final ErrorType errorType = ErrorType.MISS_RETURN;
     private final int line;
 
     public MissReturnException(int line) {

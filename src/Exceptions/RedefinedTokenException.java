@@ -3,7 +3,7 @@ package Exceptions;
 import Config.Config;
 
 public class RedefinedTokenException implements MyException{
-    private ErrorType errorType = ErrorType.REDEFINED_TOKEN;
+    private final ErrorType errorType = ErrorType.REDEFINED_TOKEN;
     private final int line;
 
     public RedefinedTokenException(int line) {
