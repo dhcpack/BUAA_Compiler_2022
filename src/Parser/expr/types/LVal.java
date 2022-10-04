@@ -3,10 +3,11 @@ package Parser.expr.types;
 import Config.IO;
 import Lexer.Token;
 import Parser.Output;
+import Symbol.SymbolType;
 
 import java.util.ArrayList;
 
-public class LVal implements PrimaryExpInterface, Output {
+public class LVal implements PrimaryExpInterface, Output, LeafNode {
     // LVal → Ident {'[' Exp ']'}
     private final Token ident;
     private final ArrayList<Exp> exps;
@@ -18,9 +19,9 @@ public class LVal implements PrimaryExpInterface, Output {
         this.bracks = bracks;
     }
 
-    public int CountDim() {
-        return exps.size();  // int--> dim = 0;
-    }
+    // public int CountDim() {
+    //     return exps.size();  // int--> dim = 0;
+    // }
 
     public boolean missRBrack() {
         for (Token token : bracks) {
@@ -48,5 +49,19 @@ public class LVal implements PrimaryExpInterface, Output {
             IO.print(bracks.get(index++).toString());
         }
         IO.print("<LVal>");
+    }
+
+    @Override
+    public SymbolType getSymbolType() {
+        if (getDims() == 0) {
+            return SymbolType.INT;
+        } else {
+            return SymbolType.ARRAY;
+        }
+    }
+
+    @Override
+    public int getDims() {
+        return exps.size();
     }
 }

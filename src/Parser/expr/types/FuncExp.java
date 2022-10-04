@@ -2,8 +2,9 @@ package Parser.expr.types;
 
 import Config.IO;
 import Lexer.Token;
+import Symbol.SymbolType;
 
-public class FuncExp implements UnaryExpInterface {
+public class FuncExp implements UnaryExpInterface, LeafNode {
     // 函数调用 FuncExp --> Ident '(' [FuncRParams] ')'
     // 函数实参表 FuncRParams → Exp { ',' Exp }
     private final Token ident;
@@ -23,7 +24,11 @@ public class FuncExp implements UnaryExpInterface {
     }
 
     public int getLine() {
-        return this.params.getLine();
+        if (params.getExps().size() != 0) {
+            return this.params.getLine();
+        } else {
+            return this.left.getLine();
+        }
     }
 
     public Token getIdent() {
@@ -42,5 +47,16 @@ public class FuncExp implements UnaryExpInterface {
             params.output();
         }
         IO.print(right.toString());
+    }
+
+    @Override
+    public SymbolType getSymbolType() {
+        // function 一定不是 void， 返回类型一定要是int
+        return SymbolType.INT;
+    }
+
+    @Override
+    public int getDims() {
+        return 0;
     }
 }
