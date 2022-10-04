@@ -19,6 +19,18 @@ public class CompUnit implements Output{
         this.mainFunction = mainFunction;
     }
 
+    public ArrayList<Decl> getGlobalVariables() {
+        return globalVariables;
+    }
+
+    public ArrayList<FuncDef> getFunctions() {
+        return functions;
+    }
+
+    public MainFuncDef getMainFunction() {
+        return mainFunction;
+    }
+
     @Override
     public void output(){
         globalVariables.forEach(Decl::output);

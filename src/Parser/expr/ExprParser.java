@@ -1,7 +1,7 @@
 package Parser.expr;
 
 import Lexer.Token;
-import Lexer.Type;
+import Lexer.TokenType;
 import Parser.TokenHandler;
 import Parser.expr.types.AddExp;
 import Parser.expr.types.BraceExp;
@@ -60,13 +60,17 @@ public class ExprParser {
         Token token = tokenHandler.getForwardToken();
         ArrayList<Token> bracs = new ArrayList<>();
         ArrayList<Exp> exps = new ArrayList<>();
-        if (token.getType() != Type.LBRACK) {
+        if (token.getType() != TokenType.LBRACK) {
             return new LVal(ident, exps, bracs);
         }
-        while (token.getType() == Type.LBRACK) {
+        while (token.getType() == TokenType.LBRACK) {
             bracs.add(tokenHandler.getTokenAndMove());  // pass [
             exps.add(parseExp());
-            bracs.add(tokenHandler.getTokenAndMove());  // pass ]
+            if (tokenHandler.getForwardToken().getType() == TokenType.RBRACK) {
+                bracs.add(tokenHandler.getTokenAndMove());  // pass ]
+            } else {
+                bracs.add(null);
+            }
             token = tokenHandler.getForwardToken();
         }
         return new LVal(ident, exps, bracs);
@@ -82,15 +86,15 @@ public class ExprParser {
     // FuncExp -> Ident '(' [FuncRParams] ')'
     public UnaryExp parseUnaryExp() {
         Token token = tokenHandler.getForwardToken();
-        if (token.getType() == Type.PLUS || token.getType() == Type.MINU || token.getType() == Type.NOT) {
+        if (token.getType() == TokenType.PLUS || token.getType() == TokenType.MINU || token.getType() == TokenType.NOT) {
             UnaryOp unaryOp = new UnaryOp(tokenHandler.getTokenAndMove());
             return new UnaryExp(unaryOp, parseUnaryExp());  // has UnaryOp
         }
-        if (tokenHandler.getForwardToken().getType() == Type.IDENFR) {
+        if (tokenHandler.getForwardToken().getType() == TokenType.IDENFR) {
             tokenHandler.moveForward(1);
             token = tokenHandler.getForwardToken();
             tokenHandler.retract(1);
-            if (token.getType() == Type.LPARENT) {
+            if (token.getType() == TokenType.LPARENT) {
                 return new UnaryExp(null, parseFuncExp());  // only funcExp
             }
         }
@@ -100,12 +104,16 @@ public class ExprParser {
     // PrimaryExp → '(' Exp ')' | LVal | Number
     public PrimaryExp parsePrimaryExp() {
         Token token = tokenHandler.getForwardToken();
-        if (token.getType() == Type.LPARENT) {
+        if (token.getType() == TokenType.LPARENT) {
             Token left = tokenHandler.getTokenAndMove();
             Exp exp = parseExp();
             Token right = tokenHandler.getTokenAndMove();
+            if (right.getType() != TokenType.RPARENT) {
+                right = null;
+                tokenHandler.retract(1);
+            }
             return new PrimaryExp(new BraceExp(left, exp, right));
-        } else if (token.getType() == Type.IDENFR) {
+        } else if (token.getType() == TokenType.IDENFR) {
             return new PrimaryExp(parseLVal());
         } else {
             return new PrimaryExp(parseNum());
@@ -118,10 +126,14 @@ public class ExprParser {
         Token left = tokenHandler.getTokenAndMove();
         Token token = tokenHandler.getForwardToken();
         FuncRParams funcRParams = null;
-        if(token.getType() != Type.RPARENT){
+        if (token.getType() != TokenType.RPARENT) {
             funcRParams = parseFuncRParams();
         }
         Token right = tokenHandler.getTokenAndMove();
+        if (right.getType() != TokenType.RPARENT) {
+            right = null;
+            tokenHandler.retract(1);
+        }
         return new FuncExp(ident, left, right, funcRParams);
     }
 
@@ -132,7 +144,7 @@ public class ExprParser {
         ArrayList<Exp> exps = new ArrayList<>();
         ArrayList<Token> seps = new ArrayList<>();
         exps.add(exp);
-        while (sep.getType() == Type.COMMA) {
+        while (sep.getType() == TokenType.COMMA) {
             seps.add(tokenHandler.getTokenAndMove());
             exps.add(parseExp());
             sep = tokenHandler.getForwardToken();
@@ -145,7 +157,7 @@ public class ExprParser {
         ArrayList<MulExp> exps = new ArrayList<>();
         ArrayList<Token> seps = new ArrayList<>();
         Token token = tokenHandler.getForwardToken();
-        while (token.getType() == Type.PLUS || token.getType() == Type.MINU) {
+        while (token.getType() == TokenType.PLUS || token.getType() == TokenType.MINU) {
             seps.add(tokenHandler.getTokenAndMove());
             exps.add(parseMulExp());
             token = tokenHandler.getForwardToken();  // refresh token
@@ -166,7 +178,7 @@ public class ExprParser {
         Token token = tokenHandler.getForwardToken();
         ArrayList<UnaryExp> exps = new ArrayList<>();
         ArrayList<Token> seps = new ArrayList<>();
-        while (token.getType() == Type.MULT || token.getType() == Type.DIV || token.getType() == Type.MOD) {
+        while (token.getType() == TokenType.MULT || token.getType() == TokenType.DIV || token.getType() == TokenType.MOD) {
             seps.add(tokenHandler.getTokenAndMove());
             exps.add(parseUnaryExp());
             token = tokenHandler.getForwardToken();
@@ -179,7 +191,7 @@ public class ExprParser {
         Token token = tokenHandler.getForwardToken();
         ArrayList<AddExp> exps = new ArrayList<>();
         ArrayList<Token> seps = new ArrayList<>();
-        while (token.getType() == Type.GEQ || token.getType() == Type.GRE || token.getType() == Type.LEQ || token.getType() == Type.LSS) {
+        while (token.getType() == TokenType.GEQ || token.getType() == TokenType.GRE || token.getType() == TokenType.LEQ || token.getType() == TokenType.LSS) {
             seps.add(tokenHandler.getTokenAndMove());
             exps.add(parseAddExp());
             token = tokenHandler.getForwardToken();
@@ -192,7 +204,7 @@ public class ExprParser {
         Token token = tokenHandler.getForwardToken();
         ArrayList<RelExp> exps = new ArrayList<>();
         ArrayList<Token> seps = new ArrayList<>();
-        while (token.getType() == Type.EQL || token.getType() == Type.NEQ) {
+        while (token.getType() == TokenType.EQL || token.getType() == TokenType.NEQ) {
             seps.add(tokenHandler.getTokenAndMove());
             exps.add(parseRelExp());
             token = tokenHandler.getForwardToken();
@@ -205,7 +217,7 @@ public class ExprParser {
         Token token = tokenHandler.getForwardToken();
         ArrayList<EqExp> exps = new ArrayList<>();
         ArrayList<Token> seps = new ArrayList<>();
-        while (token.getType() == Type.AND) {
+        while (token.getType() == TokenType.AND) {
             seps.add(tokenHandler.getTokenAndMove());
             exps.add(parseEqExp());
             token = tokenHandler.getForwardToken();
@@ -218,7 +230,7 @@ public class ExprParser {
         Token token = tokenHandler.getForwardToken();
         ArrayList<LAndExp> exps = new ArrayList<>();
         ArrayList<Token> seps = new ArrayList<>();
-        while (token.getType() == Type.OR) {
+        while (token.getType() == TokenType.OR) {
             seps.add(tokenHandler.getTokenAndMove());
             exps.add(parseLAndExp());
             token = tokenHandler.getForwardToken();

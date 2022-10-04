@@ -11,6 +11,15 @@ public class Exp implements Output {
         this.addExp = addExp;
     }
 
+    public AddExp getAddExp() {
+        return addExp;
+    }
+
+    public int getLine(){
+        return this.addExp.getLine();
+    }
+
+
     @Override
     public void output() {
         addExp.output();

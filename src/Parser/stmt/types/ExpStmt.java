@@ -10,8 +10,17 @@ public class ExpStmt implements StmtInterface {
         this.exp = exp;
     }
 
+    public Exp getExp() {
+        return exp;
+    }
+
     @Override
     public void output() {
         exp.output();
+    }
+
+    @Override
+    public int getSemicolonLine() {
+        return exp.getLine();
     }
 }

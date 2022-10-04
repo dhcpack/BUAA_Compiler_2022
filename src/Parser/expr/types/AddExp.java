@@ -18,6 +18,18 @@ public class AddExp implements Output {
         this.seps = seps;
     }
 
+    public int getLine(){
+        return this.exps.get(exps.size()-1).getLine();
+    }
+
+    public MulExp getFirstExp() {
+        return firstExp;
+    }
+
+    public ArrayList<MulExp> getExps() {
+        return exps;
+    }
+
     @Override
     public void output() {
         firstExp.output();

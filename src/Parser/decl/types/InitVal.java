@@ -50,6 +50,18 @@ public class InitVal implements Output {
         this.right = null;
     }
 
+    public ArrayList<InitVal> getInitVals() {
+        return initVals;
+    }
+
+    public Exp getExp() {
+        return exp;
+    }
+
+    public ConstExp getConstExp() {
+        return constExp;
+    }
+
     @Override
     public void output() {
         if (this.left != null) {

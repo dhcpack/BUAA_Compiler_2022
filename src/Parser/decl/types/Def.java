@@ -5,7 +5,7 @@ import Lexer.Token;
 import Parser.Output;
 
 public class Def implements Output {
-    // 常数定义 ConstDef → Var '=' ConstInitVal // 包含普通变 量、一维数组、二维数组共三种情况
+    // 常数定义 ConstDef → Var '=' ConstInitVal // 包含普通变量、一维数组、二维数组共三种情况
     // 变量定义 VarDef → Var | Var '=' InitVal
     private final Var var;
     private final Token assign;
@@ -25,6 +25,18 @@ public class Def implements Output {
         this.assign = assign;
         this.isConst = isConst;
     }
+
+    public Var getVar() {
+        return this.var;
+    }
+
+    public InitVal getInitVal() {
+        return initVal;
+    }
+
+    // public Token getIdent() {
+    //     return this.var.getIdent();
+    // }
 
     public boolean hasInitVal() {
         return this.initVal != null && this.assign != null;

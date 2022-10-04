@@ -1,22 +1,22 @@
 package Lexer;
 
 public class Token {
-    private final Type type;
+    private final TokenType tokenType;
     private final int line;
     private final String content;
 
-    public Token(Type type, String content, int line) {
-        this.type = type;
+    public Token(TokenType tokenType, String content, int line) {
+        this.tokenType = tokenType;
         this.content = content;
         this.line = line;
     }
 
-    public Type getType() {
-        return this.type;
+    public TokenType getType() {
+        return this.tokenType;
     }
 
     public String getTypeName() {
-        return this.type.toString();
+        return this.tokenType.toString();
     }
 
     public String getContent() {
@@ -28,6 +28,6 @@ public class Token {
     }
 
     public String toString() {
-        return String.format("%s %s\n", this.type.toString(), this.content);
+        return String.format("%s %s\n", this.tokenType.toString(), this.content);
     }
 }

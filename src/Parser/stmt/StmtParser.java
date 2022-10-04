@@ -1,7 +1,7 @@
 package Parser.stmt;
 
 import Lexer.Token;
-import Lexer.Type;
+import Lexer.TokenType;
 import Parser.TokenHandler;
 import Parser.decl.DeclParser;
 import Parser.expr.ExprParser;
@@ -51,47 +51,47 @@ public class StmtParser {
     public Stmt parseStmt() {
         // all ; are saved in stmt
         Token token = tokenHandler.getForwardToken();
-        if (token.getType() == Type.IFTK) {
-            return new Stmt(parseIfStmt(), null);
-        } else if (token.getType() == Type.WHILETK) {
-            return new Stmt(parseWhileStmt(), null);
-        } else if (token.getType() == Type.BREAKTK) {
-            return new Stmt(parseBreakStmt(), tokenHandler.getTokenAndMove());
-        } else if (token.getType() == Type.CONTINUETK) {
-            return new Stmt(parseContinueStmt(), tokenHandler.getTokenAndMove());
-        } else if (token.getType() == Type.RETURNTK) {
-            return new Stmt(parseReturnStmt(), tokenHandler.getTokenAndMove());
-        } else if (token.getType() == Type.PRINTFTK) {
-            return new Stmt(parsePrintfStmt(), tokenHandler.getTokenAndMove());
-        } else if (token.getType() == Type.LBRACE) {
-            return new Stmt(parseBlockStatement(), null);
-        } else if (token.getType() == Type.SEMICN) {
-            return new Stmt(null, tokenHandler.getTokenAndMove());  // a single ';'
+        if (token.getType() == TokenType.IFTK) {
+            return new Stmt(parseIfStmt());
+        } else if (token.getType() == TokenType.WHILETK) {
+            return new Stmt(parseWhileStmt());
+        } else if (token.getType() == TokenType.BREAKTK) {
+            return new Stmt(parseBreakStmt(), tokenHandler);
+        } else if (token.getType() == TokenType.CONTINUETK) {
+            return new Stmt(parseContinueStmt(), tokenHandler);
+        } else if (token.getType() == TokenType.RETURNTK) {
+            return new Stmt(parseReturnStmt(), tokenHandler);
+        } else if (token.getType() == TokenType.PRINTFTK) {
+            return new Stmt(parsePrintfStmt(), tokenHandler);
+        } else if (token.getType() == TokenType.LBRACE) {
+            return new Stmt(parseBlockStatement());
+        } else if (token.getType() == TokenType.SEMICN) {
+            return new Stmt(null, tokenHandler);  // a single ';'
         } else {
             int step = 0;
             while (true) {
                 token = tokenHandler.getTokenAndMove();
                 step++;
-                if (token.getType() == Type.ASSIGN) {  // encounter '='
+                if (token.getType() == TokenType.ASSIGN) {  // encounter '='
                     tokenHandler.retract(step);  // retract to begin place
                     LVal lVal = new ExprParser(tokenHandler).parseLVal();  // point to =
                     Token assign = tokenHandler.getTokenAndMove();
                     token = tokenHandler.getForwardToken();  // check  it
-                    if (token.getType() == Type.GETINTTK) {
+                    if (token.getType() == TokenType.GETINTTK) {
                         // LVal '=' 'getint''('')'';'
                         GetIntStmt getIntStmt = new GetIntStmt(lVal, assign, tokenHandler.getTokenAndMove(),
-                                tokenHandler.getTokenAndMove(), tokenHandler.getTokenAndMove());
-                        return new Stmt(getIntStmt, tokenHandler.getTokenAndMove());
+                                tokenHandler.getTokenAndMove(), tokenHandler.getTokenAndMove(), tokenHandler);
+                        return new Stmt(getIntStmt, tokenHandler);
                     } else {
                         // LVal '=' Exp ';'
                         Exp exp = new ExprParser(tokenHandler).parseExp();
-                        return new Stmt(new AssignStmt(lVal, assign, exp), tokenHandler.getTokenAndMove());
+                        return new Stmt(new AssignStmt(lVal, assign, exp), tokenHandler);
                     }
-                } else if (token.getType() == Type.SEMICN) {
+                } else if (token.getType() == TokenType.SEMICN) {
                     tokenHandler.retract(step);
                     // Exp ';'
                     ExpStmt expStmt = new ExpStmt(new ExprParser(tokenHandler).parseExp());
-                    return new Stmt(expStmt, tokenHandler.getTokenAndMove());
+                    return new Stmt(expStmt, tokenHandler);
                 }
             }
         }
@@ -103,12 +103,16 @@ public class StmtParser {
         Token left = tokenHandler.getTokenAndMove();
         Cond cond = new ExprParser(tokenHandler).parseCond();
         Token right = tokenHandler.getTokenAndMove();
+        if (right.getType() != TokenType.RPARENT) {
+            right = null;
+            tokenHandler.retract(1);
+        }
         Stmt stmt = parseStmt();
         Token elseToken = tokenHandler.getForwardToken();
         ArrayList<Token> elses = new ArrayList<>();
         ArrayList<Stmt> stmts = new ArrayList<>();
         stmts.add(stmt);
-        if (elseToken.getType() == Type.ELSETK) {
+        if (elseToken.getType() == TokenType.ELSETK) {
             elses.add(tokenHandler.getTokenAndMove());
             stmts.add(parseStmt());
         }
@@ -121,6 +125,10 @@ public class StmtParser {
         Token left = tokenHandler.getTokenAndMove();
         Cond cond = new ExprParser(tokenHandler).parseCond();
         Token right = tokenHandler.getTokenAndMove();
+        if (right.getType() != TokenType.RPARENT) {
+            right = null;
+            tokenHandler.retract(1);
+        }
         return new WhileStmt(whileToken, left, cond, right, parseStmt());
     }
 
@@ -137,7 +145,7 @@ public class StmtParser {
     // 'return' [Exp] ';'
     public ReturnStmt parseReturnStmt() {
         Token returnToken = tokenHandler.getTokenAndMove();
-        if (tokenHandler.getForwardToken().getType() == Type.SEMICN) {
+        if (tokenHandler.getForwardToken().getType() == TokenType.SEMICN) {
             return new ReturnStmt(returnToken);
         } else {
             return new ReturnStmt(returnToken, new ExprParser(tokenHandler).parseExp());
@@ -152,10 +160,14 @@ public class StmtParser {
         Token token = tokenHandler.getTokenAndMove();  // get , or ). point to exp or ;
         ArrayList<Token> seps = new ArrayList<>();
         ArrayList<Exp> exps = new ArrayList<>();
-        while (token.getType() == Type.COMMA) {
+        while (token.getType() == TokenType.COMMA) {
             seps.add(token);
             exps.add(new ExprParser(tokenHandler).parseExp());
             token = tokenHandler.getTokenAndMove();  // get , or ). point to exp or ;
+        }
+        if(token.getType() != TokenType.RPARENT){
+            token = null;
+            tokenHandler.retract(1);
         }
         return new PrintfStmt(printf, left, formatString, seps, exps, token);
     }
@@ -165,8 +177,8 @@ public class StmtParser {
         Token left = tokenHandler.getTokenAndMove();
         Token right = tokenHandler.getForwardToken();
         ArrayList<BlockItem> blockItems = new ArrayList<>();
-        while (right.getType() != Type.RBRACE) {
-            if (right.getType() == Type.CONSTTK || right.getType() == Type.INTTK) {
+        while (right.getType() != TokenType.RBRACE) {
+            if (right.getType() == TokenType.CONSTTK || right.getType() == TokenType.INTTK) {
                 blockItems.add(new DeclParser(tokenHandler).parseDecl());
             } else {
                 blockItems.add(parseStmt());

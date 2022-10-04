@@ -7,6 +7,10 @@ public class ConstExp implements Output {
     // ConstExp -> Exp
     private final AddExp addExp;
 
+    public AddExp getAddExp() {
+        return addExp;
+    }
+
     public ConstExp(AddExp addExp){
         this.addExp = addExp;
     }
