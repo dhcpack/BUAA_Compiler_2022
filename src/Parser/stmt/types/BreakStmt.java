@@ -14,4 +14,11 @@ public class BreakStmt implements StmtInterface {
     public void output() {
         IO.print(breakToken.toString());
     }
+
+    @Override
+    public int getSemicolonLine() {
+        return breakToken.getLine();
+    }
+
+
 }

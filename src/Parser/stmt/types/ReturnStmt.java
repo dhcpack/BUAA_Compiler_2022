@@ -19,8 +19,12 @@ public class ReturnStmt implements StmtInterface {
         this.returnExp = returnExp;
     }
 
-    public boolean isVoid() {
-        return returnExp == null;
+    public boolean returnInt() {
+        return returnExp != null;
+    }
+
+    public Token getReturnToken() {
+        return returnToken;
     }
 
     @Override
@@ -29,5 +33,10 @@ public class ReturnStmt implements StmtInterface {
         if (returnExp != null) {  // if has exp then print exp
             returnExp.output();
         }
+    }
+
+    @Override
+    public int getSemicolonLine() {
+        return returnToken.getLine();
     }
 }

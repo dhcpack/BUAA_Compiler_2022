@@ -10,6 +10,14 @@ public class PrimaryExp implements UnaryExpInterface {
         this.primaryExpInterface = primaryExpInterface;
     }
 
+    public int getLine() {
+        return this.primaryExpInterface.getLine();
+    }
+
+    public PrimaryExpInterface getPrimaryExpInterface() {
+        return primaryExpInterface;
+    }
+
     @Override
     public void output() {
         primaryExpInterface.output();

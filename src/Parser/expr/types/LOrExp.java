@@ -18,11 +18,15 @@ public class LOrExp implements Output {
         this.seps = seps;
     }
 
+    public int getLine() {
+        return exps.get(exps.size() - 1).getLine();
+    }
+
     @Override
     public void output() {
         firstExp.output();
         IO.print("<LOrExp>");
-        for (int i=0;i<exps.size();i++){
+        for (int i = 0; i < exps.size(); i++) {
             IO.print(seps.get(i).toString());
             exps.get(i).output();
             IO.print("<LOrExp>");

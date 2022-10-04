@@ -10,16 +10,32 @@ public class LVal implements PrimaryExpInterface, Output {
     // LVal → Ident {'[' Exp ']'}
     private final Token ident;
     private final ArrayList<Exp> exps;
-    private final ArrayList<Token> bracs;
+    private final ArrayList<Token> bracks;
 
-    public LVal(Token token, ArrayList<Exp> exps, ArrayList<Token> bracs) {
+    public LVal(Token token, ArrayList<Exp> exps, ArrayList<Token> bracks) {
         this.ident = token;
         this.exps = exps;
-        this.bracs = bracs;
+        this.bracks = bracks;
     }
 
     public int CountDim() {
         return exps.size();  // int--> dim = 0;
+    }
+
+    public boolean missRBrack() {
+        for (Token token : bracks) {
+            if (token == null) return true;
+        }
+        return false;
+    }
+
+    public Token getIdent() {
+        return ident;
+    }
+
+    @Override
+    public int getLine() {
+        return this.ident.getLine();
     }
 
     @Override
@@ -27,9 +43,9 @@ public class LVal implements PrimaryExpInterface, Output {
         IO.print(ident.toString());
         int index = 0;
         for (Exp exp : exps) {
-            IO.print(bracs.get(index++).toString());
+            IO.print(bracks.get(index++).toString());
             exp.output();
-            IO.print(bracs.get(index++).toString());
+            IO.print(bracks.get(index++).toString());
         }
         IO.print("<LVal>");
     }

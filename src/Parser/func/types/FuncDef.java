@@ -12,7 +12,7 @@ public class FuncDef implements Output {
     private final Token funcType;
     private final Token ident;
     private final Token left;
-    private final Token right;
+    private final Token right;  // error check: right could be null
     private final ArrayList<FuncFParam> funcFParams;
     private final ArrayList<Token> seps;
     private final BlockStmt blockStmt;
@@ -26,6 +26,42 @@ public class FuncDef implements Output {
         this.right = right;
         this.blockStmt = blockStmt;
         this.seps = seps;
+    }
+
+    public Token getLeftParenthesis() {
+        return this.left;
+    }
+
+    public Token getRightBrace() {
+        return this.blockStmt.getRightBrace();
+    }
+
+    public Token getReturn() {
+        return this.blockStmt.getReturn();
+    }
+
+    public boolean missRightParenthesis() {
+        return this.right == null;
+    }
+
+    public Token getFuncType() {
+        return funcType;
+    }
+
+    public Token getIdent() {
+        return ident;
+    }
+
+    public ArrayList<FuncFParam> getFuncFParams() {
+        return funcFParams;
+    }
+
+    public boolean returnInt() {
+        return blockStmt.returnInt();
+    }
+
+    public BlockStmt getBlockStmt() {
+        return blockStmt;
     }
 
     public void printNormal(boolean isMain) {

@@ -18,6 +18,10 @@ public class EqExp implements Output {
         this.seps = seps;
     }
 
+    public int getLine() {
+        return exps.get(exps.size() - 1).getLine();
+    }
+
     @Override
     public void output() {
         firstExp.output();

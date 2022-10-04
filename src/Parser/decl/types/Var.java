@@ -11,12 +11,33 @@ public class Var implements Output {
     // Var -> Ident { '[' ConstExp ']' }
     private final Token ident;
     private final ArrayList<ConstExp> constExps;
-    private final ArrayList<Token> bracks;
+    private final ArrayList<Token> bracks; // error check: right could be null
+    private final boolean isConst;
 
-    public Var(Token token, ArrayList<ConstExp> constExps, ArrayList<Token> bracks) {
+    public Var(Token token, ArrayList<ConstExp> constExps, ArrayList<Token> bracks, boolean isConst) {
         this.ident = token;
         this.constExps = constExps;
         this.bracks = bracks;
+        this.isConst = isConst;
+    }
+
+    public boolean missRBrack() {
+        for (Token token : bracks) {
+            if (token == null) return true;
+        }
+        return false;
+    }
+
+    public Token getIdent() {
+        return this.ident;
+    }
+
+    public ArrayList<ConstExp> getDims() {
+        return constExps;
+    }
+
+    public boolean isConst() {
+        return this.isConst;
     }
 
     @Override

@@ -14,4 +14,9 @@ public class ContinueStatement implements StmtInterface {
     public void output() {
         IO.print(continueToken.toString());
     }
+
+    @Override
+    public int getSemicolonLine() {
+        return continueToken.getLine();
+    }
 }

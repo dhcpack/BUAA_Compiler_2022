@@ -10,6 +10,14 @@ public class MainFuncDef implements Output {
         this.funcDef = funcDef;
     }
 
+    public boolean missRightParenthesis() {
+        return this.funcDef.missRightParenthesis();
+    }
+
+    public FuncDef getFuncDef() {
+        return this.funcDef;
+    }
+
     @Override
     public void output() {
         funcDef.printNormal(true);  // not print tag and not print <FuncType>

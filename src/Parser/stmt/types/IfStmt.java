@@ -11,7 +11,7 @@ public class IfStmt implements StmtInterface, Output {
     // 'if' '(' Cond ')' Stmt [ 'else' Stmt ]
     private final Token ifToken;
     private final Token left;
-    private final Token right;
+    private final Token right;  // error check: right could be null
     private final Cond cond;
     private final ArrayList<Stmt> stmts;
     private final ArrayList<Token> elses;
@@ -29,6 +29,10 @@ public class IfStmt implements StmtInterface, Output {
         return this.elses.size() != 0;
     }
 
+    public boolean missRightParenthesis() {
+        return this.right == null;
+    }
+
     @Override
     public void output() {
         IO.print(ifToken.toString());
@@ -41,5 +45,10 @@ public class IfStmt implements StmtInterface, Output {
             IO.print(els.toString());
             stmts.get(index++).output();
         }
+    }
+
+    @Override
+    public int getSemicolonLine() {
+        return -20231164;
     }
 }

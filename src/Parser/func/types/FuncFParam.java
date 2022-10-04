@@ -4,6 +4,8 @@ import Config.IO;
 import Lexer.Token;
 import Parser.Output;
 import Parser.expr.types.ConstExp;
+import Symbol.Symbol;
+import Symbol.SymbolType;
 
 import java.util.ArrayList;
 
@@ -14,19 +16,42 @@ public class FuncFParam implements Output {
     private final Token ident;
     private final boolean isArray;
     private final ArrayList<ConstExp> constExps;
-    private final ArrayList<Token> bracs;
+    private final ArrayList<Token> bracks; // error check: right could be null
 
     public FuncFParam(Token BType, Token ident, boolean isArray, ArrayList<ConstExp> constExps,
-                      ArrayList<Token> bracs) {
+                      ArrayList<Token> bracks) {
         this.BType = BType;
         this.ident = ident;
         this.isArray = isArray;
         this.constExps = constExps;
-        this.bracs = bracs;
+        this.bracks = bracks;
     }
 
-    public int getDims() {
-        return this.bracs.size() / 2;
+    public Symbol toSymbol() {
+        return new Symbol(constExps.size() == 0 ? SymbolType.INT : SymbolType.ARRAY, constExps, ident, false);
+    }
+
+    public ArrayList<ConstExp> getDims() {
+        return this.constExps;
+    }
+
+    public boolean missRBrack() {
+        for (Token token : bracks) {
+            if (token == null) return true;
+        }
+        return false;
+    }
+
+    public Token getBType() {
+        return BType;
+    }
+
+    public Token getIdent() {
+        return ident;
+    }
+
+    public boolean isArray() {
+        return isArray;
     }
 
     @Override
@@ -35,12 +60,12 @@ public class FuncFParam implements Output {
         IO.print(ident.toString());
         if (isArray) {
             int index = 0;
-            IO.print(bracs.get(index++).toString());
-            IO.print(bracs.get(index++).toString());
+            IO.print(bracks.get(index++).toString());
+            IO.print(bracks.get(index++).toString());
             for (ConstExp constExp : constExps) {
-                IO.print(bracs.get(index++).toString());
+                IO.print(bracks.get(index++).toString());
                 constExp.output();
-                IO.print(bracs.get(index++).toString());
+                IO.print(bracks.get(index++).toString());
             }
         }
         IO.print("<FuncFParam>");

@@ -17,6 +17,14 @@ public class UnaryExp implements UnaryExpInterface {
         this.unaryExpInterface = unaryExpInterface;
     }
 
+    public int getLine() {
+        return this.unaryExpInterface.getLine();
+    }
+
+    public UnaryExpInterface getUnaryExpInterface() {
+        return unaryExpInterface;
+    }
+
     @Override
     public void output() {
         if (op != null) {

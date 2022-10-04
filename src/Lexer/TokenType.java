@@ -1,6 +1,6 @@
 package Lexer;
 
-public enum Type {
+public enum TokenType {
     MAINTK("main(?![a-zA-Z0-9_])"),
     CONSTTK("const(?![a-zA-Z0-9_])"),
     INTTK("int(?![a-zA-Z0-9_])"),
@@ -44,7 +44,7 @@ public enum Type {
 
     private final String pattern;
 
-    Type(String pattern) {
+    TokenType(String pattern) {
         this.pattern = "^" + pattern;
     }
 

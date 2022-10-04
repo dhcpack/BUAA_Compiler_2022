@@ -1,7 +1,7 @@
 package Parser.func;
 
 import Lexer.Token;
-import Lexer.Type;
+import Lexer.TokenType;
 import Parser.TokenHandler;
 import Parser.expr.ExprParser;
 import Parser.expr.types.ConstExp;
@@ -37,8 +37,8 @@ public class FuncParser {
         Token left = tokenHandler.getTokenAndMove();  // skip (
         Token right = tokenHandler.getForwardToken();  // get FuncFParam or ). point to same place
         ArrayList<Token> seps = new ArrayList<>();
-        if (right.getType() != Type.RPARENT) {
-            while (right.getType() != Type.RPARENT) {
+        if (right.getType() != TokenType.RPARENT) {
+            while (right.getType() != TokenType.RPARENT) {
                 seps.add(right);
                 funcFParams.add(parseFuncFParam());
                 right = tokenHandler.getTokenAndMove();  // get , or ) and already skip
@@ -46,6 +46,10 @@ public class FuncParser {
             seps.remove(0);  // first element is not a sep
         } else {
             right = tokenHandler.getTokenAndMove();  // skip )
+        }
+        if (right.getType() != TokenType.RPARENT) {
+            right = null;
+            tokenHandler.retract(1);
         }
         return new FuncDef(funcType, ident, left, funcFParams, right,
                 new StmtParser(tokenHandler).parseBlockStatement(), seps);
@@ -61,15 +65,23 @@ public class FuncParser {
         Token ident = tokenHandler.getTokenAndMove();
         Token token = tokenHandler.getForwardToken();
         ArrayList<Token> bracs = new ArrayList<>();
-        if (token.getType() == Type.LBRACK) {
+        if (token.getType() == TokenType.LBRACK) {
             bracs.add(tokenHandler.getTokenAndMove());  // skip [
-            bracs.add(tokenHandler.getTokenAndMove());  // skip ]
+            if (tokenHandler.getForwardToken().getType() == TokenType.RBRACK) {
+                bracs.add(tokenHandler.getTokenAndMove());  // skip ]
+            } else {
+                bracs.add(null);
+            }
             token = tokenHandler.getForwardToken();
             ArrayList<ConstExp> constExps = new ArrayList<>();
-            while (token.getType() == Type.LBRACK) {
+            while (token.getType() == TokenType.LBRACK) {
                 bracs.add(tokenHandler.getTokenAndMove());  // skip [ and point to ConstExp
                 constExps.add(new ExprParser(tokenHandler).parseConstExp());
-                bracs.add(tokenHandler.getTokenAndMove());  // skip ]
+                if (tokenHandler.getForwardToken().getType() == TokenType.RBRACK) {
+                    bracs.add(tokenHandler.getTokenAndMove());  // skip ]
+                } else {
+                    bracs.add(null);
+                }
                 token = tokenHandler.getForwardToken();
             }
             return new FuncFParam(BType, ident, true, constExps, bracs);

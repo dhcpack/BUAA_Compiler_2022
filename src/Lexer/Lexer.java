@@ -17,10 +17,10 @@ public class Lexer {
             if (inputHandler.skipComments()) continue;
 
             // traverse all patterns and make regex match
-            for (Type type : Type.values()) {
-                Matcher matcher = Pattern.compile(type.getPattern()).matcher(inputHandler.getCurrentLine());
+            for (TokenType tokenType : TokenType.values()) {
+                Matcher matcher = Pattern.compile(tokenType.getPattern()).matcher(inputHandler.getCurrentLine());
                 if (matcher.find()) {
-                    tokenList.add(new Token(type, matcher.group(0), inputHandler.getLineNumber()));
+                    tokenList.add(new Token(tokenType, matcher.group(0), inputHandler.getLineNumber()));
                     inputHandler.moveForward(matcher.group(0).length());
                     break;
                 }

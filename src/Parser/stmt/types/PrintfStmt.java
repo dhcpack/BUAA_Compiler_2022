@@ -13,7 +13,7 @@ public class PrintfStmt implements StmtInterface {
     private final Token formatString;
     private final ArrayList<Token> seps;
     private final ArrayList<Exp> exps;
-    private final Token right;
+    private final Token right;  // error check: right could be null
 
     public PrintfStmt(Token printf, Token left, Token formatString, ArrayList<Token> seps, ArrayList<Exp> exps,
                       Token right) {
@@ -23,6 +23,41 @@ public class PrintfStmt implements StmtInterface {
         this.seps = seps;
         this.exps = exps;
         this.right = right;
+    }
+
+    public Token getPrintf() {
+        return printf;
+    }
+
+    public Token getFormatString() {
+        return formatString;
+    }
+
+    public ArrayList<Exp> getExps() {
+        return exps;
+    }
+
+    public boolean checkFormatString() {
+        String content = formatString.getContent();
+        for (int i = 0; i < content.length(); i++) {
+            if (!((int) content.charAt(i) == 32 || (int) content.charAt(i) == 33 ||
+                    40 <= (int) content.charAt(i) && (int) content.charAt(i) <= 126)) {
+                return false;
+            }
+            if (((int) content.charAt(i) == 92) && (i == content.length() - 1 || (int) content.charAt(i) != 110)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean checkCountMatch() {
+        String[] s = formatString.getContent().split("%d");
+        return s.length - 1 == exps.size();
+    }
+
+    public boolean missRightParenthesis() {
+        return this.right == null;
     }
 
     @Override
@@ -35,5 +70,10 @@ public class PrintfStmt implements StmtInterface {
             exps.get(i).output();
         }
         IO.print(right.toString());
+    }
+
+    @Override
+    public int getSemicolonLine() {
+        return left.getLine();
     }
 }

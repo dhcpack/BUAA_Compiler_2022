@@ -18,11 +18,23 @@ public class MulExp implements Output {
         this.seps = seps;
     }
 
+    public int getLine() {
+        return this.exps.get(exps.size() - 1).getLine();
+    }
+
+    public UnaryExp getFirstExp() {
+        return firstExp;
+    }
+
+    public ArrayList<UnaryExp> getExps() {
+        return exps;
+    }
+
     @Override
     public void output() {
         firstExp.output();
         IO.print("<MulExp>");
-        for (int i=0;i<exps.size();i++){
+        for (int i = 0; i < exps.size(); i++) {
             IO.print(seps.get(i).toString());
             exps.get(i).output();
             IO.print("<MulExp>");
