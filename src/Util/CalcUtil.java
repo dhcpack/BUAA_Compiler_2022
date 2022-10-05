@@ -1,6 +1,7 @@
 package Util;
 
 import Lexer.Token;
+import Lexer.TokenType;
 import Parser.expr.types.AddExp;
 import Parser.expr.types.BraceExp;
 import Parser.expr.types.ConstExp;
@@ -9,7 +10,6 @@ import Parser.expr.types.FuncExp;
 import Parser.expr.types.LVal;
 import Parser.expr.types.MulExp;
 import Parser.expr.types.Number;
-import Lexer.TokenType;
 import Parser.expr.types.PrimaryExp;
 import Parser.expr.types.PrimaryExpInterface;
 import Parser.expr.types.UnaryExp;
@@ -19,7 +19,7 @@ import Parser.expr.types.UnaryOp;
 import java.util.ArrayList;
 
 public class CalcUtil {
-    // TODO: 只编写了数字表达式的运算
+    // TODO: Warning: 只编写了数字表达式的运算
     public static int calcConstExp(ConstExp constExp) {
         return calcAddExp(constExp.getAddExp());
     }

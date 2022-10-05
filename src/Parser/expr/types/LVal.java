@@ -21,10 +21,6 @@ public class LVal implements PrimaryExpInterface, Output, LeafNode {
         this.bracks = bracks;
     }
 
-    // public int CountDim() {
-    //     return exps.size();  // int--> dim = 0;
-    // }
-
     public boolean missRBrack() {
         for (Token token : bracks) {
             if (token == null) return true;
@@ -42,6 +38,7 @@ public class LVal implements PrimaryExpInterface, Output, LeafNode {
     }
 
     public Symbol getSymbol() {
+        assert symbol != null;
         return symbol;
     }
 

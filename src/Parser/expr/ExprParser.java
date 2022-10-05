@@ -118,6 +118,7 @@ public class ExprParser {
         } else if (token.getType() == TokenType.INTCON) {
             return new PrimaryExp(parseNum());
         } else {
+            assert false;
             System.out.println("Warning: bad parse of an expr");
             return null;  // not an expr  Warning!!!
         }
