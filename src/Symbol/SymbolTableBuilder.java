@@ -22,6 +22,7 @@ import Parser.decl.types.InitVal;
 import Parser.decl.types.Var;
 import Parser.expr.types.AddExp;
 import Parser.expr.types.BraceExp;
+import Parser.expr.types.Cond;
 import Parser.expr.types.ConstExp;
 import Parser.expr.types.Exp;
 import Parser.expr.types.FuncExp;
@@ -171,7 +172,7 @@ public class SymbolTableBuilder {
         } else if (funcType.getType() == TokenType.INTTK && !returnInt) {
             errors.add(new MissReturnException(funcDef.getRightBrace().getLine()));
         }
-        currSymbolTable = currSymbolTable.getParent();
+        currSymbolTable = currSymbolTable.getParent();  // 上升一层
 
     }
 
@@ -242,10 +243,12 @@ public class SymbolTableBuilder {
     }
 
     public void checkBlockStmt(BlockStmt blockStmt) {
+        currSymbolTable = new SymbolTable(currSymbolTable);  // 下降一层
         ArrayList<BlockItem> blockItems = blockStmt.getBlockItems();
         for (BlockItem blockItem : blockItems) {
             checkBlockItem(blockItem);
         }
+        currSymbolTable = currSymbolTable.getParent();  // 上升一层
     }
 
     public void checkBreakStmt(BreakStmt breakStmt) {
@@ -283,6 +286,14 @@ public class SymbolTableBuilder {
     }
 
     public void checkIfStmt(IfStmt ifStmt) {
+        checkCond(ifStmt.getCond());
+        currSymbolTable = new SymbolTable(currSymbolTable);  // 下降一层
+        ArrayList<Stmt> stmts = ifStmt.getStmts();
+        ArrayList<Token> elses = ifStmt.getElses();
+        for (Stmt stmt : stmts) {
+            checkStmt(stmt);
+        }
+        currSymbolTable = currSymbolTable.getParent();  // 上升一层
         return;
     }
 
@@ -318,7 +329,11 @@ public class SymbolTableBuilder {
         if (whileStmt.missRightParenthesis()) {
             errors.add(new MissRparentException(whileStmt.getLine()));
         }
+        checkCond(whileStmt.getCond());
+        currSymbolTable = new SymbolTable(currSymbolTable);  // 下降一层
         checkStmt(whileStmt.getStmt());
+        currSymbolTable = currSymbolTable.getParent();  // 上升一层
+        loopDepth--;
     }
 
     public void checkConstExp(ConstExp constExp) {
@@ -465,5 +480,9 @@ public class SymbolTableBuilder {
             }
         }
         return funcExp;
+    }
+
+    public void checkCond(Cond cond) {
+        return;
     }
 }

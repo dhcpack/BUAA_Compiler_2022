@@ -28,6 +28,10 @@ public class WhileStmt implements StmtInterface {
         return stmt;
     }
 
+    public Cond getCond() {
+        return cond;
+    }
+
     public boolean missRightParenthesis() {
         return this.right == null;
     }
