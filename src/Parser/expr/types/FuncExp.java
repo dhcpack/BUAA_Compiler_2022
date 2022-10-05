@@ -4,6 +4,8 @@ import Config.IO;
 import Lexer.Token;
 import Symbol.SymbolType;
 
+import java.util.ArrayList;
+
 public class FuncExp implements UnaryExpInterface, LeafNode {
     // 函数调用 FuncExp --> Ident '(' [FuncRParams] ')'
     // 函数实参表 FuncRParams → Exp { ',' Exp }
@@ -73,4 +75,11 @@ public class FuncExp implements UnaryExpInterface, LeafNode {
     public int getDimCount() {
         return 0;  //
     }
+
+    @Override
+    public ArrayList<Integer> getDimNum() {
+        return new ArrayList<>();
+    }
+
+
 }

@@ -1,7 +1,7 @@
 package Config;
 
 public class Config {
-    public static final boolean debugMode = true;
+    public static final boolean debugMode = false;
     private static final int testpoint = 12;
     private static final String[] inputFiles =
             {String.format("../error_check_testfiles/mytest.txt"), "testfile.txt"};

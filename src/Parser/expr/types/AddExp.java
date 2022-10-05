@@ -26,6 +26,10 @@ public class AddExp implements Output {
         }
     }
 
+    public ArrayList<Token> getSeps() {
+        return seps;
+    }
+
     public MulExp getFirstExp() {
         return firstExp;
     }

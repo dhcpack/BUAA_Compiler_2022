@@ -34,6 +34,10 @@ public class MulExp implements Output {
         return exps;
     }
 
+    public ArrayList<Token> getSeps() {
+        return seps;
+    }
+
     @Override
     public void output() {
         firstExp.output();

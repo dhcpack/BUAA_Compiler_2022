@@ -12,6 +12,10 @@ public class UnaryOp implements Output {
         this.token = token;
     }
 
+    public Token getToken() {
+        return token;
+    }
+
     @Override
     public void output() {
         IO.print(token.toString());

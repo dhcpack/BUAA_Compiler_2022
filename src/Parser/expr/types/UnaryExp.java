@@ -25,6 +25,10 @@ public class UnaryExp implements UnaryExpInterface {
         return unaryExpInterface;
     }
 
+    public UnaryOp getOp() {
+        return op;
+    }
+
     @Override
     public void output() {
         if (op != null) {

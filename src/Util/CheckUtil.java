@@ -7,7 +7,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
-public class Check {
+public class CheckUtil {
     public static void check() throws IOException {
         System.out.println();
         System.out.println("-----Check Begin-----");
