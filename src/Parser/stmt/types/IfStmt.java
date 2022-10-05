@@ -13,7 +13,7 @@ public class IfStmt implements StmtInterface, Output {
     private final Token left;
     private final Token right;  // error check: right could be null
     private final Cond cond;
-    private final ArrayList<Stmt> stmts;
+    private final ArrayList<Stmt> stmts;  // stmts比elses多一项
     private final ArrayList<Token> elses;
 
     public IfStmt(Token ifToken, Token left, Token right, Cond cond, ArrayList<Stmt> stmts, ArrayList<Token> elses) {
@@ -31,6 +31,18 @@ public class IfStmt implements StmtInterface, Output {
 
     public boolean missRightParenthesis() {
         return this.right == null;
+    }
+
+    public Cond getCond() {
+        return cond;
+    }
+
+    public ArrayList<Stmt> getStmts() {
+        return stmts;
+    }
+
+    public ArrayList<Token> getElses() {
+        return elses;
     }
 
     @Override
