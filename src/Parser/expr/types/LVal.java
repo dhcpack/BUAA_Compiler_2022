@@ -78,4 +78,10 @@ public class LVal implements PrimaryExpInterface, Output, LeafNode {
     public int getDimCount() {
         return symbol.getDimsCount() - bracks.size() / 2;
     }
+
+    @Override
+    public ArrayList<Integer> getDimNum() {
+        assert symbol != null;
+        return symbol.getDimNum();
+    }
 }

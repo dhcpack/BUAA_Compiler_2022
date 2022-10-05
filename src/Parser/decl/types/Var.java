@@ -4,6 +4,7 @@ import Config.IO;
 import Lexer.Token;
 import Parser.Output;
 import Parser.expr.types.ConstExp;
+import Util.CalcUtil;
 
 import java.util.ArrayList;
 
@@ -11,6 +12,7 @@ public class Var implements Output {
     // Var -> Ident { '[' ConstExp ']' }
     private final Token ident;
     private final ArrayList<ConstExp> constExps;
+    private final ArrayList<Integer> dims = new ArrayList<>();
     private final ArrayList<Token> bracks; // error check: right could be null
     private final boolean isConst;
 
@@ -19,6 +21,9 @@ public class Var implements Output {
         this.constExps = constExps;
         this.bracks = bracks;
         this.isConst = isConst;
+        for (ConstExp constExp : constExps) {
+            dims.add(CalcUtil.calcConstExp(constExp));
+        }
     }
 
     public boolean missRBrack() {
@@ -36,8 +41,12 @@ public class Var implements Output {
         return this.ident;
     }
 
-    public ArrayList<ConstExp> getDims() {
-        return constExps;
+    public ArrayList<Integer> getDimNum() {
+        return dims;
+    }
+
+    public ArrayList<ConstExp> getDimExp() {
+        return this.constExps;
     }
 
     public boolean isConst() {

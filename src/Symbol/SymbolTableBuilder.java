@@ -53,6 +53,7 @@ import Parser.stmt.types.WhileStmt;
 
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class SymbolTableBuilder {
     private SymbolTable currSymbolTable = new SymbolTable(null);
@@ -109,13 +110,14 @@ public class SymbolTableBuilder {
         if (var.missRBrack()) {
             errors.add(new MissRbrackException(ident.getLine()));
         }
-        ArrayList<ConstExp> dims = var.getDims();
-        for (ConstExp constExp : dims) {
+        ArrayList<ConstExp> dimExp = var.getDimExp();
+        for (ConstExp constExp : dimExp) {
             checkConstExp(constExp);
         }
-        SymbolType symbolType = dims.size() == 0 ? SymbolType.INT : SymbolType.ARRAY;
+        ArrayList<Integer> dimNums = var.getDimNum();
+        SymbolType symbolType = dimNums.size() == 0 ? SymbolType.INT : SymbolType.ARRAY;
         if (!redefine) {
-            currSymbolTable.addSymbol(new Symbol(symbolType, var.getBracks(), dims, ident, var.isConst()));
+            currSymbolTable.addSymbol(new Symbol(symbolType, var.getBracks(), dimNums, ident, var.isConst()));
         }
     }
 
@@ -146,11 +148,16 @@ public class SymbolTableBuilder {
         if (funcDef.missRightParenthesis()) {
             errors.add(new MissRparentException(funcDef.getLeftParenthesis().getLine()));
         }
+
+        // check FuncFParam
         ArrayList<FuncFParam> funcFParams = funcDef.getFuncFParams();
         ArrayList<Symbol> params = new ArrayList<>();
         for (FuncFParam funcFParam : funcFParams) {
-            params.add(funcFParam.toSymbol());
-            checkFuncFParam(funcFParam);
+            // params.add(funcFParam.toSymbol());
+            Symbol symbol = checkFuncFParam(funcFParam);
+            if (symbol != null) {
+                params.add(symbol);
+            }
         }
         Token funcType = funcDef.getFuncType();
         if (!redefine) {
@@ -172,7 +179,7 @@ public class SymbolTableBuilder {
         checkFunc(mainFuncDef.getFuncDef());
     }
 
-    public void checkFuncFParam(FuncFParam funcFParam) {
+    public Symbol checkFuncFParam(FuncFParam funcFParam) {
         boolean redefine = false;
         Token ident = funcFParam.getIdent();
         if (currSymbolTable.contains(ident.getContent(), false)) {
@@ -182,10 +189,14 @@ public class SymbolTableBuilder {
         if (funcFParam.missRBrack()) {
             errors.add(new MissRbrackException(ident.getLine()));
         }
-        ArrayList<ConstExp> dims = funcFParam.getDims();
-        SymbolType symbolType = dims.size() == 0 ? SymbolType.INT : SymbolType.ARRAY;
+        ArrayList<Integer> dimNum = funcFParam.getDimNum();
+        SymbolType symbolType = dimNum.size() == 0 ? SymbolType.INT : SymbolType.ARRAY;
         if (!redefine) {
-            currSymbolTable.addSymbol(new Symbol(symbolType, funcFParam.getBracks(), dims, ident, false));
+            Symbol symbol = new Symbol(symbolType, funcFParam.getBracks(), dimNum, ident, false);
+            currSymbolTable.addSymbol(symbol);
+            return symbol;
+        } else {
+            return null;
         }
     }
 
@@ -283,7 +294,11 @@ public class SymbolTableBuilder {
             errors.add(new MismatchPrintfException(printfStmt.getPrintf().getLine()));
         }
         if (printfStmt.missRightParenthesis()) {
-            errors.add(new MissRparentException(printfStmt.getExps().get(printfStmt.getExps().size() - 1).getLine()));
+            errors.add(new MissRparentException(printfStmt.getFormatString().getLine()));
+        }
+        ArrayList<Exp> exps = printfStmt.getExps();
+        for (Exp exp : exps) {
+            checkExp(exp);
         }
     }
 
@@ -375,7 +390,7 @@ public class SymbolTableBuilder {
         return checkExp(braceExp.getExp());
     }
 
-    public LeafNode checkLVal(LVal lVal, boolean checkConst) {  // could const occur?
+    public LeafNode checkLVal(LVal lVal, boolean checkConst) {  // checkConst represents check const or not
         Token ident = lVal.getIdent();
         Symbol symbol = currSymbolTable.getSymbol(ident.getContent(), true);
         if (symbol == null) {
@@ -388,6 +403,7 @@ public class SymbolTableBuilder {
         if (lVal.missRBrack()) {
             errors.add(new MissRbrackException(ident.getLine()));
         }
+        // TODO: check LVal using right or not
         lVal.setSymbol(symbol);
         return lVal;
     }
@@ -425,14 +441,26 @@ public class SymbolTableBuilder {
             errors.add(new MismatchParamCountException(funcExp.getLine()));
         } else {
             for (int i = 0; i < Fparams.size(); i++) {  // param type mismatch
-                if (Fparams.get(i).getSymbolType() != Rparams.get(i).getSymbolType()) {
+                Symbol fParam = Fparams.get(i);
+                LeafNode rParam = Rparams.get(i);
+                if (fParam.getSymbolType() != rParam.getSymbolType()) {
                     errors.add(new MismatchParamTypeException(funcRParams.getLine()));
                     break;
                 }
-                if (Fparams.get(i).getSymbolType() == SymbolType.ARRAY &&
-                        (Fparams.get(i).getDimsCount() != Rparams.get(i).getDimCount())) {
-                    errors.add(new MismatchParamTypeException(funcRParams.getLine()));
-                    break;
+                if (fParam.getSymbolType() == SymbolType.ARRAY) {
+                    assert rParam instanceof LVal;
+                    if (fParam.getDimsCount() != rParam.getDimCount()) {
+                        errors.add(new MismatchParamTypeException(funcRParams.getLine()));
+                        break;
+                    }
+                    ArrayList<Integer> fDimNum = fParam.getDimNum();
+                    ArrayList<Integer> rDimNum = rParam.getDimNum();
+                    for (int j = 1; j < fDimNum.size(); j++) {
+                        if (!Objects.equals(fDimNum.get(j), rDimNum.get(j))) {
+                            errors.add(new MismatchParamTypeException(funcRParams.getLine()));
+                            break;
+                        }
+                    }
                 }
             }
         }

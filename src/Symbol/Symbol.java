@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 public class Symbol {
     private final SymbolType symbolType;
-    private final ArrayList<ConstExp> dims;
+    private final ArrayList<Integer> dimNum;
     private final ArrayList<Token> bracks;  // 数组维数（定义时的Const Exp，未经过化简计算）
     private final Token ident;
     private final boolean isConst;
@@ -16,11 +16,11 @@ public class Symbol {
     private final ArrayList<Symbol> params;
     private final SymbolType returnType;
 
-    public Symbol(SymbolType symbolType, ArrayList<Token> bracks, ArrayList<ConstExp> dims, Token ident,
+    public Symbol(SymbolType symbolType, ArrayList<Token> bracks, ArrayList<Integer> dimNum, Token ident,
                   Boolean isConst) {  // int or array
         this.symbolType = symbolType;
         this.bracks = bracks;
-        this.dims = dims;
+        this.dimNum = dimNum;
         this.ident = ident;
         this.isConst = isConst;
         this.params = null;
@@ -32,7 +32,7 @@ public class Symbol {
         this.symbolType = symbolType;
         this.returnType = returnType;
         this.bracks = null;
-        this.dims = null;
+        this.dimNum = null;
         this.ident = ident;
         this.isConst = false;
         this.isFunc = true;
@@ -48,9 +48,9 @@ public class Symbol {
         return params;
     }
 
-    // public ArrayList<ConstExp> getDims() {
-    //     return dims;
-    // }
+    public ArrayList<Integer> getDimNum() {
+        return dimNum;
+    }
 
     public Token getIdent() {
         return ident;

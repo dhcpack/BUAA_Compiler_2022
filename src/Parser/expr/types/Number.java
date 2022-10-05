@@ -4,6 +4,8 @@ import Config.IO;
 import Lexer.Token;
 import Symbol.SymbolType;
 
+import java.util.ArrayList;
+
 public class Number implements PrimaryExpInterface, LeafNode {
     private final Token number;
 
@@ -13,6 +15,10 @@ public class Number implements PrimaryExpInterface, LeafNode {
 
     public int getLine() {
         return this.number.getLine();
+    }
+
+    public int getNumber() {
+        return Integer.parseInt(number.getContent());
     }
 
     @Override
@@ -29,5 +35,10 @@ public class Number implements PrimaryExpInterface, LeafNode {
     @Override
     public int getDimCount() {
         return 0;
+    }
+
+    @Override
+    public ArrayList<Integer> getDimNum() {
+        return new ArrayList<>();
     }
 }
