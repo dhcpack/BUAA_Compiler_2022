@@ -472,7 +472,7 @@ public class SymbolTableBuilder {
         Symbol symbol = currSymbolTable.getSymbol(ident.getContent(), true);
         if (symbol == null) {
             errors.add(new UndefinedTokenException(ident.getLine()));
-            return null;  // error
+            return null;  // error  TODO: WARNING!!!: NOT EXIST IN SYMBOL TABLE
         }
 
         // check const
@@ -514,7 +514,7 @@ public class SymbolTableBuilder {
         Symbol symbol = currSymbolTable.getSymbol(ident.getContent(), true);
         if (symbol == null) {
             errors.add(new UndefinedTokenException(ident.getLine()));
-            return null;  // error
+            return null;  // error  TODO: WARNING!!!: NOT EXIST IN SYMBOL TABLE
         }
         assert symbol.isFunc();  // assert symbol is a function
         funcExp.setReturnType(symbol.getReturnType());  // 设置function的returnType  TODO: 可以在未来用来检查funcExp是否正确使用
