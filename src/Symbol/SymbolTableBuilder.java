@@ -56,11 +56,18 @@ import Parser.stmt.types.WhileStmt;
 import java.util.ArrayList;
 import java.util.Objects;
 
+/*
+ *
+ * 符号表需要下降一层: 定义的新函数，blockStmt，whileStmt，ifStmt
+ *
+ */
+
+// TODO: LeafNode未进行合并计算，只返回表达式的首项，用来在FuncRParams中检查类型是否正确
 public class SymbolTableBuilder {
     private SymbolTable currSymbolTable = new SymbolTable(null);
     private final Errors errors = new Errors();
     private final CompUnit compUnit;
-    private FuncDef currFunc;
+    private FuncDef currFunc;  // not using
 
     private int loopDepth = 0;
 
@@ -68,20 +75,29 @@ public class SymbolTableBuilder {
         this.compUnit = compUnit;
     }
 
+    // CompUnit → {Decl} {FuncDef} MainFuncDef
     public void checkCompUnit() {
         ArrayList<Decl> decls = compUnit.getGlobalVariables();
         ArrayList<FuncDef> funcDefs = compUnit.getFunctions();
         MainFuncDef mainFunction = compUnit.getMainFunction();
+        // check decl
         for (Decl decl : decls) {
             checkDecl(decl);
         }
+
+        // check func def
         for (FuncDef funcDef : funcDefs) {
             checkFunc(funcDef);
         }
+
+        // check main func
         checkMainFunc(mainFunction);
         errors.output();
     }
 
+    // Decl → ConstDecl | VarDecl
+    // 变量声明 VarDecl → 'int' VarDef { ',' VarDef } ';'
+    // 常量声明 ConstDecl → 'const' BType ConstDef { ',' ConstDef } ';'
     public void checkDecl(Decl decl) {
         if (decl.missSemicolon()) {
             errors.add(new MissSemicnException(decl.getLine()));
@@ -94,6 +110,8 @@ public class SymbolTableBuilder {
         }
     }
 
+    // 常数定义 ConstDef → Var '=' ConstInitVal
+    // 变量定义 VarDef → Var | Var '=' InitVal
     public void checkDef(Def def) {
         checkVar(def.getVar());
         if (def.hasInitVal()) {
@@ -101,33 +119,43 @@ public class SymbolTableBuilder {
         }
     }
 
+    //  常量变量 Var -> Ident { '[' ConstExp ']' }
     public void checkVar(Var var) {
+        // check redefine
         boolean redefine = false;
         Token ident = var.getIdent();
         if (currSymbolTable.contains(ident.getContent(), false)) {
             errors.add(new RedefinedTokenException(ident.getLine()));
             redefine = true;
         }
+
+        // check missRBrack
         if (var.missRBrack()) {
             errors.add(new MissRbrackException(ident.getLine()));
         }
+
+        // check const Exp
         ArrayList<ConstExp> dimExp = var.getDimExp();
         for (ConstExp constExp : dimExp) {
             checkConstExp(constExp);
         }
-        ArrayList<Integer> dimNums = var.getDimNum();
+
+        // add to symbol table
+        ArrayList<Integer> dimNums = var.getDimNum();  // 维数的数值
         SymbolType symbolType = dimNums.size() == 0 ? SymbolType.INT : SymbolType.ARRAY;
         if (!redefine) {
             currSymbolTable.addSymbol(new Symbol(symbolType, var.getBracks(), dimNums, ident, var.isConst()));
         }
     }
 
+    // 常量初值 ConstInitVal → ConstExp | '{' [ ConstInitVal { ',' ConstInitVal } ] '}'
+    // 变量初值 InitVal → Exp | '{' [ InitVal { ',' InitVal } ] '}'
     public void checkInitVal(InitVal initVal) {
-        if (initVal.getExp() != null) {
+        if (initVal.getExp() != null) {  // only expr
             checkExp(initVal.getExp());
-        } else if (initVal.getConstExp() != null) {
+        } else if (initVal.getConstExp() != null) {  // only const expr
             checkConstExp(initVal.getConstExp());
-        } else {
+        } else {  // initial Vals
             ArrayList<InitVal> initVals = initVal.getInitVals();
             for (InitVal initVal1 : initVals) {
                 checkInitVal(initVal1);
@@ -135,61 +163,78 @@ public class SymbolTableBuilder {
         }
     }
 
+    // FuncDef → FuncType Ident '(' [FuncFParams] ')' Block
     public void checkFunc(FuncDef funcDef) {
         Token ident = funcDef.getIdent();
+        // check redefine
         boolean redefine = false;
-        if (currSymbolTable.contains(ident.getContent(), false)) {
+        if (currSymbolTable.contains(ident.getContent(), false)) {  // check redefine
             errors.add(new RedefinedTokenException(ident.getLine()));
             redefine = true;
             // return;  // stop here or not?
         }
 
         currSymbolTable = new SymbolTable(currSymbolTable);  // 下降一层
-        this.currFunc = funcDef;
+
+        // check missing Parenthesis
+        this.currFunc = funcDef;  // unused
         if (funcDef.missRightParenthesis()) {
             errors.add(new MissRparentException(funcDef.getLeftParenthesis().getLine()));
         }
 
-        // check FuncFParam
+        // check FuncFParams
         ArrayList<FuncFParam> funcFParams = funcDef.getFuncFParams();
         ArrayList<Symbol> params = new ArrayList<>();
         for (FuncFParam funcFParam : funcFParams) {
-            // params.add(funcFParam.toSymbol());
-            Symbol symbol = checkFuncFParam(funcFParam);
+            Symbol symbol = checkFuncFParam(funcFParam); // checkFuncFParam could return null
             if (symbol != null) {
                 params.add(symbol);
             }
         }
+
+        // add to Symbol Table(parent symbol table)
         Token funcType = funcDef.getFuncType();
         if (!redefine) {
             currSymbolTable.getParent().addSymbol(new Symbol(SymbolType.FUNCTION,  // func 加到父符号表中
                     funcType.getType() == TokenType.INTTK ? SymbolType.INT : SymbolType.VOID, params, ident));
         }
+
+        // check func stmt
         checkBlockStmt(funcDef.getBlockStmt());
+
+        // check return right or not
         boolean returnInt = funcDef.returnInt();
         if (funcType.getType() == TokenType.VOIDTK && returnInt) {
             errors.add(new IllegalReturnException(funcDef.getReturn().getLine()));
         } else if (funcType.getType() == TokenType.INTTK && !returnInt) {
             errors.add(new MissReturnException(funcDef.getRightBrace().getLine()));
         }
-        currSymbolTable = currSymbolTable.getParent();  // 上升一层
 
+        currSymbolTable = currSymbolTable.getParent();  // 上升一层
     }
 
+    // MainFuncDef → 'int' 'main' '(' ')' Block
     public void checkMainFunc(MainFuncDef mainFuncDef) {
         checkFunc(mainFuncDef.getFuncDef());
     }
 
+    // FuncFParam → BType Ident ['[' ']' { '[' ConstExp ']' }]
+    // Warning: this func could return null
     public Symbol checkFuncFParam(FuncFParam funcFParam) {
+        // check redefine
         boolean redefine = false;
         Token ident = funcFParam.getIdent();
         if (currSymbolTable.contains(ident.getContent(), false)) {
             redefine = true;
             errors.add(new RedefinedTokenException(ident.getLine()));
         }
+
+        // check miss RBrack
         if (funcFParam.missRBrack()) {
             errors.add(new MissRbrackException(ident.getLine()));
         }
+
+        // add to symbol table
         ArrayList<Integer> dimNum = funcFParam.getDimNum();
         SymbolType symbolType = dimNum.size() == 0 ? SymbolType.INT : SymbolType.ARRAY;
         if (!redefine) {
@@ -201,6 +246,7 @@ public class SymbolTableBuilder {
         }
     }
 
+    // 语句块项 BlockItem → Decl | Stmt
     public void checkBlockItem(BlockItem blockItem) {
         if (blockItem instanceof Decl) {
             checkDecl((Decl) blockItem);
@@ -209,7 +255,9 @@ public class SymbolTableBuilder {
         }
     }
 
+    // many stmts
     public void checkStmt(Stmt stmt) {
+        // check miss semicolon
         StmtInterface stmtInterface = stmt.getStmt();
         if (stmt.missSemicolon()) {
             errors.add(new MissSemicnException(stmtInterface.getSemicolonLine()));
@@ -237,13 +285,19 @@ public class SymbolTableBuilder {
         }
     }
 
+    // LVal '=' Exp ;
+    // TODO: check LVal using right or not（LVal是否正确使用，和Exp是否匹配int）
     public void checkAssignStmt(AssignStmt assignStmt) {
+        // check LVal, and LVal could not be const
         checkLVal(assignStmt.getLVal(), true);
+        // check right Val
         checkExp(assignStmt.getExp());
     }
 
+    // Block → '{' { BlockItem } '}'
     public void checkBlockStmt(BlockStmt blockStmt) {
         currSymbolTable = new SymbolTable(currSymbolTable);  // 下降一层
+        // traverse all blockItems and check
         ArrayList<BlockItem> blockItems = blockStmt.getBlockItems();
         for (BlockItem blockItem : blockItems) {
             checkBlockItem(blockItem);
@@ -251,62 +305,62 @@ public class SymbolTableBuilder {
         currSymbolTable = currSymbolTable.getParent();  // 上升一层
     }
 
+    // break;
     public void checkBreakStmt(BreakStmt breakStmt) {
         if (loopDepth == 0) {
             errors.add(new IllegalBreakContinueException(breakStmt.getSemicolonLine()));
         }
     }
 
+    // continue;
     public void checkContinueStmt(ContinueStatement continueStatement) {
         if (loopDepth == 0) {
             errors.add(new IllegalBreakContinueException(continueStatement.getSemicolonLine()));
         }
     }
 
+    // Exp ';'
     public void checkExpStmt(ExpStmt expStmt) {
         checkExp(expStmt.getExp());
     }
 
+    // LVal '=' 'getint''('')'
+    // TODO: check LVal using right or not（LVal是否正确使用，和Exp是否匹配，int）
     public void checkGetIntStmt(GetIntStmt getIntStmt) {
-        // LVal lVal = getIntStmt.getLVal();
-        // Token ident = lVal.getIdent();
-        // Symbol symbol = currSymbolTable.getSymbol(ident.getContent(), true);
-        // if (symbol == null) {
-        //     errors.add(new UndefinedTokenException(ident.getLine()));
-        //     return;
-        // }
-        // if (symbol.isConst()) {
-        //     errors.add(new ModifyConstException(ident.getLine()));
-        // }
-        // if (lVal.missRBrack()) {
-        //     errors.add(new MissRbrackException(ident.getLine()));
-        // }
-        // lVal.setSymbol(symbol);
+        // check miss Right Parenthesis
+        if (getIntStmt.missRightParenthesis()) {
+            errors.add(new MissRparentException(getIntStmt.getLine()));
+        }
+        // check LVal, and LVal could not be const
         checkLVal(getIntStmt.getLVal(), true);
     }
 
+    // 'if' '(' Cond ')' Stmt [ 'else' Stmt ]
     public void checkIfStmt(IfStmt ifStmt) {
+        // check cond Stmt
         checkCond(ifStmt.getCond());
         currSymbolTable = new SymbolTable(currSymbolTable);  // 下降一层
+
+        // check all stmts
         ArrayList<Stmt> stmts = ifStmt.getStmts();
-        ArrayList<Token> elses = ifStmt.getElses();
         for (Stmt stmt : stmts) {
             checkStmt(stmt);
         }
         currSymbolTable = currSymbolTable.getParent();  // 上升一层
-        return;
     }
 
     public void checkPrintfStmt(PrintfStmt printfStmt) {
-        if (!printfStmt.checkFormatString()) {
+        if (!printfStmt.checkFormatString()) {  // 检查formatString
             errors.add(new IllegalSymbolException(printfStmt.getFormatString().getLine()));
         }
-        if (!printfStmt.checkCountMatch()) {
+        if (!printfStmt.checkCountMatch()) {  // 检查Exp个数是否匹配
             errors.add(new MismatchPrintfException(printfStmt.getPrintf().getLine()));
         }
-        if (printfStmt.missRightParenthesis()) {
+        if (printfStmt.missRightParenthesis()) {  // 检查是否缺少左括号
             errors.add(new MissRparentException(printfStmt.getFormatString().getLine()));
         }
+
+        // 检查所有Exp
         ArrayList<Exp> exps = printfStmt.getExps();
         for (Exp exp : exps) {
             checkExp(exp);
@@ -314,23 +368,23 @@ public class SymbolTableBuilder {
     }
 
     public void checkReturnStmt(ReturnStmt returnStmt) {
-        // Token funcType = funcDef.getFuncType();
-        // boolean returnInt = funcDef.returnInt();
-        // if (funcType.getType() == TokenType.VOIDTK && returnInt) {
-        //     errors.add(new IllegalReturnException(funcDef.getReturn().getLine()));
-        // } else if (funcType.getType() == TokenType.INTTK && !returnInt) {
-        //     errors.add(new MissReturnException(funcDef.getRightBrace().getLine()));
-        // }
+        // 在checkFunc中检查
         return;
     }
 
+    // 'while' '(' Cond ')' Stmt
     public void checkWhileStmt(WhileStmt whileStmt) {
         loopDepth++;
+        // check missing Right Parenthesis
         if (whileStmt.missRightParenthesis()) {
             errors.add(new MissRparentException(whileStmt.getLine()));
         }
+
+        // check Cond
         checkCond(whileStmt.getCond());
+
         currSymbolTable = new SymbolTable(currSymbolTable);  // 下降一层
+        // check Stmt
         checkStmt(whileStmt.getStmt());
         currSymbolTable = currSymbolTable.getParent();  // 上升一层
         loopDepth--;
@@ -371,12 +425,13 @@ public class SymbolTableBuilder {
     public LeafNode checkUnaryExpInterFace(UnaryExpInterface unaryExpInterface) {
         if (unaryExpInterface instanceof PrimaryExp) {
             return checkPrimaryExp((PrimaryExp) unaryExpInterface);
-        } else if (unaryExpInterface instanceof FuncExp) {
+        } else if (unaryExpInterface instanceof FuncExp) {  // TODO: 检查FuncExp的returnType是否匹配
             return checkFuncExp((FuncExp) unaryExpInterface);
         } else if (unaryExpInterface instanceof UnaryExp) {
             return checkUnaryExp((UnaryExp) unaryExpInterface);
         }
         // not output
+        assert false;
         System.out.println("In checkUnaryExpInterFace: this line should not output");
         return null;
     }
@@ -389,37 +444,55 @@ public class SymbolTableBuilder {
         if (primaryExpInterface instanceof BraceExp) {
             return checkBraceExp((BraceExp) primaryExpInterface);
         } else if (primaryExpInterface instanceof LVal) {
+            // TODO: check LVal using right or not（LVal是否正确使用，和Exp是否匹配，int）
             return checkLVal((LVal) primaryExpInterface, false);
         } else if (primaryExpInterface instanceof Number) {
             return checkNumber((Number) primaryExpInterface);
         }
         // not output
+        assert false;
         System.out.println("In checkPrimaryExpInterFace: this line should not output");
         return null;
     }
 
+    // BraceExp = '(' Exp ')'
     public LeafNode checkBraceExp(BraceExp braceExp) {
+        // check missing Right Parenthesis
         if (braceExp.missRightParenthesis()) {
             errors.add(new MissRparentException(braceExp.getLine()));
         }
         return checkExp(braceExp.getExp());
     }
 
+    // LVal → Ident {'[' Exp ']'}
+    // 会给LVal Symbol赋值
     public LeafNode checkLVal(LVal lVal, boolean checkConst) {  // checkConst represents check const or not
+        // 查符号表!!!
         Token ident = lVal.getIdent();
         Symbol symbol = currSymbolTable.getSymbol(ident.getContent(), true);
         if (symbol == null) {
             errors.add(new UndefinedTokenException(ident.getLine()));
             return null;  // error
         }
+
+        // check const
         if (checkConst && symbol.isConst()) {
             errors.add(new ModifyConstException(ident.getLine()));
         }
+
+        // check missing RBrack
         if (lVal.missRBrack()) {
             errors.add(new MissRbrackException(ident.getLine()));
         }
         // TODO: check LVal using right or not
-        lVal.setSymbol(symbol);
+        /*
+         * int a;
+         * b = a[1];
+         *
+         * int a[1][2][3];
+         * b =  a[1];
+         * */
+        lVal.setSymbol(symbol);  // TODO: 可以在未来用来检查lVal是否正确使用
         return lVal;
     }
 
@@ -427,50 +500,67 @@ public class SymbolTableBuilder {
         return number;
     }
 
-
+    // 函数调用 FuncExp --> Ident '(' [FuncRParams] ')'
+    // 函数实参表 FuncRParams → Exp { ',' Exp }
+    // 会给Func的ReturnType赋值
     public LeafNode checkFuncExp(FuncExp funcExp) {
+        // check missing RightParenthesis
         if (funcExp.missRightParenthesis()) {
             errors.add(new MissRparentException(funcExp.getLine()));
         }
+
+        // 查符号表
         Token ident = funcExp.getIdent();
         Symbol symbol = currSymbolTable.getSymbol(ident.getContent(), true);
         if (symbol == null) {
             errors.add(new UndefinedTokenException(ident.getLine()));
             return null;  // error
         }
-        assert symbol.isFunc();
-        funcExp.setReturnType(symbol.getReturnType());  // 设置function的returnType
+        assert symbol.isFunc();  // assert symbol is a function
+        funcExp.setReturnType(symbol.getReturnType());  // 设置function的returnType  TODO: 可以在未来用来检查funcExp是否正确使用
 
-        ArrayList<Symbol> Fparams = symbol.getParams();  // 形参表
+        // 形参表
+        ArrayList<Symbol> Fparams = symbol.getParams();
+
+        // 实参表
         FuncRParams funcRParams = funcExp.getParams();
-        // LeafNode is LVal or Number or funcExp
-        ArrayList<LeafNode> Rparams = new ArrayList<>();  // 实参表
+        ArrayList<LeafNode> Rparams = new ArrayList<>();  // LeafNode is LVal or Number or funcExp
         if (funcRParams != null) {
             for (Exp exp : funcRParams.getExps()) {
-                Rparams.add(checkExp(exp));
+                Rparams.add(checkExp(exp));  // TODO: LeafNode未进行合并计算，只返回表达式的首项，用来在FuncRParams中检查类型是否正确
             }
         }
 
         // match check
-        if (Fparams.size() != Rparams.size()) {  // param count mismatch
-            errors.add(new MismatchParamCountException(funcExp.getLine()));
+        if (Fparams.size() != Rparams.size()) {
+            errors.add(new MismatchParamCountException(funcExp.getLine()));  // param count mismatch
         } else {
-            for (int i = 0; i < Fparams.size(); i++) {  // param type mismatch
+            for (int i = 0; i < Fparams.size(); i++) {
                 Symbol fParam = Fparams.get(i);
                 LeafNode rParam = Rparams.get(i);
-                if (fParam.getSymbolType() != rParam.getSymbolType()) {
+
+                if (fParam.getSymbolType() != rParam.getSymbolType()) {  // param type mismatch
                     errors.add(new MismatchParamTypeException(funcRParams.getLine()));
                     break;
                 }
-                if (fParam.getSymbolType() == SymbolType.ARRAY) {
-                    assert rParam instanceof LVal;
-                    if (fParam.getDimsCount() != rParam.getDimCount()) {
+                if (fParam.getSymbolType() == SymbolType.ARRAY) {  // 检查数组参数的维数是否正确
+                    assert rParam instanceof LVal;  // 数组一定是LVal
+                    if (fParam.getDimsCount() != rParam.getDimCount()) {  // 维数不正确
                         errors.add(new MismatchParamTypeException(funcRParams.getLine()));
                         break;
                     }
+
+                    // 检查每一维的数值是否正确
+                    /*
+                     *  int f(int a[][2]) {}
+                     *  int main(){
+                     *       int a[2][3];
+                     *       f(a);  // mismatch!!!
+                     *  }
+                     * */
                     ArrayList<Integer> fDimNum = fParam.getDimNum();
                     ArrayList<Integer> rDimNum = rParam.getDimNum();
-                    for (int j = 1; j < fDimNum.size(); j++) {
+                    for (int j = 1; j < fDimNum.size(); j++) {  // 跳过第一维
                         if (!Objects.equals(fDimNum.get(j), rDimNum.get(j))) {
                             errors.add(new MismatchParamTypeException(funcRParams.getLine()));
                             break;
@@ -482,6 +572,7 @@ public class SymbolTableBuilder {
         return funcExp;
     }
 
+    // TODO: Unchecked
     public void checkCond(Cond cond) {
         return;
     }

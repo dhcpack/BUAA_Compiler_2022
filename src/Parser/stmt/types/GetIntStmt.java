@@ -35,6 +35,10 @@ public class GetIntStmt implements StmtInterface {
         return this.right == null;
     }
 
+    public int getLine() {
+        return this.left.getLine();
+    }
+
     @Override
     public int getSemicolonLine() {
         return this.left.getLine();
