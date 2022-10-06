@@ -54,6 +54,11 @@ public class ExprParser {
         this.tokenHandler = tokenHandler;
     }
 
+    public boolean inFirstExp(Token token) {  // Exp的FIRST集
+        return token.getType() == TokenType.LPARENT || token.getType() == TokenType.IDENFR || token.getType() == TokenType.INTCON
+                || token.getType() == TokenType.AND || token.getType() == TokenType.MINU || token.getType() == TokenType.NOT;
+    }
+
     // LVal → Ident {'[' Exp ']'}
     public LVal parseLVal() {
         Token ident = tokenHandler.getTokenAndMove();
@@ -132,8 +137,7 @@ public class ExprParser {
         FuncRParams funcRParams = null;
         // TODO: check!!! Exp的FIRST集 左括号or常数or标识符orUnaryOp
         if (token.getType() != TokenType.RPARENT) {  // 不是右括号可能是有实参，也可能是有括号缺失
-            if (token.getType() == TokenType.LPARENT || token.getType() == TokenType.IDENFR || token.getType() == TokenType.INTCON
-                    || token.getType() == TokenType.AND || token.getType() == TokenType.MINU || token.getType() == TokenType.NOT) {
+            if (inFirstExp(token)) {
                 funcRParams = parseFuncRParams();
             }
         }
