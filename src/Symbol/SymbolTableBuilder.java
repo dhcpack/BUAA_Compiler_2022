@@ -350,11 +350,14 @@ public class SymbolTableBuilder {
     }
 
     public void checkPrintfStmt(PrintfStmt printfStmt) {
-        if (!printfStmt.checkFormatString()) {  // 检查formatString
-            errors.add(new IllegalSymbolException(printfStmt.getFormatString().getLine()));
+        if (printfStmt.getPrintf().getLine() == 696) {
+            System.out.println(1);
         }
         if (!printfStmt.checkCountMatch()) {  // 检查Exp个数是否匹配
             errors.add(new MismatchPrintfException(printfStmt.getPrintf().getLine()));
+        }
+        if (!printfStmt.checkFormatString()) {  // 检查formatString
+            errors.add(new IllegalSymbolException(printfStmt.getFormatString().getLine()));
         }
         if (printfStmt.missRightParenthesis()) {  // 检查是否缺少左括号
             errors.add(new MissRparentException(printfStmt.getFormatString().getLine()));
