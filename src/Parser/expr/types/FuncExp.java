@@ -66,7 +66,7 @@ public class FuncExp implements UnaryExpInterface, LeafNode {
 
     @Override
     public SymbolType getSymbolType() {
-        // function 一定不是 void， 返回类型一定要是int
+        // return type之前一定赋值完成了
         assert returnType != null;
         return returnType;
     }

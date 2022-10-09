@@ -531,7 +531,7 @@ public class SymbolTableBuilder {
         if (funcRParams != null) {
             for (Exp exp : funcRParams.getExps()) {
                 Rparams.add(checkExp(exp));  // TODO: LeafNode未进行合并计算，只返回表达式的首项，用来在FuncRParams中检查类型是否正确
-            }
+            }  // check Exp会给所有的LVal和FuncExp设置SymbolType
         }
 
         // match check
@@ -542,6 +542,7 @@ public class SymbolTableBuilder {
                 Symbol fParam = Fparams.get(i);
                 LeafNode rParam = Rparams.get(i);
 
+                // 由于之前checkExp已经给每个LeafNode赋过SymbolType了，这里一定可以得到SymbolType
                 if (fParam.getSymbolType() != rParam.getSymbolType()) {  // param type mismatch
                     errors.add(new MismatchParamTypeException(funcRParams.getLine()));
                     break;

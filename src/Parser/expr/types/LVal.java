@@ -58,21 +58,29 @@ public class LVal implements PrimaryExpInterface, Output, LeafNode {
         IO.print("<LVal>");
     }
 
+    // WARNING: 对类型根据使用方法进行了修改
+    // int a[10];
+    // a[1] ---> int
+    // WARNING: 只能在funcExp被使用
     @Override
     public SymbolType getSymbolType() {
-        if (getDimCount() == 0) {
+        assert symbol != null;  // Symbol已经赋好值了
+        if (symbol.getSymbolType() == SymbolType.FUNCTION) {
+            return symbol.getReturnType();
+        } else if (symbol.getSymbolType() == SymbolType.ARRAY && getDimCount() == 0) {
             return SymbolType.INT;
         } else {
-            return SymbolType.ARRAY;
+            return symbol.getSymbolType();
         }
     }
 
     // Warning: for LVal, it is using Dim!!!
     // int a[1][2];
     // when using a[0], getDimCount() -> 1;
-    // generally used in funcRParam
+    // generally used in funcRPara
     @Override
     public int getDimCount() {
+        assert symbol.getSymbolType() == SymbolType.ARRAY;
         return symbol.getDimsCount() - bracks.size() / 2;
     }
 

@@ -1,0 +1,72 @@
+// const int a[2][3][4];
+
+// int main() {
+//     int b = a[1];
+// }
+
+// const int a[3] = {1,2,3};
+void f1(int x, int y, int z){
+
+}
+int f2(int x){
+    return x;
+}
+
+void f3(int x[])
+{
+    return 0;
+}
+
+int main(){
+    printf("#:\n");
+    printf("%%");
+    printf("\");
+    while(1){
+        int a = 1;
+        break;
+    }
+    if(1){
+        int a = 1;
+    }
+    {
+        int a = 1;
+    }
+    printf("%d\n", a);
+    int a, a;
+    a;
+    a = 1;
+    // a();
+    f1(1);
+    int arr[2][2];
+    f2(1);
+    f2(arr[1])
+    f2(f3(arr[0]));
+    f3(arr[0])
+    const int c = 1;
+    c = 0;
+    f3(;
+    f3()
+    int a[2][2;
+    printf("%d", 1, 1);
+    break;
+    continue;
+    while(1){
+        while(1){
+            break;
+        }
+        continue;
+    }
+}
+
+
+int main(){
+    // check or not
+    int a;
+    a[1] = 1;
+    return 0;
+
+    // check or not
+    int b[1][2];
+    int c = b[1];
+    return 0;
+}

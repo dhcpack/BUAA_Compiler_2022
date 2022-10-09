@@ -135,9 +135,8 @@ public class ExprParser {
         Token left = tokenHandler.getTokenAndMove();
         Token token = tokenHandler.getForwardToken();
         FuncRParams funcRParams = null;
-        // TODO: check!!! Exp的FIRST集 左括号or常数or标识符orUnaryOp
         if (token.getType() != TokenType.RPARENT) {  // 不是右括号可能是有实参，也可能是有括号缺失
-            if (inFirstExp(token)) {
+            if (inFirstExp(token)) {  // 检查是否在Exp的FIRST集中
                 funcRParams = parseFuncRParams();
             }
         }
