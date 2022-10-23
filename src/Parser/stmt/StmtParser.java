@@ -153,7 +153,8 @@ public class StmtParser {
     public ReturnStmt parseReturnStmt() {
         Token returnToken = tokenHandler.getTokenAndMove();
         if (tokenHandler.getForwardToken().getType() == TokenType.SEMICN ||
-                tokenHandler.getForwardToken().getType() == TokenType.RBRACE) {  // 可能缺失分号
+                tokenHandler.getForwardToken().getType() == TokenType.RBRACE ||  // 接到任何关键字都表示return缺失分号而终止
+                tokenHandler.getForwardToken().getType().isKeyWord()) {  // 可能缺失分号
             return new ReturnStmt(returnToken);
         } else {
             return new ReturnStmt(returnToken, new ExprParser(tokenHandler).parseExp());

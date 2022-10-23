@@ -26,6 +26,18 @@ public class LOrExp implements Output {
         }
     }
 
+    public LAndExp getFirstExp() {
+        return firstExp;
+    }
+
+    public ArrayList<LAndExp> getExps() {
+        return exps;
+    }
+
+    public ArrayList<Token> getSeps() {
+        return seps;
+    }
+
     @Override
     public void output() {
         firstExp.output();
