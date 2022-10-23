@@ -1,5 +1,10 @@
 package Lexer;
 
+import java.util.HashSet;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 public enum TokenType {
     MAINTK("main(?![a-zA-Z0-9_])"),
     CONSTTK("const(?![a-zA-Z0-9_])"),
@@ -52,4 +57,7 @@ public enum TokenType {
         return pattern;
     }
 
+    public boolean isKeyWord() {
+        return this == MAINTK || this == CONSTTK || this == INTTK || this == BREAKTK || this == CONTINUETK || this == IFTK || this == ELSETK || this == WHILETK || this == GETINTTK || this == PRINTFTK || this == RETURNTK || this == VOIDTK;
+    }
 }

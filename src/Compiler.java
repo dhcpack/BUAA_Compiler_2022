@@ -22,8 +22,8 @@ public class Compiler {
         * */
         new SymbolTableBuilder(Parser.parseCompUnit(new TokenHandler(Lexer.lex(IO.input())))).checkCompUnit();
         IO.flush();
-        if (Config.debugMode) {
-            CheckUtil.check();
-        }
+        // if (Config.debugMode) {
+        //     CheckUtil.check();
+        // }
     }
 }

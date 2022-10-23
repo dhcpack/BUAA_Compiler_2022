@@ -18,6 +18,18 @@ public class RelExp implements Output {
         this.seps = seps;
     }
 
+    public AddExp getFirstExp() {
+        return firstExp;
+    }
+
+    public ArrayList<AddExp> getExps() {
+        return exps;
+    }
+
+    public ArrayList<Token> getSeps() {
+        return seps;
+    }
+
     public int getLine() {
         if (exps.size() != 0) {
             return this.exps.get(exps.size() - 1).getLine();

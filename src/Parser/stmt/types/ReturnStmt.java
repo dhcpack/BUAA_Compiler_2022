@@ -19,6 +19,10 @@ public class ReturnStmt implements StmtInterface {
         this.returnExp = returnExp;
     }
 
+    public Exp getReturnExp() {
+        return returnExp;
+    }
+
     public boolean returnInt() {
         return returnExp != null;
     }

@@ -24,15 +24,19 @@ import Parser.expr.types.AddExp;
 import Parser.expr.types.BraceExp;
 import Parser.expr.types.Cond;
 import Parser.expr.types.ConstExp;
+import Parser.expr.types.EqExp;
 import Parser.expr.types.Exp;
 import Parser.expr.types.FuncExp;
 import Parser.expr.types.FuncRParams;
+import Parser.expr.types.LAndExp;
+import Parser.expr.types.LOrExp;
 import Parser.expr.types.LVal;
 import Parser.expr.types.LeafNode;
 import Parser.expr.types.MulExp;
 import Parser.expr.types.Number;
 import Parser.expr.types.PrimaryExp;
 import Parser.expr.types.PrimaryExpInterface;
+import Parser.expr.types.RelExp;
 import Parser.expr.types.UnaryExp;
 import Parser.expr.types.UnaryExpInterface;
 import Parser.func.types.FuncDef;
@@ -68,6 +72,7 @@ public class SymbolTableBuilder {
     private final Errors errors = new Errors();
     private final CompUnit compUnit;
     private FuncDef currFunc;  // not using
+    private TokenType currFuncType = null;
 
     private int loopDepth = 0;
 
@@ -113,10 +118,13 @@ public class SymbolTableBuilder {
     // 常数定义 ConstDef → Var '=' ConstInitVal
     // 变量定义 VarDef → Var | Var '=' InitVal
     public void checkDef(Def def) {
-        checkVar(def.getVar());
-        if (def.hasInitVal()) {
+        /*
+         *  int a = a * a;
+         * */
+        if (def.hasInitVal()) {  // 先检查initial Val，再检查Def
             checkInitVal(def.getInitVal());
         }
+        checkVar(def.getVar());
     }
 
     //  常量变量 Var -> Ident { '[' ConstExp ']' }
@@ -165,6 +173,7 @@ public class SymbolTableBuilder {
 
     // FuncDef → FuncType Ident '(' [FuncFParams] ')' Block
     public void checkFunc(FuncDef funcDef) {
+        currFuncType = funcDef.getFuncType().getType();
         Token ident = funcDef.getIdent();
         // check redefine
         boolean redefine = false;
@@ -200,13 +209,14 @@ public class SymbolTableBuilder {
         }
 
         // check func stmt
-        checkBlockStmt(funcDef.getBlockStmt());
+        checkBlockStmt(funcDef.getBlockStmt(), true);
 
         // check return right or not
-        boolean returnInt = funcDef.returnInt();
-        if (funcType.getType() == TokenType.VOIDTK && returnInt) {
-            errors.add(new IllegalReturnException(funcDef.getReturn().getLine()));
-        } else if (funcType.getType() == TokenType.INTTK && !returnInt) {
+        // boolean returnInt = funcDef.returnInt();
+        // if (funcType.getType() == TokenType.VOIDTK && returnInt) {
+        //     errors.add(new IllegalReturnException(funcDef.getReturn().getLine()));
+        // } else
+        if (funcType.getType() == TokenType.INTTK && !funcDef.returnInt()) {
             errors.add(new MissReturnException(funcDef.getRightBrace().getLine()));
         }
 
@@ -265,7 +275,7 @@ public class SymbolTableBuilder {
         if (stmtInterface instanceof AssignStmt) {
             checkAssignStmt((AssignStmt) stmtInterface);
         } else if (stmtInterface instanceof BlockStmt) {
-            checkBlockStmt((BlockStmt) stmtInterface);
+            checkBlockStmt((BlockStmt) stmtInterface, false);
         } else if (stmtInterface instanceof BreakStmt) {
             checkBreakStmt((BreakStmt) stmtInterface);
         } else if (stmtInterface instanceof ContinueStatement) {
@@ -295,14 +305,19 @@ public class SymbolTableBuilder {
     }
 
     // Block → '{' { BlockItem } '}'
-    public void checkBlockStmt(BlockStmt blockStmt) {
-        currSymbolTable = new SymbolTable(currSymbolTable);  // 下降一层
+    public void checkBlockStmt(BlockStmt blockStmt, boolean isFuncBlock) {
+        if (!isFuncBlock) {
+            currSymbolTable = new SymbolTable(currSymbolTable);  // 下降一层
+        }
         // traverse all blockItems and check
         ArrayList<BlockItem> blockItems = blockStmt.getBlockItems();
         for (BlockItem blockItem : blockItems) {
             checkBlockItem(blockItem);
         }
-        currSymbolTable = currSymbolTable.getParent();  // 上升一层
+
+        if (!isFuncBlock) {
+            currSymbolTable = currSymbolTable.getParent();  // 上升一层
+        }
     }
 
     // break;
@@ -339,6 +354,9 @@ public class SymbolTableBuilder {
     public void checkIfStmt(IfStmt ifStmt) {
         // check cond Stmt
         checkCond(ifStmt.getCond());
+        if (ifStmt.missRightParenthesis()) {
+            errors.add(new MissRparentException(ifStmt.getIfLine()));
+        }
         currSymbolTable = new SymbolTable(currSymbolTable);  // 下降一层
 
         // check all stmts
@@ -371,8 +389,14 @@ public class SymbolTableBuilder {
     }
 
     public void checkReturnStmt(ReturnStmt returnStmt) {
-        // 在checkFunc中检查
-        return;
+        assert currFuncType != null;  // 不在Decl区
+        if (currFuncType == TokenType.VOIDTK && returnStmt.getReturnExp() != null) {
+            errors.add(new IllegalReturnException(returnStmt.getReturnToken().getLine()));
+        }
+        if (returnStmt.getReturnExp() != null) {
+            checkExp(returnStmt.getReturnExp());
+        }
+        // 是否return正确在checkFunc中检查
     }
 
     // 'while' '(' Cond ')' Stmt
@@ -469,6 +493,7 @@ public class SymbolTableBuilder {
 
     // LVal → Ident {'[' Exp ']'}
     // 会给LVal Symbol赋值
+    // 当不在符号表中存在时会返回null
     public LeafNode checkLVal(LVal lVal, boolean checkConst) {  // checkConst represents check const or not
         // 查符号表!!!
         Token ident = lVal.getIdent();
@@ -506,6 +531,8 @@ public class SymbolTableBuilder {
     // 函数调用 FuncExp --> Ident '(' [FuncRParams] ')'
     // 函数实参表 FuncRParams → Exp { ',' Exp }
     // 会给Func的ReturnType赋值
+    // 当func不在符号表中存在时会返回null
+    // 当Rparam不在符号表中时会返回FuncExp
     public LeafNode checkFuncExp(FuncExp funcExp) {
         // check missing RightParenthesis
         if (funcExp.missRightParenthesis()) {
@@ -519,6 +546,9 @@ public class SymbolTableBuilder {
             errors.add(new UndefinedTokenException(ident.getLine()));
             return null;  // error  TODO: WARNING!!!: NOT EXIST IN SYMBOL TABLE
         }
+        if (!symbol.isFunc()) {
+            return null;  // TODO: 帖子，什么错误类型？？
+        }
         assert symbol.isFunc();  // assert symbol is a function
         funcExp.setReturnType(symbol.getReturnType());  // 设置function的returnType  TODO: 可以在未来用来检查funcExp是否正确使用
 
@@ -530,7 +560,11 @@ public class SymbolTableBuilder {
         ArrayList<LeafNode> Rparams = new ArrayList<>();  // LeafNode is LVal or Number or funcExp
         if (funcRParams != null) {
             for (Exp exp : funcRParams.getExps()) {
-                Rparams.add(checkExp(exp));  // TODO: LeafNode未进行合并计算，只返回表达式的首项，用来在FuncRParams中检查类型是否正确
+                LeafNode res = checkExp(exp);
+                if (res == null) {
+                    return funcExp;
+                }
+                Rparams.add(res);  // TODO: LeafNode未进行合并计算，只返回表达式的首项，用来在FuncRParams中检查类型是否正确
             }  // check Exp会给所有的LVal和FuncExp设置SymbolType
         }
 
@@ -576,8 +610,45 @@ public class SymbolTableBuilder {
         return funcExp;
     }
 
-    // TODO: Unchecked
-    public void checkCond(Cond cond) {
-        return;
+    // Cond → LOrExp
+    public LeafNode checkCond(Cond cond) {
+        return checkLOrExp(cond.getLOrExp());
+    }
+
+    // LOrExp → LAndExp {'||' LAndExp}
+    public LeafNode checkLOrExp(LOrExp lOrExp) {
+        LeafNode first = checkLAndExp(lOrExp.getFirstExp());
+        ArrayList<LAndExp> andExps = lOrExp.getExps();
+        for (LAndExp lAndExp : andExps) {
+            checkLAndExp(lAndExp);
+        }
+        return first;
+    }
+
+    public LeafNode checkLAndExp(LAndExp lAndExp) {
+        LeafNode first = checkEqExp(lAndExp.getFirstExp());
+        ArrayList<EqExp> eqExps = lAndExp.getExps();
+        for (EqExp eqExp : eqExps) {
+            checkEqExp(eqExp);
+        }
+        return first;
+    }
+
+    public LeafNode checkEqExp(EqExp eqExp) {
+        LeafNode first = checkRelExp(eqExp.getFirstExp());
+        ArrayList<RelExp> relExps = eqExp.getExps();
+        for (RelExp relExp : relExps) {
+            checkRelExp(relExp);
+        }
+        return first;
+    }
+
+    public LeafNode checkRelExp(RelExp relExp) {
+        LeafNode first = checkAddExp(relExp.getFirstExp());
+        ArrayList<AddExp> addExps = relExp.getExps();
+        for (AddExp addExp : addExps) {
+            checkAddExp(addExp);
+        }
+        return first;
     }
 }

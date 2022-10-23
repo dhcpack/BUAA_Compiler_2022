@@ -46,6 +46,7 @@ public class InputHandler {
     public boolean moveNextLine() {
         line++;
         pointer = 0;
+        if (reachEnd()) return false;
         moveForward(0);  // 跳过接下来的空行
         return !reachEnd();
     }

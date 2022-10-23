@@ -18,6 +18,18 @@ public class LAndExp implements Output {
         this.seps = seps;
     }
 
+    public EqExp getFirstExp() {
+        return firstExp;
+    }
+
+    public ArrayList<EqExp> getExps() {
+        return exps;
+    }
+
+    public ArrayList<Token> getSeps() {
+        return seps;
+    }
+
     public int getLine() {
         if (exps.size() != 0) {
             return this.exps.get(exps.size() - 1).getLine();

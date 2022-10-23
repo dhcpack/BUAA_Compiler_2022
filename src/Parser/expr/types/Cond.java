@@ -15,6 +15,10 @@ public class Cond implements Output {
         this.lOrExp = lOrExp;
     }
 
+    public LOrExp getLOrExp() {
+        return lOrExp;
+    }
+
     @Override
     public void output() {
         lOrExp.output();

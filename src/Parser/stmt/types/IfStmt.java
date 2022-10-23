@@ -29,6 +29,10 @@ public class IfStmt implements StmtInterface, Output {
         return this.elses.size() != 0;
     }
 
+    public int getIfLine() {
+        return this.ifToken.getLine();
+    }
+
     public boolean missRightParenthesis() {
         return this.right == null;
     }
