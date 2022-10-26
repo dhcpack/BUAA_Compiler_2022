@@ -1,6 +1,6 @@
 package Config;
 
-import Lexer.InputHandler;
+import Frontend.Lexer.InputHandler;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

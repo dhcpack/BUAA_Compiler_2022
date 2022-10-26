@@ -1,17 +1,14 @@
-import Config.Config;
 import Config.IO;
-import Lexer.Lexer;
-import Parser.CompUnit;
-import Parser.Parser;
-import Parser.TokenHandler;
-import Symbol.SymbolTableBuilder;
-import Util.CheckUtil;
+import Frontend.Lexer.Lexer;
+import Frontend.Parser.Parser;
+import Frontend.Parser.TokenHandler;
+import Frontend.Symbol.SymbolTableBuilder;
 
 import java.io.IOException;
 
 public class Compiler {
     public static void main(String[] args) throws IOException {
-        // CompUnit compUnit = Parser.parseCompUnit(new TokenHandler(Lexer.lex(IO.input())));
+        // CompUnit compUnit = frontend.Parser.parseCompUnit(new TokenHandler(frontend.Lexer.lex(IO.input())));
         /*
         * Unfixed error type
         *
