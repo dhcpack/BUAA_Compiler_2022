@@ -1,6 +1,7 @@
 package Frontend.Parser.expr.types;
 
-import Config.IO;
+import Config.Reader;
+import Config.SyntaxWriter;
 
 public class PrimaryExp implements UnaryExpInterface {
     // 基本表达式 PrimaryExp → BraceExp | LVal | Number
@@ -21,6 +22,6 @@ public class PrimaryExp implements UnaryExpInterface {
     @Override
     public void output() {
         primaryExpInterface.output();
-        IO.print("<PrimaryExp>");
+        SyntaxWriter.print("<PrimaryExp>");
     }
 }

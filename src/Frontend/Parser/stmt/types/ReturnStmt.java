@@ -1,6 +1,7 @@
 package Frontend.Parser.stmt.types;
 
-import Config.IO;
+import Config.Reader;
+import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
 import Frontend.Parser.expr.types.Exp;
 
@@ -33,7 +34,7 @@ public class ReturnStmt implements StmtInterface {
 
     @Override
     public void output() {
-        IO.print(returnToken.toString());
+        SyntaxWriter.print(returnToken.toString());
         if (returnExp != null) {  // if has exp then print exp
             returnExp.output();
         }

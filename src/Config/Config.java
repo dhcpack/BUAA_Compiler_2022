@@ -6,7 +6,12 @@ public class Config {
     private static final String[] inputFiles =
             {String.format("mytest.txt", testpoint), "testfile.txt"};
     public static final String inputFile = debugMode ? inputFiles[0] : inputFiles[1];
-    public static final String outputFile = "error.txt";
+    public static final String syntaxFile = "syntax.txt";
+    public static final String middleFile = "middle.txt";
+    public static final String mipsFile = "mips.txt";
+    public static final String errorFile = "error.txt";
+
+
     public static final String expectedFile = String.format("myoutput.txt",
             testpoint);
 }

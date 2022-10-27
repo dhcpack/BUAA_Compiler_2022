@@ -1,0 +1,12 @@
+int main(){
+    int a = 4;
+    int b[2] = {1, 2};
+    {
+        int b = 1;
+    }
+    b[0] = 2;
+    a = 0;
+    a = getint();
+    b[1] = getint();
+    return 0;
+}

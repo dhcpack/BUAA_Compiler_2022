@@ -1,6 +1,7 @@
 package Frontend.Parser.stmt.types;
 
-import Config.IO;
+import Config.Reader;
+import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
 import Frontend.Parser.expr.types.Exp;
 import Frontend.Parser.expr.types.LVal;
@@ -28,7 +29,7 @@ public class AssignStmt implements StmtInterface {
     @Override
     public void output() {
         lVal.output();
-        IO.print(assign.toString());
+        SyntaxWriter.print(assign.toString());
         exp.output();
     }
 

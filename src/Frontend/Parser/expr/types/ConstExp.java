@@ -1,7 +1,8 @@
 package Frontend.Parser.expr.types;
 
-import Config.IO;
-import Frontend.Parser.Output;
+import Config.Reader;
+import Config.Output;
+import Config.SyntaxWriter;
 
 public class ConstExp implements Output {
     // ConstExp -> Exp
@@ -18,6 +19,6 @@ public class ConstExp implements Output {
     @Override
     public void output() {
         addExp.output();
-        IO.print("<ConstExp>");
+        SyntaxWriter.print("<ConstExp>");
     }
 }

@@ -1,13 +1,15 @@
 package Frontend.Parser;
 
-import Config.IO;
+import Config.Output;
+import Config.Reader;
+import Config.SyntaxWriter;
 import Frontend.Parser.decl.types.Decl;
 import Frontend.Parser.func.types.FuncDef;
 import Frontend.Parser.func.types.MainFuncDef;
 
 import java.util.ArrayList;
 
-public class CompUnit implements Output{
+public class CompUnit implements Output {
     // 编译单元 CompUnit → {Decl} {FuncDef} MainFuncDef
     private final ArrayList<Decl> globalVariables;
     private final ArrayList<FuncDef> functions;
@@ -36,6 +38,6 @@ public class CompUnit implements Output{
         globalVariables.forEach(Decl::output);
         functions.forEach(FuncDef::output);
         mainFunction.output();
-        IO.print("<CompUnit>");
+        SyntaxWriter.print("<CompUnit>");
     }
 }

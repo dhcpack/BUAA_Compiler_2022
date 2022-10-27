@@ -2,24 +2,33 @@ package Middle.type;
 
 import Frontend.Parser.expr.types.LeafNode;
 
-public class Return {
-    public final LeafNode returnVal;
+public class Return extends BlockNode {
+    public final Operand returnVal;
 
     // return int
-    public Return(LeafNode returnVal) {
+    public Return(Operand returnVal) {
         this.returnVal = returnVal;
     }
 
-    // is void
+    // return void
     public Return() {
         this.returnVal = null;
     }
 
-    public LeafNode getReturnVal() {
+    public Operand getReturnVal() {
         return returnVal;
     }
 
     public boolean hasReturnVal() {
         return this.returnVal != null;
+    }
+
+    @Override
+    public String toString() {
+        if (returnVal == null) {
+            return "RETURN VOID";
+        } else {
+            return "RETURN " + returnVal;
+        }
     }
 }

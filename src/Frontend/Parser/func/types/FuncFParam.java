@@ -1,10 +1,10 @@
 package Frontend.Parser.func.types;
 
-import Config.IO;
+import Config.Reader;
+import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
-import Frontend.Parser.Output;
+import Config.Output;
 import Frontend.Parser.expr.types.ConstExp;
-import Frontend.Util.ConstExpCalculator;
 
 import java.util.ArrayList;
 
@@ -15,7 +15,7 @@ public class FuncFParam implements Output {
     private final Token ident;
     private final boolean isArray;
     private final ArrayList<ConstExp> constExps;
-    private final ArrayList<Integer> dimNum = new ArrayList<>();
+    private ArrayList<Integer> dimSize;
     private final ArrayList<Token> bracks; // error check: right could be null
 
     public FuncFParam(Token BType, Token ident, boolean isArray, ArrayList<ConstExp> constExps,
@@ -25,13 +25,21 @@ public class FuncFParam implements Output {
         this.isArray = isArray;
         this.constExps = constExps;
         this.bracks = bracks;
-        if (bracks.size() != 0) {  // bracks is 0, represents not an array
-            dimNum.add(-2023);  // represent empty dim;
-        }
-        for (ConstExp constExp : constExps) {
-            dimNum.add(ConstExpCalculator.calcConstExp(constExp));
-        }
+        // if (bracks.size() != 0) {  // bracks is 0, represents not an array
+        //     dimSize.add(-2023);  // represent empty dim;  第一维省略
+        // }
+        // for (ConstExp constExp : constExps) {
+        //     dimNum.add(ConstExpCalculator.calcConstExp(constExp));
+        // }
     }
+
+    // public ArrayList<Integer> getDimSize() {
+    //     return dimSize;
+    // }
+    //
+    // public void setDimSize(ArrayList<Integer> dimSize) {
+    //     this.dimSize = dimSize;
+    // }
 
     // public Frontend.Symbol toSymbol() {  // 第一维省略exp，因此检查bracks才不会出错
     //     return new Frontend.Symbol(bracks.size() == 0 ? SymbolType.INT : SymbolType.ARRAY, bracks, dimNum, ident, false);
@@ -41,9 +49,9 @@ public class FuncFParam implements Output {
         return this.constExps;
     }
 
-    public ArrayList<Integer> getDimNum() {
-        return dimNum;
-    }
+    // public ArrayList<Integer> getDimNum() {
+    //     return dimNum;
+    // }
 
     public ArrayList<Token> getBracks() {
         return bracks;
@@ -70,18 +78,18 @@ public class FuncFParam implements Output {
 
     @Override
     public void output() {
-        IO.print(BType.toString());
-        IO.print(ident.toString());
+        SyntaxWriter.print(BType.toString());
+        SyntaxWriter.print(ident.toString());
         if (isArray) {
             int index = 0;
-            IO.print(bracks.get(index++).toString());
-            IO.print(bracks.get(index++).toString());
+            SyntaxWriter.print(bracks.get(index++).toString());
+            SyntaxWriter.print(bracks.get(index++).toString());
             for (ConstExp constExp : constExps) {
-                IO.print(bracks.get(index++).toString());
+                SyntaxWriter.print(bracks.get(index++).toString());
                 constExp.output();
-                IO.print(bracks.get(index++).toString());
+                SyntaxWriter.print(bracks.get(index++).toString());
             }
         }
-        IO.print("<FuncFParam>");
+        SyntaxWriter.print("<FuncFParam>");
     }
 }

@@ -1,8 +1,9 @@
 package Frontend.Parser.expr.types;
 
-import Config.IO;
+import Config.Reader;
+import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
-import Frontend.Parser.Output;
+import Config.Output;
 
 import java.util.ArrayList;
 
@@ -41,11 +42,11 @@ public class EqExp implements Output {
     @Override
     public void output() {
         firstExp.output();
-        IO.print("<EqExp>");
+        SyntaxWriter.print("<EqExp>");
         for (int i=0;i<exps.size();i++){
-            IO.print(seps.get(i).toString());
+            SyntaxWriter.print(seps.get(i).toString());
             exps.get(i).output();
-            IO.print("<EqExp>");
+            SyntaxWriter.print("<EqExp>");
         }
     }
 }

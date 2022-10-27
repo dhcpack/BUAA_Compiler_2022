@@ -1,6 +1,7 @@
 package Frontend.Parser.stmt.types;
 
-import Config.IO;
+import Config.Reader;
+import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
 import Frontend.Parser.expr.types.Exp;
 
@@ -71,14 +72,14 @@ public class PrintfStmt implements StmtInterface {
 
     @Override
     public void output() {
-        IO.print(printf.toString());
-        IO.print(left.toString());
-        IO.print(formatString.toString());
+        SyntaxWriter.print(printf.toString());
+        SyntaxWriter.print(left.toString());
+        SyntaxWriter.print(formatString.toString());
         for (int i = 0; i < seps.size(); i++) {
-            IO.print(seps.get(i).toString());
+            SyntaxWriter.print(seps.get(i).toString());
             exps.get(i).output();
         }
-        IO.print(right.toString());
+        SyntaxWriter.print(right.toString());
     }
 
     @Override

@@ -1,6 +1,7 @@
 package Frontend.Parser.stmt.types;
 
-import Config.IO;
+import Config.Reader;
+import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
 import Frontend.Lexer.TokenType;
 import Frontend.Parser.TokenHandler;
@@ -47,8 +48,8 @@ public class Stmt implements BlockItem {
             stmt.output();
         }
         if (semicolon != null) {  // if has semicn then print semicn
-            IO.print(semicolon.toString());
+            SyntaxWriter.print(semicolon.toString());
         }
-        IO.print("<Stmt>");
+        SyntaxWriter.print("<Stmt>");
     }
 }

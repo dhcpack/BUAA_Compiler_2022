@@ -2,7 +2,7 @@ package Middle.type;
 
 import Frontend.Symbol.Symbol;
 
-public class GetInt {
+public class GetInt extends BlockNode {
     private final Symbol target;
 
     public GetInt(Symbol target) {
@@ -13,5 +13,8 @@ public class GetInt {
         return target;
     }
 
-
+    @Override
+    public String toString() {
+        return "GETINT " + target.toString();
+    }
 }

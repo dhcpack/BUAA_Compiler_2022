@@ -1,8 +1,9 @@
 package Frontend.Parser.decl.types;
 
-import Config.IO;
+import Config.Reader;
+import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
-import Frontend.Parser.Output;
+import Config.Output;
 
 public class Def implements Output {
     // 常数定义 ConstDef → Var '=' ConstInitVal // 包含普通变量、一维数组、二维数组共三种情况
@@ -46,13 +47,13 @@ public class Def implements Output {
     public void output() {
         var.output();
         if (hasInitVal()) {  // check have initial value or not
-            IO.print(assign.toString());
+            SyntaxWriter.print(assign.toString());
             initVal.output();
         }
         if (isConst) {
-            IO.print("<ConstDef>");
+            SyntaxWriter.print("<ConstDef>");
         } else {
-            IO.print("<VarDef>");
+            SyntaxWriter.print("<VarDef>");
         }
     }
 }

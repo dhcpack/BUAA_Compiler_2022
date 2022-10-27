@@ -1,8 +1,9 @@
 package Frontend.Parser.func.types;
 
-import Config.IO;
+import Config.Reader;
+import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
-import Frontend.Parser.Output;
+import Config.Output;
 import Frontend.Parser.stmt.types.BlockStmt;
 
 import java.util.ArrayList;
@@ -65,28 +66,28 @@ public class FuncDef implements Output {
     }
 
     public void printNormal(boolean isMain) {
-        IO.print(returnType.toString());
+        SyntaxWriter.print(returnType.toString());
         if (!isMain) {  // if not main, print <FuncType>
-            IO.print("<FuncType>");
+            SyntaxWriter.print("<FuncType>");
         }
-        IO.print(ident.toString());
-        IO.print(left.toString());
+        SyntaxWriter.print(ident.toString());
+        SyntaxWriter.print(left.toString());
         if (funcFParams.size() != 0) {  // if has formal Params
             funcFParams.get(0).output();
             int index = 1;
             for (Token sep : seps) {
-                IO.print(sep.toString());
+                SyntaxWriter.print(sep.toString());
                 funcFParams.get(index++).output();
             }
-            IO.print("<FuncFParams>");
+            SyntaxWriter.print("<FuncFParams>");
         }
-        IO.print(right.toString());
+        SyntaxWriter.print(right.toString());
         blockStmt.output();
     }
 
     @Override
     public void output() {
         printNormal(false);
-        IO.print("<FuncDef>");
+        SyntaxWriter.print("<FuncDef>");
     }
 }

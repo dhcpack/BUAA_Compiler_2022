@@ -1,6 +1,7 @@
 package Frontend.Parser.expr.types;
 
-import Config.IO;
+import Config.Reader;
+import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
 import Frontend.Symbol.SymbolType;
 
@@ -23,8 +24,8 @@ public class Number implements PrimaryExpInterface, LeafNode {
 
     @Override
     public void output() {
-        IO.print(number.toString());
-        IO.print("<Number>");
+        SyntaxWriter.print(number.toString());
+        SyntaxWriter.print("<Number>");
     }
 
     @Override

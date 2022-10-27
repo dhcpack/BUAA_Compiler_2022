@@ -1,0 +1,34 @@
+###### GLOBAL STRING ######
+
+###### GLOBAL ARRAY ######
+
+###### GLOBAL VAR ######
+
+###### TEXT ######
+JUMP FUNC_main
+# func main : stack size 0xc
+FUNC_main:
+	DEF, 4, a[sp-0x4] :INT
+	OFFSET 4+0->tmp_pointer_0TEMP :POINTER
+	STORE tmp_pointer_0TEMP :POINTER, 1
+	OFFSET 4+4->tmp_pointer_1TEMP :POINTER
+	STORE tmp_pointer_1TEMP :POINTER, 2
+	JUMP B_0
+
+B_0:
+	DEF, 1, b[sp-0x4] :INT
+	JUMP B_1
+
+B_1:
+	MUL, 0, 4, tmp_int_0TEMP :INT
+	ADD, tmp_int_0TEMP :INT, 0, tmp_int_0TEMP :INT
+	OFFSET 4+tmp_int_0TEMP :INT->tmp_pointer_2TEMP :POINTER
+	STORE tmp_pointer_2TEMP :POINTER, 2
+	ASS, 0, a[sp-0x4] :INT
+	GETINT a[sp-0x4] :INT
+	MUL, 1, 4, tmp_int_1TEMP :INT
+	ADD, tmp_int_1TEMP :INT, 0, tmp_int_1TEMP :INT
+	OFFSET 4+tmp_int_1TEMP :INT->tmp_pointer_3TEMP :POINTER
+	GETINT tmp_pointer_3TEMP :POINTER
+	RETURN 0
+

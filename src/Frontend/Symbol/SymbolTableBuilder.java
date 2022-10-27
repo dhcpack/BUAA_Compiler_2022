@@ -28,7 +28,7 @@ import Frontend.Parser.expr.types.EqExp;
 import Frontend.Parser.expr.types.Exp;
 import Frontend.Parser.expr.types.FuncExp;
 import Frontend.Parser.expr.types.FuncRParams;
-import Frontend.Parser.expr.types.Immediate;
+import Middle.type.Immediate;
 import Frontend.Parser.expr.types.LAndExp;
 import Frontend.Parser.expr.types.LOrExp;
 import Frontend.Parser.expr.types.LVal;
@@ -63,14 +63,19 @@ import Middle.type.Branch;
 import Middle.type.FourExpr;
 import Middle.type.FuncBlock;
 import Middle.type.FuncCall;
+import Middle.type.GetInt;
 import Middle.type.Jump;
 import Middle.type.Memory;
+import Middle.type.Operand;
 import Middle.type.Pointer;
+import Middle.type.PrintInt;
+import Middle.type.PrintStr;
+import Middle.type.Return;
 
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
+import java.util.Stack;
 import java.util.stream.Collectors;
 
 /*
@@ -78,7 +83,6 @@ import java.util.stream.Collectors;
  * 符号表需要下降一层: 定义的新函数，blockStmt，whileStmt，ifStmt
  *
  */
-// TODO: LeafNode未进行合并计算，只返回表达式的首项，用来在FuncRParams中检查类型是否正确
 public class SymbolTableBuilder {
     private SymbolTable currSymbolTable = new SymbolTable(null);
     private final Errors errors = new Errors();
@@ -96,11 +100,26 @@ public class SymbolTableBuilder {
 
     private final MiddleCode middleCode = new MiddleCode();
 
+    private final Stack<BasicBlock> inLoop = new Stack<>();  // for continue
+    private final Stack<BasicBlock> followLoop = new Stack<>();  // for break
+
     // about loop
     private int loopDepth = 0;
 
     public SymbolTableBuilder(CompUnit compUnit) {
         this.compUnit = compUnit;
+    }
+
+    public Errors getErrors() {
+        return errors;
+    }
+
+    public CompUnit getCompUnit() {
+        return compUnit;
+    }
+
+    public MiddleCode getMiddleCode() {
+        return middleCode;
     }
 
     // CompUnit → {Decl} {FuncDef} MainFuncDef
@@ -115,12 +134,11 @@ public class SymbolTableBuilder {
 
         // check func def
         for (FuncDef funcDef : funcDefs) {
-            checkFunc(funcDef);
+            checkFunc(funcDef, false);
         }
 
         // check main func
         checkMainFunc(mainFunction);
-        errors.output();
     }
 
     // Decl → ConstDecl | VarDecl
@@ -149,22 +167,37 @@ public class SymbolTableBuilder {
                 InitVal initVal = def.getInitVal();
                 Symbol symbol = checkVar(def.getVar());  // 先检查initial Val，再检查Var
                 if (initVal.isConst() || currFunc == null) {
-                    int val = new ConstExpCalculator(currSymbolTable, errors).calcExp(def.getInitVal().getExp());
-                    if (currFunc == null) {  // pre decl, not in a function
-                        middleCode.addInt(def.getVar().getIdent().getContent(), currSymbolTable.getStackSize(), val);
-                    } else {  // decl in a function
+                    int val;
+                    if (!initVal.isConst()) {
+                        val = new ConstExpCalculator(currSymbolTable, errors).calcExp(initVal.getExp());
+                    } else {
+                        val = new ConstExpCalculator(currSymbolTable, errors).calcConstExp(initVal.getConstExp());
+                    }
+                    if (currFunc == null) {  // pre decl, not in a function  全局
+                        middleCode.addInt(def.getVar().getIdent().getContent(), symbol.getAddress(), val);
+                        symbol.setScope(Symbol.Scope.GLOBAL);
+                    } else {  // decl in a function  // 局部
                         currBlock.addContent(new Middle.type.FourExpr(new Immediate(val), symbol, FourExpr.ExprOp.DEF));
+                        symbol.setScope(Symbol.Scope.LOCAL);
                     }
                 } else {
-                    LeafNode val = checkExp(initVal.getExp());
+                    Operand val;
+                    if (initVal.isConst()) {
+                        val = checkConstExp(initVal.getConstExp());
+                    } else {
+                        val = checkExp(initVal.getExp());
+                    }
                     currBlock.addContent(new Middle.type.FourExpr(val, symbol, FourExpr.ExprOp.DEF));
+                    symbol.setScope(Symbol.Scope.LOCAL);
                 }
             } else {  // 没有初始化
                 Symbol symbol = checkVar(def.getVar());  // 先检查initial Val，再检查Var
                 if (currFunc == null) {  // pre decl, not in a function
-                    middleCode.addInt(def.getVar().getIdent().getContent(), currSymbolTable.getStackSize(), 0);
+                    middleCode.addInt(def.getVar().getIdent().getContent(), symbol.getAddress(), 0);
+                    symbol.setScope(Symbol.Scope.GLOBAL);
                 } else {  // decl in a function
                     currBlock.addContent(new Middle.type.FourExpr(new Immediate(0), symbol, FourExpr.ExprOp.DEF));
+                    symbol.setScope(Symbol.Scope.LOCAL);
                 }
             }
         } else {  // 数组
@@ -182,7 +215,8 @@ public class SymbolTableBuilder {
                     ArrayList<Integer> initNum = initExp.stream().map(constExpCalculator::calcAddExp)
                             .collect(Collectors.toCollection(ArrayList::new));
                     if (currFunc == null) {  // 全局变量
-                        middleCode.addArray(symbol.getIdent().getContent(), currSymbolTable.getStackSize(), initNum);
+                        middleCode.addArray(symbol.getIdent().getContent(), symbol.getAddress(), initNum);
+                        symbol.setScope(Symbol.Scope.GLOBAL);
                     } else {  // 局部变量
                         int offset = 0;
                         for (Integer num : initNum) {
@@ -191,24 +225,28 @@ public class SymbolTableBuilder {
                             currBlock.addContent(new Pointer(Pointer.Op.STORE, ptr, new Immediate(num)));
                             offset++;
                         }
+                        symbol.setScope(Symbol.Scope.LOCAL);
                     }
                 } else {
                     int offset = 0;
                     for (AddExp addExp : initExp) {
-                        LeafNode exp = checkAddExp(addExp);
+                        Operand exp = checkAddExp(addExp);
                         Symbol ptr = Symbol.tempSymbol(SymbolType.POINTER);
                         currBlock.addContent(new Memory(symbol, new Immediate(offset * 4), ptr));
                         currBlock.addContent(new Pointer(Pointer.Op.STORE, ptr, exp));
                         offset++;
                     }
+                    symbol.setScope(Symbol.Scope.LOCAL);
                 }
             } else {
                 Symbol symbol = checkVar(def.getVar());  // 先检查initial Val，再检查Var
                 if (currFunc == null) {
                     ArrayList<Integer> initZero = new ArrayList<>();
                     for (int i = 0; i < def.getDimCount(); i++) initZero.add(0);
-                    middleCode.addArray(symbol.getIdent().getContent(), currSymbolTable.getStackSize(), initZero);
+                    middleCode.addArray(symbol.getIdent().getContent(), symbol.getAddress(), initZero);
+                    symbol.setScope(Symbol.Scope.GLOBAL);
                 } else {
+                    symbol.setScope(Symbol.Scope.LOCAL);
                     // nothing to do
                     // 函数中的局部变量，没有初始化
                 }
@@ -263,7 +301,7 @@ public class SymbolTableBuilder {
         // add to symbol table
         if (!redefine) {
             Symbol symbol = new Symbol(var.getDimCount() == 0 ? SymbolType.INT : SymbolType.ARRAY, ident, dimSize,
-                    var.getDimCount(), var.isConst());
+                    var.getDimCount(), var.isConst(), null);  // checkVal没有设置scope
             symbol.setAddress(currSymbolTable.getStackSize());
             currSymbolTable.addSymbol(symbol);  // 会同时为Symbol申请空间
             return symbol;
@@ -288,7 +326,7 @@ public class SymbolTableBuilder {
     // }
 
     // FuncDef → FuncType Ident '(' [FuncFParams] ')' Block
-    public void checkFunc(FuncDef funcDef) {
+    public void checkFunc(FuncDef funcDef, boolean isMainFunc) {
         currFuncType = funcDef.getReturnType().getType();
         Token ident = funcDef.getIdent();
         // check redefine
@@ -302,7 +340,6 @@ public class SymbolTableBuilder {
         currSymbolTable = new SymbolTable(currSymbolTable);  // 下降一层
 
         // check missing Parenthesis
-        // this.currFunc = funcDef;  // unused
         if (funcDef.missRightParenthesis()) {
             errors.add(new MissRparentException(funcDef.getLeftParenthesis().getLine()));
         }
@@ -317,6 +354,13 @@ public class SymbolTableBuilder {
             }
         }
 
+        FuncBlock funcBlock = new FuncBlock(funcDef.getReturnType()
+                .getType() == TokenType.INTTK ? FuncBlock.ReturnType.INT : FuncBlock.ReturnType.VOID,
+                funcDef.getIdent().getContent(), params, currSymbolTable, isMainFunc);
+        middleCode.addFunc(funcBlock);  // 加入到中间代码入口表中
+        currFunc = funcBlock;
+
+
         // add to Frontend.Symbol Table(parent symbol table)
         Token returnType = funcDef.getReturnType();
         if (!redefine) {
@@ -324,24 +368,33 @@ public class SymbolTableBuilder {
                     returnType.getType() == TokenType.INTTK ? SymbolType.INT : SymbolType.VOID, params, ident));
         }
 
-        // check func stmt
-        checkBlockStmt(funcDef.getBlockStmt(), true);
+        // check func block
+        BasicBlock body = checkBlockStmt(funcDef.getBlockStmt(), true, funcBlock.getLabel());
+        // BasicBlock body = new BasicBlock(funcBlock.getLabel());
+        // body.addContent(new Jump(block));
+        currFunc.setBody(body);
+        // checkFuncBlock(funcBlock, funcDef.getBlockStmt());
 
         // check return right or not
-        // boolean returnInt = funcDef.returnInt();
-        // if (funcType.getType() == TokenType.VOIDTK && returnInt) {
-        //     errors.add(new IllegalReturnException(funcDef.getReturn().getLine()));
-        // } else
+        // 函数return int， 但是没有return语句
         if (returnType.getType() == TokenType.INTTK && !funcDef.returnInt()) {
             errors.add(new MissReturnException(funcDef.getRightBrace().getLine()));
         }
 
         currSymbolTable = currSymbolTable.getParent();  // 上升一层
+        currFunc = null;  // 上升一层
+        // currBlock = null;
     }
+
+    // public void checkFuncBlock(FuncBlock funcBlock, BlockStmt blockStmt) {
+    //     BasicBlock body = new BasicBlock(funcBlock.getFuncName());
+    //
+    // }
+
 
     // MainFuncDef → 'int' 'main' '(' ')' Block
     public void checkMainFunc(MainFuncDef mainFuncDef) {
-        checkFunc(mainFuncDef.getFuncDef());
+        checkFunc(mainFuncDef.getFuncDef(), true);
     }
 
     // FuncFParam → BType Ident ['[' ']' { '[' ConstExp ']' }]
@@ -361,15 +414,24 @@ public class SymbolTableBuilder {
         }
 
         // add to symbol table
-        ArrayList<Integer> dimNum = funcFParam.getDimNum();
-        SymbolType symbolType = dimNum.size() == 0 ? SymbolType.INT : SymbolType.ARRAY;
         if (!redefine) {
-            Symbol symbol = new Symbol(symbolType, funcFParam.getBracks(), dimNum, ident, false);
-            currSymbolTable.addSymbol(symbol);
-            return symbol;
+            if (funcFParam.isArray()) {
+                ArrayList<ConstExp> dimExp = funcFParam.getDimExp();
+                ConstExpCalculator constExpCalculator = new ConstExpCalculator(currSymbolTable, errors);
+                ArrayList<Integer> dimSize = dimExp.stream().map(constExpCalculator::calcConstExp)
+                        .collect(Collectors.toCollection(ArrayList::new));
+                dimSize.add(0, -20231164);  // 第一维省略
+                Symbol array = new Symbol(SymbolType.ARRAY, ident, dimSize, dimSize.size(), false, Symbol.Scope.LOCAL);
+                currSymbolTable.addSymbol(array);
+            } else {
+                Symbol val = new Symbol(SymbolType.INT, ident, false, Symbol.Scope.LOCAL);
+                currSymbolTable.addSymbol(val);
+            }
         } else {
+            assert false : "TO BE FIXED: 函数参数重名";
             return null;
         }
+        return null;
     }
 
     // 语句块项 BlockItem → Decl | Stmt
@@ -391,7 +453,7 @@ public class SymbolTableBuilder {
         if (stmtInterface instanceof AssignStmt) {
             checkAssignStmt((AssignStmt) stmtInterface);
         } else if (stmtInterface instanceof BlockStmt) {
-            checkBlockStmt((BlockStmt) stmtInterface, false);
+            checkBlockStmt((BlockStmt) stmtInterface, false, null);
         } else if (stmtInterface instanceof BreakStmt) {
             checkBreakStmt((BreakStmt) stmtInterface);
         } else if (stmtInterface instanceof ContinueStatement) {
@@ -415,25 +477,68 @@ public class SymbolTableBuilder {
     // TODO: check LVal using right or not（LVal是否正确使用，和Exp是否匹配int）
     public void checkAssignStmt(AssignStmt assignStmt) {
         // check LVal, and LVal could not be const
-        checkLVal(assignStmt.getLVal(), true);
+        Symbol lVal = checkLVal(assignStmt.getLVal(), true);
         // check right Val
-        checkExp(assignStmt.getExp());
+        Operand operand = checkExp(assignStmt.getExp());
+        if (lVal.getSymbolType() == SymbolType.POINTER) {
+            currBlock.addContent(new Pointer(Pointer.Op.STORE, lVal, operand));
+        } else if (lVal.getSymbolType() == SymbolType.INT) {
+            currBlock.addContent(new FourExpr(operand, lVal, FourExpr.ExprOp.ASS));
+        } else {
+            assert false;
+        }
+        return;
+
     }
 
     // Block → '{' { BlockItem } '}'
-    public void checkBlockStmt(BlockStmt blockStmt, boolean isFuncBlock) {
-        if (!isFuncBlock) {
+    // public BasicBlock checkBlockStmt(BlockStmt blockStmt, String funcLabel) {
+    //     BasicBlock basicBlock = new BasicBlock(funcLabel);
+    //     if (currBlock != null) {
+    //         currBlock.addContent(new Jump(basicBlock));
+    //     }
+    //     currBlock = basicBlock;
+    //     blockDepth++;
+    //     // traverse all blockItems and check
+    //     ArrayList<BlockItem> blockItems = blockStmt.getBlockItems();
+    //     for (BlockItem blockItem : blockItems) {
+    //         checkBlockItem(blockItem);
+    //     }
+    //     blockDepth--;
+    //     currBlock = null;
+    //     return basicBlock;
+    // }
+
+    public BasicBlock checkBlockStmt(BlockStmt blockStmt, boolean isFunc, String funcLabel) {
+        if (!isFunc) {
             currSymbolTable = new SymbolTable(currSymbolTable);  // 下降一层
         }
+        BasicBlock basicBlock;
+        if (isFunc) {
+            basicBlock = new BasicBlock(funcLabel);
+        } else {
+            basicBlock = new BasicBlock("B_" + blockCount++);
+        }
+        if (currBlock != null) {
+            currBlock.addContent(new Jump(basicBlock));
+        }
+        currBlock = basicBlock;
+        blockDepth++;
         // traverse all blockItems and check
         ArrayList<BlockItem> blockItems = blockStmt.getBlockItems();
         for (BlockItem blockItem : blockItems) {
             checkBlockItem(blockItem);
         }
-
-        if (!isFuncBlock) {
+        BasicBlock nextBlock = new BasicBlock("B_" + blockCount++);
+        blockDepth--;
+        if (!isFunc) {
+            basicBlock.addContent(new Jump(nextBlock));
+        }
+        currBlock = nextBlock;
+        if (!isFunc) {
             currSymbolTable = currSymbolTable.getParent();  // 上升一层
         }
+        return basicBlock;
     }
 
     // break;
@@ -441,6 +546,8 @@ public class SymbolTableBuilder {
         if (loopDepth == 0) {
             errors.add(new IllegalBreakContinueException(breakStmt.getSemicolonLine()));
         }
+        BasicBlock followBlock = followLoop.peek();
+        currBlock.addContent(new Jump(followBlock));
     }
 
     // continue;
@@ -448,6 +555,8 @@ public class SymbolTableBuilder {
         if (loopDepth == 0) {
             errors.add(new IllegalBreakContinueException(continueStatement.getSemicolonLine()));
         }
+        BasicBlock inLoopBlock = inLoop.peek();
+        currBlock.addContent(new Jump(inLoopBlock));
     }
 
     // Exp ';'
@@ -463,30 +572,42 @@ public class SymbolTableBuilder {
             errors.add(new MissRparentException(getIntStmt.getLine()));
         }
         // check LVal, and LVal could not be const
-        checkLVal(getIntStmt.getLVal(), true);
+        Symbol symbol = checkLVal(getIntStmt.getLVal(), true);
+        currBlock.addContent(new GetInt(symbol));  // 根据global local temp来设计sw, lw指令
     }
 
     // 'if' '(' Cond ')' Stmt [ 'else' Stmt ]
     public void checkIfStmt(IfStmt ifStmt) {
         // check cond Stmt
-        checkCond(ifStmt.getCond());
+        Operand cond = checkCond(ifStmt.getCond());
         if (ifStmt.missRightParenthesis()) {
             errors.add(new MissRparentException(ifStmt.getIfLine()));
         }
         currSymbolTable = new SymbolTable(currSymbolTable);  // 下降一层
-
-        // check all stmts
-        ArrayList<Stmt> stmts = ifStmt.getStmts();
-        for (Stmt stmt : stmts) {
-            checkStmt(stmt);
+        BasicBlock ifBody = new BasicBlock("IF_BODY_" + blockCount++);
+        BasicBlock ifEnd = new BasicBlock("IF_END_" + blockCount++);
+        // currBlock.addContent(new Jump());
+        // ArrayList<Stmt> stmts = ifStmt.getStmts();
+        if (ifStmt.hasElse()) {
+            BasicBlock ifElse = new BasicBlock("IF_ELSE_" + blockCount++);
+            currBlock.addContent(new Branch(cond, ifBody, ifElse));
+            currBlock = ifBody;
+            checkStmt(ifStmt.getStmts().get(0));
+            currBlock.addContent(new Jump(ifEnd));
+            currBlock = ifElse;
+            checkStmt(ifStmt.getStmts().get(1));
+            currBlock.addContent(new Jump(ifEnd));
+        } else {
+            currBlock.addContent(new Branch(cond, ifBody, ifEnd));
+            currBlock = ifBody;
+            checkStmt(ifStmt.getStmts().get(0));
+            currBlock.addContent(new Jump(ifEnd));
         }
+        currBlock = ifEnd;
         currSymbolTable = currSymbolTable.getParent();  // 上升一层
     }
 
     public void checkPrintfStmt(PrintfStmt printfStmt) {
-        if (printfStmt.getPrintf().getLine() == 696) {
-            System.out.println(1);
-        }
         if (!printfStmt.checkCountMatch()) {  // 检查Exp个数是否匹配
             errors.add(new MismatchPrintfException(printfStmt.getPrintf().getLine()));
         }
@@ -497,11 +618,35 @@ public class SymbolTableBuilder {
             errors.add(new MissRparentException(printfStmt.getFormatString().getLine()));
         }
 
-        // 检查所有Exp
-        ArrayList<Exp> exps = printfStmt.getExps();
-        for (Exp exp : exps) {
-            checkExp(exp);
+        // check printf("");
+        if (printfStmt.getFormatString().getContent().equals("")) {
+            return;
         }
+        // 检查所有Exp 得到LeftNode
+        ArrayList<Exp> exps = printfStmt.getExps();
+        // ArrayList<LeafNode> outputs = exps.stream().map(this::checkExp)
+        //         .collect(Collectors.toCollection(ArrayList::new));
+        String formatString = printfStmt.getFormatString().getContent();
+        // String[] s = printfStmt.getFormatString().getContent().split("%d");
+        String formatChar = "%d";
+        int index = 0, prev = 0;
+        for (Exp exp : exps) {
+            index = formatString.indexOf(formatChar, index);  // find %d and point to %
+            if (index > prev) {
+                String str = formatString.substring(prev, index);
+                String strName = middleCode.addAsciiz(str);
+                currBlock.addContent(new PrintStr(strName));
+            }
+            currBlock.addContent(new PrintInt(checkExp(exp)));
+            index += 2;
+            prev = index;
+        }
+        if (index != formatString.length()) {
+            String str = formatString.substring(index);
+            String strName = middleCode.addAsciiz(str);
+            currBlock.addContent(new PrintStr(strName));
+        }
+        return;
     }
 
     public void checkReturnStmt(ReturnStmt returnStmt) {
@@ -510,9 +655,12 @@ public class SymbolTableBuilder {
             errors.add(new IllegalReturnException(returnStmt.getReturnToken().getLine()));
         }
         if (returnStmt.getReturnExp() != null) {
-            checkExp(returnStmt.getReturnExp());
+            Operand returnVal = checkExp(returnStmt.getReturnExp());
+            currBlock.addContent(new Return(returnVal));
+        } else {
+            currBlock.addContent(new Return());
         }
-        // 是否return正确在checkFunc中检查
+        // return int是否正确在checkFunc中检查
     }
 
     // 'while' '(' Cond ')' Stmt
@@ -523,76 +671,89 @@ public class SymbolTableBuilder {
             errors.add(new MissRparentException(whileStmt.getLine()));
         }
 
+        BasicBlock whileBlock = new BasicBlock("WHILE_LOOP_" + blockCount++);
+        BasicBlock whileBody = new BasicBlock("WHILE_BODY_" + blockCount++);
+        BasicBlock whileEnd = new BasicBlock("WHILE_END_" + blockCount++);
+        inLoop.push(whileBlock);
+        followLoop.push(whileEnd);
+
         // check Cond
-        checkCond(whileStmt.getCond());
+        Operand cond = checkCond(whileStmt.getCond());
+        whileBlock.addContent(new Branch(cond, whileBody, whileEnd));
+
+        currBlock.addContent(new Jump(whileBlock));
+        currBlock = whileBody;
 
         currSymbolTable = new SymbolTable(currSymbolTable);  // 下降一层
         // check Stmt
         checkStmt(whileStmt.getStmt());
         currSymbolTable = currSymbolTable.getParent();  // 上升一层
         loopDepth--;
+        followLoop.pop();
+        inLoop.pop();
+        currBlock = whileEnd;
     }
 
-    public void checkConstExp(ConstExp constExp) {
-        checkAddExp(constExp.getAddExp());
+    public Operand checkConstExp(ConstExp constExp) {
+        return checkAddExp(constExp.getAddExp());
     }
 
-    public LeafNode checkExp(Exp exp) {
+    public Operand checkExp(Exp exp) {
         return checkAddExp(exp.getAddExp());
     }
 
     // 四元式表达
     // AddExp → MulExp {('+' | '−') MulExp}
-    public LeafNode checkAddExp(AddExp addExp) {
-        LeafNode first = checkMulExp(addExp.getFirstExp());
-        Symbol midRes = Symbol.tempSymbol(SymbolType.BOOL);
-        currBlock.addContent(new FourExpr(first, midRes, FourExpr.ExprOp.ASS));
-        ArrayList<LeafNode> nodes = addExp.getExps().stream().map(this::checkMulExp)
-                .collect(Collectors.toCollection(ArrayList::new));
+    public Operand checkAddExp(AddExp addExp) {
+        Operand left = checkMulExp(addExp.getFirstExp());
+        ArrayList<MulExp> mulExps = addExp.getExps();
+        // ArrayList<LeafNode> nodes = addExp.getExps().stream().map(this::checkMulExp)
+        //         .collect(Collectors.toCollection(ArrayList::new));
         ArrayList<Token> seps = addExp.getSeps();
-        for (int i = 0; i < nodes.size(); i++) {
+        for (int i = 0; i < seps.size(); i++) {
             Symbol temp = Symbol.tempSymbol(SymbolType.BOOL);
+            Operand right = checkMulExp(mulExps.get(i));
             if (seps.get(i).getType() == TokenType.PLUS) {
-                currBlock.addContent(new FourExpr(midRes, nodes.get(i), temp, FourExpr.ExprOp.ADD));
+                currBlock.addContent(new FourExpr(left, right, temp, FourExpr.ExprOp.ADD));
             } else if (seps.get(i).getType() == TokenType.MINU) {
-                currBlock.addContent(new FourExpr(midRes, nodes.get(i), temp, FourExpr.ExprOp.SUB));
+                currBlock.addContent(new FourExpr(left, right, temp, FourExpr.ExprOp.SUB));
             } else {
                 assert false;
             }
-            midRes = temp;
+            left = temp;
         }
-        return midRes;
+        return left;
     }
 
     // MulExp → UnaryExp {('*' | '/' | '%') UnaryExp}
-    public LeafNode checkMulExp(MulExp mulExp) {
-        LeafNode first = checkUnaryExp(mulExp.getFirstExp());
-        Symbol midRes = Symbol.tempSymbol(SymbolType.BOOL);
-        currBlock.addContent(new FourExpr(first, midRes, FourExpr.ExprOp.ASS));
-        ArrayList<LeafNode> nodes = mulExp.getExps().stream().map(this::checkUnaryExp)
-                .collect(Collectors.toCollection(ArrayList::new));
+    public Operand checkMulExp(MulExp mulExp) {
+        Operand left = checkUnaryExp(mulExp.getFirstExp());
+        ArrayList<UnaryExp> unaryExps = mulExp.getExps();
+        // ArrayList<LeafNode> nodes = mulExp.getExps().stream().map(this::checkUnaryExp)
+        //         .collect(Collectors.toCollection(ArrayList::new));
         ArrayList<Token> seps = mulExp.getSeps();
-        for (int i = 0; i < nodes.size(); i++) {
-            Symbol temp = Symbol.tempSymbol(SymbolType.BOOL);
+        for (int i = 0; i < seps.size(); i++) {
+            Symbol temp = Symbol.tempSymbol(SymbolType.INT);
+            Operand right = checkUnaryExp(unaryExps.get(i));
             if (seps.get(i).getType() == TokenType.MULT) {
-                currBlock.addContent(new FourExpr(midRes, nodes.get(i), temp, FourExpr.ExprOp.MUL));
+                currBlock.addContent(new FourExpr(left, right, temp, FourExpr.ExprOp.MUL));
             } else if (seps.get(i).getType() == TokenType.DIV) {
-                currBlock.addContent(new FourExpr(midRes, nodes.get(i), temp, FourExpr.ExprOp.DIV));
+                currBlock.addContent(new FourExpr(left, right, temp, FourExpr.ExprOp.DIV));
             } else if (seps.get(i).getType() == TokenType.MOD) {
-                currBlock.addContent(new FourExpr(midRes, nodes.get(i), temp, FourExpr.ExprOp.MOD));
+                currBlock.addContent(new FourExpr(left, right, temp, FourExpr.ExprOp.MOD));
             } else {
                 assert false;
             }
-            midRes = temp;
+            left = temp;
         }
-        return midRes;
+        return left;
     }
 
-    public LeafNode checkUnaryExp(UnaryExp unaryExp) {
+    public Operand checkUnaryExp(UnaryExp unaryExp) {
         return checkUnaryExpInterFace(unaryExp.getUnaryExpInterface());
     }
 
-    public LeafNode checkUnaryExpInterFace(UnaryExpInterface unaryExpInterface) {
+    public Operand checkUnaryExpInterFace(UnaryExpInterface unaryExpInterface) {
         if (unaryExpInterface instanceof PrimaryExp) {
             return checkPrimaryExp((PrimaryExp) unaryExpInterface);
         } else if (unaryExpInterface instanceof FuncExp) {  // TODO: 检查FuncExp的returnType是否匹配
@@ -605,11 +766,11 @@ public class SymbolTableBuilder {
         return null;
     }
 
-    public LeafNode checkPrimaryExp(PrimaryExp primaryExp) {
+    public Operand checkPrimaryExp(PrimaryExp primaryExp) {
         return checkPrimaryExpInterFace(primaryExp.getPrimaryExpInterface());
     }
 
-    public LeafNode checkPrimaryExpInterFace(PrimaryExpInterface primaryExpInterface) {
+    public Operand checkPrimaryExpInterFace(PrimaryExpInterface primaryExpInterface) {
         if (primaryExpInterface instanceof BraceExp) {
             return checkBraceExp((BraceExp) primaryExpInterface);
         } else if (primaryExpInterface instanceof LVal) {
@@ -624,7 +785,7 @@ public class SymbolTableBuilder {
     }
 
     // BraceExp = '(' Exp ')'
-    public LeafNode checkBraceExp(BraceExp braceExp) {
+    public Operand checkBraceExp(BraceExp braceExp) {
         // check missing Right Parenthesis
         if (braceExp.missRightParenthesis()) {
             errors.add(new MissRparentException(braceExp.getLine()));
@@ -635,7 +796,7 @@ public class SymbolTableBuilder {
     // LVal → Ident {'[' Exp ']'}
     // 会给LVal Symbol赋值
     // 当不在符号表中存在时会返回null
-    public LeafNode checkLVal(LVal lVal, boolean checkConst) {  // checkConst represents check const or not
+    public Symbol checkLVal(LVal lVal, boolean checkConst) {  // checkConst represents check const or not
         // 查符号表!!!
         Token ident = lVal.getIdent();
         Symbol symbol = currSymbolTable.getSymbol(ident.getContent(), true);
@@ -662,6 +823,7 @@ public class SymbolTableBuilder {
          * b =  a[1];
          * */
         lVal.setSymbol(symbol);  // TODO: 可以在未来用来检查lVal是否正确使用
+        // return symbol;
 
         /*
          * translate to middle code
@@ -675,31 +837,31 @@ public class SymbolTableBuilder {
             for (int i = dimSize.size() - 1; i > 0; i--) {
                 suffix.add(0, suffix.get(0) * dimSize.get(i));
             }
-            ArrayList<LeafNode> place = lVal.getExps().stream().map(this::checkExp)
+            ArrayList<Operand> place = lVal.getExps().stream().map(this::checkExp)  // 数组最多二维
                     .collect(Collectors.toCollection(ArrayList::new));  // 每一维的取值
-            LeafNode offset = new Immediate(0);
+            Operand offset = new Immediate(0);
             for (int i = place.size() - 1; i >= 0; i--) {
-                LeafNode weight = new Immediate(suffix.get(i));  // 后缀积
+                Operand weight = new Immediate(suffix.get(i) * 4);  // 后缀积
                 Symbol mid = Symbol.tempSymbol(SymbolType.INT);
                 currBlock.addContent(new FourExpr(place.get(i), weight, mid, FourExpr.ExprOp.MUL));
-                currBlock.addContent(new FourExpr(mid, offset, mid, FourExpr.ExprOp.AND));
+                currBlock.addContent(new FourExpr(mid, offset, mid, FourExpr.ExprOp.ADD));
                 offset = mid;
             }
             // Symbol addr = Symbol.tempSymbol(SymbolType.INT);
             // currBlock.addContent(new FourExpr(new Immediate(symbol.getAddress()), offset, addr, FourExpr.ExprOp
             // .ADD));
             Symbol ptr = Symbol.tempSymbol(SymbolType.POINTER);
-            currBlock.addContent(new Memory(symbol, offset, ptr));
-            Symbol res = Symbol.tempSymbol(SymbolType.INT);
-            currBlock.addContent(new Pointer(Pointer.Op.LOAD, ptr, res));
-            return res;
+            currBlock.addContent(new Memory(symbol, offset, ptr));  // return the pointer to array
+            // Symbol res = Symbol.tempSymbol(SymbolType.INT);
+            // currBlock.addContent(new Pointer(Pointer.Op.LOAD, ptr, res));
+            return ptr;
         }
         assert false;
         return null;
     }
 
-    public LeafNode checkNumber(Number number) {
-        return number;
+    public Operand checkNumber(Number number) {
+        return new Immediate(number.getNumber());
     }
 
     // 函数调用 FuncExp --> Ident '(' [FuncRParams] ')'
@@ -707,7 +869,7 @@ public class SymbolTableBuilder {
     // 会给Func的ReturnType赋值
     // 当func不在符号表中存在时会返回null
     // 当Rparam不在符号表中时会返回FuncExp
-    public LeafNode checkFuncExp(FuncExp funcExp) {
+    public Operand checkFuncExp(FuncExp funcExp) {
         // check missing RightParenthesis
         if (funcExp.missRightParenthesis()) {
             errors.add(new MissRparentException(funcExp.getLine()));
@@ -731,12 +893,13 @@ public class SymbolTableBuilder {
 
         // 实参表
         FuncRParams funcRParams = funcExp.getParams();
-        ArrayList<LeafNode> Rparams = new ArrayList<>();  // LeafNode is LVal or Number or funcExp
+        ArrayList<Operand> Rparams = new ArrayList<>();  // LeafNode is LVal or Number or funcExp
         if (funcRParams != null) {
             for (Exp exp : funcRParams.getExps()) {
-                LeafNode res = checkExp(exp);
+                Operand res = checkExp(exp);
                 if (res == null) {
-                    return funcExp;
+                    assert false : "check";
+                    return null;
                 }
                 Rparams.add(res);  // TODO: LeafNode未进行合并计算，只返回表达式的首项，用来在FuncRParams中检查类型是否正确
             }  // check Exp会给所有的LVal和FuncExp设置SymbolType
@@ -748,37 +911,52 @@ public class SymbolTableBuilder {
         } else {
             for (int i = 0; i < Fparams.size(); i++) {
                 Symbol fParam = Fparams.get(i);
-                LeafNode rParam = Rparams.get(i);
+                Operand rParam = Rparams.get(i);
 
-                // 由于之前checkExp已经给每个LeafNode赋过SymbolType了，这里一定可以得到SymbolType
-                if (fParam.getSymbolType() != rParam.getSymbolType()) {  // param type mismatch
-                    errors.add(new MismatchParamTypeException(funcRParams.getLine()));
+                if (rParam instanceof Immediate) {
+                    if (fParam.getSymbolType() != SymbolType.INT) {
+                        errors.add(new MismatchParamTypeException(funcRParams.getLine()));
+                    }
+                    break;
+                    // TODO: do what?
+                } else {
+                    Symbol rp = (Symbol) rParam;
+                    if (fParam.getSymbolType() != rp.getSymbolType()) {
+                        errors.add(new MismatchParamTypeException(funcRParams.getLine()));
+                    }
                     break;
                 }
-                if (fParam.getSymbolType() == SymbolType.ARRAY) {  // 检查数组参数的维数是否正确
-                    assert rParam instanceof LVal;  // 数组一定是LVal
-                    if (fParam.getDimCount() != rParam.getDimCount()) {  // 维数不正确
-                        errors.add(new MismatchParamTypeException(funcRParams.getLine()));
-                        break;
-                    }
 
-                    // 检查每一维的数值是否正确
-                    /*
-                     *  int f(int a[][2]) {}
-                     *  int main(){
-                     *       int a[2][3];
-                     *       f(a);  // mismatch!!!
-                     *  }
-                     * */
-                    ArrayList<Integer> fDimSize = fParam.getDimSize();
-                    ArrayList<Integer> rDimSize = rParam.getDimSize();
-                    for (int j = 1; j < fDimSize.size(); j++) {  // 跳过第一维
-                        if (!Objects.equals(fDimSize.get(j), rDimSize.get(j))) {
-                            errors.add(new MismatchParamTypeException(funcRParams.getLine()));
-                            break;
-                        }
-                    }
-                }
+                // TODO: 需要检查维数和每一维的大小是否匹配
+                // // 由于之前checkExp已经给每个LeafNode赋过SymbolType了，这里一定可以得到SymbolType
+                // if (fParam.getSymbolType() != rParam.getSymbolType()) {  // param type mismatch
+                //     errors.add(new MismatchParamTypeException(funcRParams.getLine()));
+                //     break;
+                // }
+                // if (fParam.getSymbolType() == SymbolType.ARRAY) {  // 检查数组参数的维数是否正确
+                //     assert rParam instanceof LVal;  // 数组一定是LVal
+                //     if (fParam.getDimCount() != rParam.getDimCount()) {  // 维数不正确
+                //         errors.add(new MismatchParamTypeException(funcRParams.getLine()));
+                //         break;
+                //     }
+                //
+                //     // 检查每一维的数值是否正确
+                //     /*
+                //      *  int f(int a[][2]) {}
+                //      *  int main(){
+                //      *       int a[2][3];
+                //      *       f(a);  // mismatch!!!
+                //      *  }
+                //      * */
+                //     ArrayList<Integer> fDimSize = fParam.getDimSize();
+                //     ArrayList<Integer> rDimSize = rParam.getDimSize();
+                //     for (int j = 1; j < fDimSize.size(); j++) {  // 跳过第一维
+                //         if (!Objects.equals(fDimSize.get(j), rDimSize.get(j))) {
+                //             errors.add(new MismatchParamTypeException(funcRParams.getLine()));
+                //             break;
+                //         }
+                //     }
+                // }
             }
         }
         FuncBlock funcBlock = middleCode.getFunc(symbol.getName());
@@ -791,15 +969,17 @@ public class SymbolTableBuilder {
     }
 
     // Cond → LOrExp
-    public LeafNode checkCond(Cond cond) {
+    // return Symbol
+    public Operand checkCond(Cond cond) {
         return checkLOrExp(cond.getLOrExp());
     }
 
     // LOrExp → LAndExp {'||' LAndExp}
     // 短路求值
-    public LeafNode checkLOrExp(LOrExp lOrExp) {
+    // return Symbol
+    public Operand checkLOrExp(LOrExp lOrExp) {
         BasicBlock orEnd = new BasicBlock("B_OR_END_" + blockCount++);
-        LeafNode and = checkLAndExp(lOrExp.getFirstExp());
+        Operand and = checkLAndExp(lOrExp.getFirstExp());
         Symbol orMidRes = Symbol.tempSymbol(SymbolType.BOOL);
         currBlock.addContent(new FourExpr(and, orMidRes, FourExpr.ExprOp.ASS));
         BasicBlock falseBlock = new BasicBlock("B_OR_" + blockCount++);
@@ -816,18 +996,21 @@ public class SymbolTableBuilder {
             currBlock = falseBlock;
         }
         currBlock.addContent(new Jump(orEnd));
+        currBlock = orEnd;
         return orMidRes;
     }
 
     // LAndExp → EqExp {'&&' EqExp}
     // 短路求值
-    public LeafNode checkLAndExp(LAndExp lAndExp) {
+    // return Symbol
+    // TODO: 看看能不能省略midRes，直接根据Operand跳转
+    public Operand checkLAndExp(LAndExp lAndExp) {
         BasicBlock andEnd = new BasicBlock("B_AND_END_" + blockCount++);
-        LeafNode eq = checkEqExp(lAndExp.getFirstExp());
+        Operand eq = checkEqExp(lAndExp.getFirstExp());
         Symbol andMidRes = Symbol.tempSymbol(SymbolType.BOOL);
         currBlock.addContent(new FourExpr(eq, andMidRes, FourExpr.ExprOp.ASS));
         BasicBlock trueBlock = new BasicBlock("B_AND_" + blockCount++);
-        currBlock.addContent(new Branch(andMidRes, trueBlock, andEnd));
+        currBlock.addContent(new Branch(eq, trueBlock, andEnd));
 
         currBlock = trueBlock;
         ArrayList<EqExp> eqExps = lAndExp.getExps();
@@ -839,56 +1022,59 @@ public class SymbolTableBuilder {
             currBlock = trueBlock;
         }
         currBlock.addContent(new Jump(andEnd));
+        currBlock = andEnd;
         return andMidRes;
     }
 
     // EqExp → RelExp {('==' | '!=') RelExp}
     // 翻译成四元式
-    public LeafNode checkEqExp(EqExp eqExp) {
-        LeafNode first = checkRelExp(eqExp.getFirstExp());
-        Symbol midRes = Symbol.tempSymbol(SymbolType.BOOL);
-        currBlock.addContent(new FourExpr(first, midRes, FourExpr.ExprOp.ASS));
-        ArrayList<LeafNode> nodes = eqExp.getExps().stream().map(this::checkRelExp)
-                .collect(Collectors.toCollection(ArrayList::new));
+    // return Symbol
+    public Operand checkEqExp(EqExp eqExp) {
+        Operand left = checkRelExp(eqExp.getFirstExp());
+        ArrayList<RelExp> relExps = eqExp.getExps();
+        // ArrayList<LeafNode> nodes = eqExp.getExps().stream().map(this::checkRelExp)
+        //         .collect(Collectors.toCollection(ArrayList::new));
         ArrayList<Token> seps = eqExp.getSeps();
-        for (int i = 0; i < nodes.size(); i++) {
+        for (int i = 0; i < relExps.size(); i++) {
             Symbol temp = Symbol.tempSymbol(SymbolType.BOOL);
+            Operand right = checkRelExp(relExps.get(i));
             if (seps.get(i).getType() == TokenType.EQL) {
-                currBlock.addContent(new FourExpr(midRes, nodes.get(i), temp, FourExpr.ExprOp.EQ));
+                currBlock.addContent(new FourExpr(left, right, temp, FourExpr.ExprOp.EQ));
             } else if (seps.get(i).getType() == TokenType.NEQ) {
-                currBlock.addContent(new FourExpr(midRes, nodes.get(i), temp, FourExpr.ExprOp.NEQ));
+                currBlock.addContent(new FourExpr(left, right, temp, FourExpr.ExprOp.NEQ));
             } else {
                 assert false;
             }
-            midRes = temp;
+            left = temp;
         }
-        return midRes;
+        return left;
     }
 
     // RelExp → AddExp {('<' | '>' | '<=' | '>=') AddExp}
     // 四元式表达
-    public LeafNode checkRelExp(RelExp relExp) {
-        LeafNode first = checkAddExp(relExp.getFirstExp());
-        Symbol midRes = Symbol.tempSymbol(SymbolType.BOOL);
-        currBlock.addContent(new FourExpr(first, midRes, FourExpr.ExprOp.ASS));
-        ArrayList<LeafNode> nodes = relExp.getExps().stream().map(this::checkAddExp)
-                .collect(Collectors.toCollection(ArrayList::new));
+    // return Symbol
+    public Operand checkRelExp(RelExp relExp) {
+        Operand left = checkAddExp(relExp.getFirstExp());
+        ArrayList<AddExp> exps = relExp.getExps();
+        // ArrayList<LeafNode> nodes = relExp.getExps().stream().map(this::checkAddExp)
+        //         .collect(Collectors.toCollection(ArrayList::new));  // 一个一个算 要不然可能会造成寄存器的浪费和冲突
         ArrayList<Token> seps = relExp.getSeps();
-        for (int i = 0; i < nodes.size(); i++) {
+        for (int i = 0; i < exps.size(); i++) {
             Symbol temp = Symbol.tempSymbol(SymbolType.BOOL);
+            Operand right = checkAddExp(exps.get(i));
             if (seps.get(i).getType() == TokenType.LSS) {
-                currBlock.addContent(new FourExpr(midRes, nodes.get(i), temp, FourExpr.ExprOp.LT));
+                currBlock.addContent(new FourExpr(left, right, temp, FourExpr.ExprOp.LT));
             } else if (seps.get(i).getType() == TokenType.LEQ) {
-                currBlock.addContent(new FourExpr(midRes, nodes.get(i), temp, FourExpr.ExprOp.LE));
+                currBlock.addContent(new FourExpr(left, right, temp, FourExpr.ExprOp.LE));
             } else if (seps.get(i).getType() == TokenType.GRE) {
-                currBlock.addContent(new FourExpr(midRes, nodes.get(i), temp, FourExpr.ExprOp.GT));
+                currBlock.addContent(new FourExpr(left, right, temp, FourExpr.ExprOp.GT));
             } else if (seps.get(i).getType() == TokenType.GEQ) {
-                currBlock.addContent(new FourExpr(midRes, nodes.get(i), temp, FourExpr.ExprOp.GE));
+                currBlock.addContent(new FourExpr(left, right, temp, FourExpr.ExprOp.GE));
             } else {
                 assert false;
             }
-            midRes = temp;
+            left = temp;
         }
-        return midRes;
+        return left;
     }
 }

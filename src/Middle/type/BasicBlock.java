@@ -14,4 +14,20 @@ public class BasicBlock {
         this.content.add(blockNode);
     }
 
+    public BlockNode getFirst() {
+        return this.content.get(0);
+    }
+
+    public ArrayList<BlockNode> getContent() {
+        return this.content;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    @Override
+    public String toString() {
+        return this.label.toString();
+    }
 }

@@ -1,8 +1,9 @@
 package Frontend.Parser.decl.types;
 
-import Config.IO;
+import Config.Reader;
+import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
-import Frontend.Parser.Output;
+import Config.Output;
 import Frontend.Parser.expr.types.ConstExp;
 
 import java.util.ArrayList;
@@ -50,7 +51,10 @@ public class Var implements Output {
 
     // 0->int 1+->array
     public int getDimCount() {
-        return dimSize.size();
+        if (constExps == null) {
+            return 0;
+        }
+        return constExps.size();
     }
 
     public ArrayList<ConstExp> getDimExp() {
@@ -63,12 +67,12 @@ public class Var implements Output {
 
     @Override
     public void output() {
-        IO.print(ident.toString());
+        SyntaxWriter.print(ident.toString());
         int index = 0;
         for (ConstExp constExp : constExps) {  // print arrays
-            IO.print(bracks.get(index++).toString());
+            SyntaxWriter.print(bracks.get(index++).toString());
             constExp.output();
-            IO.print(bracks.get(index++).toString());
+            SyntaxWriter.print(bracks.get(index++).toString());
         }
     }
 }

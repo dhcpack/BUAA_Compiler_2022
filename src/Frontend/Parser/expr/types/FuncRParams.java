@@ -1,8 +1,9 @@
 package Frontend.Parser.expr.types;
 
-import Config.IO;
+import Config.Reader;
+import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
-import Frontend.Parser.Output;
+import Config.Output;
 
 import java.util.ArrayList;
 
@@ -32,9 +33,9 @@ public class FuncRParams implements Output {
         exps.get(index++).output();
 
         for (Token sep : seps) {
-            IO.print(sep.toString());
+            SyntaxWriter.print(sep.toString());
             exps.get(index++).output();
         }
-        IO.print("<FuncRParams>");
+        SyntaxWriter.print("<FuncRParams>");
     }
 }

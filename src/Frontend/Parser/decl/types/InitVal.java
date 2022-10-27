@@ -1,8 +1,9 @@
 package Frontend.Parser.decl.types;
 
-import Config.IO;
+import Config.Reader;
+import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
-import Frontend.Parser.Output;
+import Config.Output;
 import Frontend.Parser.expr.types.ConstExp;
 import Frontend.Parser.expr.types.Exp;
 
@@ -73,25 +74,25 @@ public class InitVal implements Output {
     @Override
     public void output() {
         if (this.left != null) {
-            IO.print(this.left.toString());
+            SyntaxWriter.print(this.left.toString());
             int index = 0;
             if (initVals.size() != 0) {
                 initVals.get(index++).output();
             }
             for (Token sep : seps) {
-                IO.print(sep.toString());
+                SyntaxWriter.print(sep.toString());
                 initVals.get(index++).output();
             }
-            IO.print(this.right.toString());
+            SyntaxWriter.print(this.right.toString());
         } else if (this.exp != null) {
             this.exp.output();
         } else if (this.constExp != null) {
             this.constExp.output();
         }
         if (isConst) {
-            IO.print("<ConstInitVal>");
+            SyntaxWriter.print("<ConstInitVal>");
         } else {
-            IO.print("<InitVal>");
+            SyntaxWriter.print("<InitVal>");
         }
     }
 }
