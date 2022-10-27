@@ -3,7 +3,8 @@ package Frontend.Symbol;
 import java.util.ArrayList;
 import java.util.Comparator;
 
-import Config.IO;
+import Config.ErrorWriter;
+import Config.Reader;
 import Exceptions.MyException;
 
 
@@ -25,7 +26,7 @@ public class Errors {
             }
         });
         for (MyException exception : exceptions) {
-            IO.print(exception.getLine() + " " + exception.getType().getCode());
+            ErrorWriter.print(exception.getLine() + " " + exception.getType().getCode());
         }
     }
 }

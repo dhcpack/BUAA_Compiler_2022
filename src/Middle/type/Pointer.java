@@ -10,7 +10,7 @@ public class Pointer extends BlockNode {
     }
 
     private Symbol load;
-    private LeafNode store;
+    private Operand store;
     private Op op;
     private Symbol pointer;
 
@@ -20,9 +20,18 @@ public class Pointer extends BlockNode {
         this.load = load;
     }
 
-    public Pointer(Op op, Symbol pointer, LeafNode store) {
+    public Pointer(Op op, Symbol pointer, Operand store) {
         this.op = op;
         this.pointer = pointer;
         this.store = store;
+    }
+
+    @Override
+    public String toString() {
+        if (op == Op.LOAD) {
+            return "LOAD " + pointer + ", " + load;
+        } else {
+            return "STORE " + pointer + ", " + store;
+        }
     }
 }

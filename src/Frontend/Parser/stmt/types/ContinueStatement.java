@@ -1,6 +1,7 @@
 package Frontend.Parser.stmt.types;
 
-import Config.IO;
+import Config.Reader;
+import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
 
 public class ContinueStatement implements StmtInterface {
@@ -12,7 +13,7 @@ public class ContinueStatement implements StmtInterface {
 
     @Override
     public void output() {
-        IO.print(continueToken.toString());
+        SyntaxWriter.print(continueToken.toString());
     }
 
     @Override

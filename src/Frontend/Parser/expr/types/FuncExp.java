@@ -1,6 +1,7 @@
 package Frontend.Parser.expr.types;
 
-import Config.IO;
+import Config.Reader;
+import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
 import Frontend.Symbol.SymbolType;
 
@@ -56,12 +57,12 @@ public class FuncExp implements UnaryExpInterface, LeafNode {
 
     @Override
     public void output() {
-        IO.print(ident.toString());
-        IO.print(left.toString());
+        SyntaxWriter.print(ident.toString());
+        SyntaxWriter.print(left.toString());
         if (params != null) {  // params could be null
             params.output();
         }
-        IO.print(right.toString());
+        SyntaxWriter.print(right.toString());
     }
 
     @Override

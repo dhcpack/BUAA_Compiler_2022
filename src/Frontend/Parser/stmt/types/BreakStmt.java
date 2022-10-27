@@ -1,6 +1,7 @@
 package Frontend.Parser.stmt.types;
 
-import Config.IO;
+import Config.Reader;
+import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
 
 public class BreakStmt implements StmtInterface {
@@ -12,7 +13,7 @@ public class BreakStmt implements StmtInterface {
 
     @Override
     public void output() {
-        IO.print(breakToken.toString());
+        SyntaxWriter.print(breakToken.toString());
     }
 
     @Override

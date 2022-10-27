@@ -6,5 +6,10 @@ public enum SymbolType {
     FUNCTION,
     VOID,
     POINTER,
-    BOOL,
+    BOOL;
+
+    @Override
+    public String toString() {
+        return this.name();
+    }
 }

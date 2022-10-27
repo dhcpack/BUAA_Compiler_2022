@@ -1,8 +1,9 @@
 package Frontend.Parser.decl.types;
 
-import Config.IO;
+import Config.Reader;
+import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
-import Frontend.Parser.Output;
+import Config.Output;
 import Frontend.Parser.stmt.types.BlockItem;
 
 import java.util.ArrayList;
@@ -49,20 +50,20 @@ public class Decl implements BlockItem, Output {
 
     @Override
     public void output() {
-        if (isConst()) IO.print(constToken.toString());  // print const
-        IO.print(BType.toString());  // print BType
+        if (isConst()) SyntaxWriter.print(constToken.toString());  // print const
+        SyntaxWriter.print(BType.toString());  // print BType
         def.output();  // print def
         for (int i = 0; i < separators.size(); i++) {  // print sep and def
-            IO.print(separators.get(i).toString());
+            SyntaxWriter.print(separators.get(i).toString());
             defs.get(i).output();
         }
         if (this.semicolon != null) {
-            IO.print(semicolon.toString());  // print ;
+            SyntaxWriter.print(semicolon.toString());  // print ;
         }
         if (isConst()) {
-            IO.print("<ConstDecl>");
+            SyntaxWriter.print("<ConstDecl>");
         } else {
-            IO.print("<VarDecl>");
+            SyntaxWriter.print("<VarDecl>");
         }
     }
 }

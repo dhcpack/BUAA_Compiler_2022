@@ -1,6 +1,7 @@
 package Frontend.Parser.stmt.types;
 
-import Config.IO;
+import Config.Reader;
+import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
 import Frontend.Lexer.TokenType;
 import Frontend.Parser.TokenHandler;
@@ -47,9 +48,9 @@ public class GetIntStmt implements StmtInterface {
     @Override
     public void output() {
         lVal.output();
-        IO.print(assign.toString());
-        IO.print(getint.toString());
-        IO.print(left.toString());
-        IO.print(right.toString());
+        SyntaxWriter.print(assign.toString());
+        SyntaxWriter.print(getint.toString());
+        SyntaxWriter.print(left.toString());
+        SyntaxWriter.print(right.toString());
     }
 }

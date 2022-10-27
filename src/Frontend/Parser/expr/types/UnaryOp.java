@@ -1,8 +1,9 @@
 package Frontend.Parser.expr.types;
 
-import Config.IO;
+import Config.Reader;
+import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
-import Frontend.Parser.Output;
+import Config.Output;
 
 public class UnaryOp implements Output {
     // UnaryOp → '+' | '−' | '!'
@@ -18,7 +19,7 @@ public class UnaryOp implements Output {
 
     @Override
     public void output() {
-        IO.print(token.toString());
-        IO.print("<UnaryOp>");
+        SyntaxWriter.print(token.toString());
+        SyntaxWriter.print("<UnaryOp>");
     }
 }

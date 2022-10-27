@@ -5,12 +5,12 @@ import Frontend.Symbol.SymbolTable;
 
 import java.util.ArrayList;
 
-public class FuncBlock extends BlockNode{
+public class FuncBlock extends BlockNode {
     private final ReturnType returnType;
     private final String funcName;
     private final ArrayList<Symbol> params;
     private final SymbolTable funcSymbolTable;
-    private final BasicBlock body;
+    private BasicBlock body;
     private final Boolean isMainFunc;
 
     public enum ReturnType {
@@ -19,12 +19,12 @@ public class FuncBlock extends BlockNode{
     }
 
     public FuncBlock(ReturnType returnType, String funcName, ArrayList<Symbol> params, SymbolTable funcSymbolTable,
-                     BasicBlock body, Boolean isMainFunc) {
+                     Boolean isMainFunc) {
         this.returnType = returnType;
         this.funcName = funcName;
         this.params = params;
         this.funcSymbolTable = funcSymbolTable;
-        this.body = body;
+        this.body = null;  // not pass body
         this.isMainFunc = isMainFunc;
     }
 
@@ -44,6 +44,10 @@ public class FuncBlock extends BlockNode{
         return body;
     }
 
+    public void setBody(BasicBlock body) {
+        this.body = body;
+    }
+
     public Boolean getMainFunc() {
         return isMainFunc;
     }
@@ -55,4 +59,13 @@ public class FuncBlock extends BlockNode{
     public int getStackSize() {
         return this.funcSymbolTable.getStackSize();
     }
+
+    public String getLabel() {
+        return "FUNC_" + getFuncName();
+    }
+
+    // @Override
+    // public String toString() {
+    //
+    // }
 }

@@ -11,7 +11,7 @@ public class CheckUtil {
     public static void check() throws IOException {
         System.out.println();
         System.out.println("-----Check Begin-----");
-        File outputFile = new File(Config.outputFile);
+        File outputFile = new File(Config.mipsFile);
         File expectFile = new File(Config.expectedFile);
         BufferedReader out = new BufferedReader(new FileReader(outputFile));
         BufferedReader expect = new BufferedReader(new FileReader(expectFile));

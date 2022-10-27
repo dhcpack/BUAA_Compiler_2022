@@ -1,8 +1,9 @@
 package Frontend.Parser.stmt.types;
 
-import Config.IO;
+import Config.Reader;
+import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
-import Frontend.Parser.Output;
+import Config.Output;
 import Frontend.Parser.expr.types.Cond;
 
 import java.util.ArrayList;
@@ -51,14 +52,14 @@ public class IfStmt implements StmtInterface, Output {
 
     @Override
     public void output() {
-        IO.print(ifToken.toString());
-        IO.print(left.toString());
+        SyntaxWriter.print(ifToken.toString());
+        SyntaxWriter.print(left.toString());
         cond.output();
-        IO.print(right.toString());
+        SyntaxWriter.print(right.toString());
         stmts.get(0).output();
         int index = 1;
         for (Token els : elses) {
-            IO.print(els.toString());
+            SyntaxWriter.print(els.toString());
             stmts.get(index++).output();
         }
     }

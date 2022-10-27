@@ -1,6 +1,7 @@
 package Frontend.Parser.expr.types;
 
-import Config.IO;
+import Config.Reader;
+import Config.SyntaxWriter;
 
 public class UnaryExp implements UnaryExpInterface {
     private final UnaryOp op;
@@ -35,6 +36,6 @@ public class UnaryExp implements UnaryExpInterface {
             op.output();
         }
         unaryExpInterface.output();
-        IO.print("<UnaryExp>");
+        SyntaxWriter.print("<UnaryExp>");
     }
 }

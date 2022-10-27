@@ -1,6 +1,6 @@
 package Middle.type;
 
-public class Jump extends BlockNode{
+public class Jump extends BlockNode {
     public BasicBlock target;
 
     public Jump(BasicBlock target) {
@@ -9,5 +9,10 @@ public class Jump extends BlockNode{
 
     public BasicBlock getTarget() {
         return target;
+    }
+
+    @Override
+    public String toString() {
+        return "JUMP " + target.getLabel();
     }
 }

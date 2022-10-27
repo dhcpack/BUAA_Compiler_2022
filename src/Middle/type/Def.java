@@ -1,4 +1,4 @@
-package Middle.type;
-
-public class Def {
-}
+// package Middle.type;
+//
+// public class Def {
+// }

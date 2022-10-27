@@ -1,6 +1,7 @@
 package Frontend.Parser.expr.types;
 
-import Config.IO;
+import Config.Reader;
+import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
 
 public class BraceExp implements PrimaryExpInterface {
@@ -30,8 +31,8 @@ public class BraceExp implements PrimaryExpInterface {
 
     @Override
     public void output() {
-        IO.print(left.toString());
+        SyntaxWriter.print(left.toString());
         exp.output();
-        IO.print(right.toString());
+        SyntaxWriter.print(right.toString());
     }
 }

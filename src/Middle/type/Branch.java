@@ -2,19 +2,19 @@ package Middle.type;
 
 import Frontend.Symbol.Symbol;
 
-public class Branch extends BlockNode{
-    private Symbol cond;
+public class Branch extends BlockNode {
+    private Operand cond;
     private BasicBlock thenBlock;
     private BasicBlock elseBlock;
 
 
-    public Branch(Symbol cond, BasicBlock thenBlock, BasicBlock elseBlock) {
+    public Branch(Operand cond, BasicBlock thenBlock, BasicBlock elseBlock) {
         this.cond = cond;
         this.thenBlock = thenBlock;
         this.elseBlock = elseBlock;
     }
 
-    public Symbol getCond() {
+    public Operand getCond() {
         return cond;
     }
 
@@ -24,5 +24,10 @@ public class Branch extends BlockNode{
 
     public BasicBlock getElseBlock() {
         return elseBlock;
+    }
+
+    @Override
+    public String toString() {
+        return "Branch " + cond + " ? " + thenBlock + " : " + elseBlock;
     }
 }

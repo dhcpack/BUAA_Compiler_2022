@@ -1,8 +1,9 @@
 package Frontend.Parser.expr.types;
 
-import Config.IO;
+import Config.Reader;
+import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
-import Frontend.Parser.Output;
+import Config.Output;
 import Frontend.Symbol.Symbol;
 import Frontend.Symbol.SymbolType;
 
@@ -52,14 +53,14 @@ public class LVal implements PrimaryExpInterface, Output, LeafNode {
 
     @Override
     public void output() {
-        IO.print(ident.toString());
+        SyntaxWriter.print(ident.toString());
         int index = 0;
         for (Exp exp : exps) {
-            IO.print(bracks.get(index++).toString());
+            SyntaxWriter.print(bracks.get(index++).toString());
             exp.output();
-            IO.print(bracks.get(index++).toString());
+            SyntaxWriter.print(bracks.get(index++).toString());
         }
-        IO.print("<LVal>");
+        SyntaxWriter.print("<LVal>");
     }
 
     // WARNING: 对类型根据使用方法进行了修改

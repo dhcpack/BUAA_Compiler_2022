@@ -1,8 +1,9 @@
 package Frontend.Parser.stmt.types;
 
-import Config.IO;
+import Config.Reader;
+import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
-import Frontend.Parser.Output;
+import Config.Output;
 
 import java.util.ArrayList;
 
@@ -59,12 +60,12 @@ public class BlockStmt implements StmtInterface, Output {
 
     @Override
     public void output() {
-        IO.print(left.toString());
+        SyntaxWriter.print(left.toString());
         for (BlockItem blockItem : blockItems) {
             blockItem.output();
         }
-        IO.print(right.toString());
-        IO.print("<Block>");
+        SyntaxWriter.print(right.toString());
+        SyntaxWriter.print("<Block>");
     }
 
     @Override
