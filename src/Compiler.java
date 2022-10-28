@@ -1,3 +1,5 @@
+import BackEnd.MipsCode;
+import BackEnd.Translator;
 import Config.Reader;
 import Frontend.Lexer.Lexer;
 import Frontend.Parser.Parser;
@@ -25,7 +27,10 @@ public class Compiler {
         MiddleCode middleCode = symbolTableBuilder.getMiddleCode();
         middleCode.output();  // through MiddleWriter
 
+        MipsCode mipsCode = new Translator(middleCode).translate();
+        mipsCode.output();  // through MipsWriter
+
         Errors errors = symbolTableBuilder.getErrors();
-        // errors.output();  // through ErrorWriter
+        errors.output();  // through ErrorWriter
     }
 }

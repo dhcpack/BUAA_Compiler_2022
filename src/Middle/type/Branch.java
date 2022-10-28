@@ -7,7 +7,6 @@ public class Branch extends BlockNode {
     private BasicBlock thenBlock;
     private BasicBlock elseBlock;
 
-
     public Branch(Operand cond, BasicBlock thenBlock, BasicBlock elseBlock) {
         this.cond = cond;
         this.thenBlock = thenBlock;

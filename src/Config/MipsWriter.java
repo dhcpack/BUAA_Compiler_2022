@@ -12,8 +12,15 @@ import java.io.IOException;
 public class MipsWriter {
     public static String string = "";
 
-    public static void print(String s) {
+    public static void print(String s, Object o) {
         string += s;
+        if (string.charAt(string.length() - 1) != '\n') {
+            string += "\n";
+        }
+    }
+
+    public static void print(String s) {
+        string += ("\t" + s);
         if (string.charAt(string.length() - 1) != '\n') {
             string += "\n";
         }

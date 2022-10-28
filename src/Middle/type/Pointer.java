@@ -26,6 +26,22 @@ public class Pointer extends BlockNode {
         this.store = store;
     }
 
+    public Symbol getLoad() {
+        return load;
+    }
+
+    public Operand getStore() {
+        return store;
+    }
+
+    public Op getOp() {
+        return op;
+    }
+
+    public Symbol getPointer() {
+        return pointer;
+    }
+
     @Override
     public String toString() {
         if (op == Op.LOAD) {
