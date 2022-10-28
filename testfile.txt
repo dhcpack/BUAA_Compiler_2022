@@ -1,3 +1,15 @@
+int f(){
+    return 0;
+}
+
+int g(){
+    return 1;
+}
+
+int h(int a){
+    return a;
+}
+
 int main(){
     int a = 4;
     int b[2] = {1, 2};

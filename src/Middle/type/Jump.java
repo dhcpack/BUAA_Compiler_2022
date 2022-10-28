@@ -1,7 +1,7 @@
 package Middle.type;
 
 public class Jump extends BlockNode {
-    public BasicBlock target;
+    private final BasicBlock target;
 
     public Jump(BasicBlock target) {
         this.target = target;

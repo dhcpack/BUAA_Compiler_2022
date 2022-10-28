@@ -6,20 +6,36 @@
 
 ###### TEXT ######
 JUMP FUNC_main
+# func f : stack size 0x0
+# param: 
+FUNC_f:
+	RETURN 0
+
+# func g : stack size 0x0
+# param: 
+FUNC_g:
+	RETURN 1
+
+# func h : stack size 0x4
+# param: a[sp-0x4] :INT
+FUNC_h:
+	RETURN a[sp-0x4] :INT
+
 # func main : stack size 0xc
+# param: 
 FUNC_main:
 	DEF, 4, a[sp-0x4] :INT
 	OFFSET 4+0->tmp_pointer_0TEMP :POINTER
 	STORE tmp_pointer_0TEMP :POINTER, 1
 	OFFSET 4+4->tmp_pointer_1TEMP :POINTER
 	STORE tmp_pointer_1TEMP :POINTER, 2
-	JUMP B_0
+	JUMP B_3
 
-B_0:
+B_3:
 	DEF, 1, b[sp-0x4] :INT
-	JUMP B_1
+	JUMP B_4
 
-B_1:
+B_4:
 	MUL, 0, 4, tmp_int_0TEMP :INT
 	ADD, tmp_int_0TEMP :INT, 0, tmp_int_0TEMP :INT
 	OFFSET 4+tmp_int_0TEMP :INT->tmp_pointer_2TEMP :POINTER

@@ -2,6 +2,7 @@ package Middle;
 
 import Config.MiddleWriter;
 import Config.Output;
+import Frontend.Symbol.Symbol;
 import Middle.type.BasicBlock;
 import Middle.type.BlockNode;
 import Middle.type.Branch;
@@ -14,7 +15,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Queue;
 import java.util.StringJoiner;
 
@@ -41,6 +41,30 @@ public class MiddleCode implements Output {
             this.AsciizToName.put(content, name);
             return name;
         }
+    }
+
+    public HashMap<String, Integer> getNameToAddr() {
+        return nameToAddr;
+    }
+
+    public HashMap<String, Integer> getNameToVal() {
+        return nameToVal;
+    }
+
+    public HashMap<String, String> getNameToAsciiz() {
+        return nameToAsciiz;
+    }
+
+    public HashMap<String, String> getAsciizToName() {
+        return AsciizToName;
+    }
+
+    public HashMap<String, ArrayList<Integer>> getNameToArray() {
+        return nameToArray;
+    }
+
+    public HashMap<String, FuncBlock> getNameToFunc() {
+        return nameToFunc;
     }
 
     public String getAsciizName(String content) {
@@ -95,6 +119,11 @@ public class MiddleCode implements Output {
         for (FuncBlock funcBlock : nameToFunc.values()) {
             MiddleWriter.print(
                     String.format("# func %s : stack size 0x%x", funcBlock.getFuncName(), funcBlock.getStackSize()));
+            StringJoiner params = new StringJoiner(", ");
+            for (Symbol param : funcBlock.getParams()) {
+                params.add(param.toString());
+            }
+            MiddleWriter.print(String.format("# param: %s", params));
             queue.add(funcBlock.getBody());
             while (!queue.isEmpty()) {
                 BasicBlock front = queue.poll();

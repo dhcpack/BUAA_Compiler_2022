@@ -423,15 +423,16 @@ public class SymbolTableBuilder {
                 dimSize.add(0, -20231164);  // 第一维省略
                 Symbol array = new Symbol(SymbolType.ARRAY, ident, dimSize, dimSize.size(), false, Symbol.Scope.LOCAL);
                 currSymbolTable.addSymbol(array);
+                return array;
             } else {
                 Symbol val = new Symbol(SymbolType.INT, ident, false, Symbol.Scope.LOCAL);
                 currSymbolTable.addSymbol(val);
+                return val;
             }
         } else {
             assert false : "TO BE FIXED: 函数参数重名";
             return null;
         }
-        return null;
     }
 
     // 语句块项 BlockItem → Decl | Stmt
@@ -828,9 +829,9 @@ public class SymbolTableBuilder {
         /*
          * translate to middle code
          * */
-        if (symbol.getSymbolType() == SymbolType.INT) {
+        if (symbol.getSymbolType() == SymbolType.INT) {  // 局部变量
             return symbol;
-        } else if (symbol.getSymbolType() == SymbolType.ARRAY) {
+        } else if (symbol.getSymbolType() == SymbolType.ARRAY) {  // 数组变量
             ArrayList<Integer> dimSize = symbol.getDimSize();
             ArrayList<Integer> suffix = new ArrayList<>();
             suffix.add(1);

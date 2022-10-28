@@ -28,6 +28,10 @@ public class FuncCall extends BlockNode {
         this.saveRet = false;
     }
 
+    public ArrayList<Operand> getrParams() {
+        return rParams;
+    }
+
     @Override
     public String toString() {
         String call = String.format("CALL %s\n", funcBlock.getLabel());

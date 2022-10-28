@@ -20,6 +20,7 @@ public class Symbol implements LeafNode, Operand {
     private Scope scope;
     private int size;
     private int address;
+    private boolean hasAddress = false;
     // int
     private int initInt;
 
@@ -209,11 +210,17 @@ public class Symbol implements LeafNode, Operand {
     }
 
     public int getAddress() {
+        assert hasAddress;
         return address;
     }
 
     public void setAddress(int address) {
         this.address = address;
+        this.hasAddress = true;
+    }
+
+    public boolean hasAddress() {
+        return this.hasAddress;
     }
 
     private static int tempIntCount = 0;
@@ -248,7 +255,11 @@ public class Symbol implements LeafNode, Operand {
         } else if (scope == Scope.LOCAL) {
             addr = String.format("[sp-0x%x]", this.address + this.getSize());
         } else {
-            addr = "TEMP";
+            if (hasAddress) {
+                addr = String.format("TEMP[sp-0x%x]", this.address);
+            } else {
+                addr = "TEMP";
+            }
         }
         return String.format("%s%s :%s", this.name, addr, this.symbolType);
     }

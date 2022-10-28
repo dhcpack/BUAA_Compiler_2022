@@ -1,21 +1,20 @@
 package Middle.type;
 
-import Frontend.Parser.expr.types.LeafNode;
 import Frontend.Symbol.Symbol;
 
 public class Memory extends BlockNode {
-    private Symbol array;
+    private Symbol base;
     private Operand offset;
     private Symbol res;
 
-    public Memory(Symbol array, Operand offset, Symbol res) {
-        this.array = array;
+    public Memory(Symbol base, Operand offset, Symbol res) {
+        this.base = base;
         this.offset = offset;
         this.res = res;
     }
 
-    public Symbol getArray() {
-        return array;
+    public Symbol getBase() {
+        return base;
     }
 
     public Operand getOffset() {
@@ -28,6 +27,6 @@ public class Memory extends BlockNode {
 
     @Override
     public String toString() {
-        return "OFFSET " + array.getAddress() + "+" + offset + "->" + res;
+        return "OFFSET " + base.getAddress() + "+" + offset + "->" + res;
     }
 }
