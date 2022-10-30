@@ -1,5 +1,6 @@
 ###### GLOBAL STRING ######
-STR_1 : \n
+STR_1 : a is 
+STR_2 : \n, b is 
 
 ###### GLOBAL ARRAY ######
 
@@ -7,30 +8,37 @@ STR_1 : \n
 
 ###### TEXT ######
 JUMP FUNC_main
-# func f : stack size 0x0
-# param: 
-FUNC_f:
-	RETURN 999
-
 # func main : stack size 0x8
 # param: 
 FUNC_main:
-	OFFSET (4+0)->POINTER(tmp_pointer_0[temp])
-	STORE POINTER(tmp_pointer_0[temp]), 8
-	MUL, 0, 4, INT(tmp_int_0[temp])
-	ADD, INT(tmp_int_0[temp]), 0, INT(tmp_int_0[temp])
-	OFFSET (4+INT(tmp_int_0[temp]))->POINTER(tmp_pointer_1[temp])
-	LOAD POINTER(tmp_pointer_1[temp]), INT(tmp_int_1[temp])
-	DEF, INT(tmp_int_1[temp]), INT(b[sp-0x8])
-	ASS, 10, INT(b[sp-0x8])
-	Call FUNC_f; Params: ; RET INT(tmp_int_2[temp])
+	DEF, 1, INT(a[sp-0x4])
+	DEF, 2, INT(b[sp-0x8])
+	EQ, INT(a[sp-0x4]), 1, BOOL(tmp_bool_0[temp])
+	ASS, BOOL(tmp_bool_0[temp]), BOOL(tmp_bool_1[temp])
+	Branch BOOL(tmp_bool_0[temp]) ? AND_2 : AND_END_1
+AND_2:
+	EQ, INT(b[sp-0x8]), 2, BOOL(tmp_bool_2[temp])
+	AND, BOOL(tmp_bool_2[temp]), BOOL(tmp_bool_1[temp]), BOOL(tmp_bool_1[temp])
+	Branch BOOL(tmp_bool_1[temp]) ? AND_3 : AND_END_1
+AND_3:
+	JUMP AND_END_1
+AND_END_1:
+	ASS, BOOL(tmp_bool_1[temp]), BOOL(tmp_bool_3[temp])
+	Branch BOOL(tmp_bool_3[temp]) ? OR_END_0 : OR_4
+OR_END_0:
+	Branch BOOL(tmp_bool_3[temp]) ? IF_BODY_5 : IF_END_6
+IF_BODY_5:
+	JUMP B_7
+B_7:
+	PRINT_STR STR_1
+	PRINT_INT INT(a[sp-0x4])
+	PRINT_STR STR_2
 	PRINT_INT INT(b[sp-0x8])
-	PRINT_STR STR_1
-	MUL, 0, 4, INT(tmp_int_3[temp])
-	ADD, INT(tmp_int_3[temp]), 0, INT(tmp_int_3[temp])
-	OFFSET (4+INT(tmp_int_3[temp]))->POINTER(tmp_pointer_2[temp])
-	LOAD POINTER(tmp_pointer_2[temp]), INT(tmp_int_4[temp])
-	PRINT_INT INT(tmp_int_4[temp])
-	PRINT_STR STR_1
+	JUMP B_8
+B_8:
+	JUMP IF_END_6
+IF_END_6:
 	RETURN 0
+OR_4:
+	JUMP OR_END_0
 

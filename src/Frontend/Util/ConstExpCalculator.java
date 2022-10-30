@@ -95,7 +95,7 @@ public class ConstExpCalculator {
             return calcPrimaryExp((PrimaryExp) unaryExpInterface);
         } else {
             assert unaryOp != null;
-            int res = calcUnaryExp(unaryExp);
+            int res = calcUnaryExp((UnaryExp) unaryExpInterface);
             if (unaryOp.getToken().getType() == TokenType.MINU) {
                 return -res;
             } else if (unaryOp.getToken().getType() == TokenType.NOT) {

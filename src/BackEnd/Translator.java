@@ -39,18 +39,18 @@ import Middle.type.Return;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.PriorityQueue;
-import java.util.Queue;
 
 public class Translator {
     private final MiddleCode middleCode;
     private final MipsCode mipsCode = new MipsCode();
     private final Registers registers = new Registers();
+    private final HashMap<Symbol, Integer> symbolUsageMap;
 
     public Translator(MiddleCode middleCode) {
         this.middleCode = middleCode;
+        this.symbolUsageMap = middleCode.getSymbolUsageMap();
     }
 
     public MipsCode translate() {
@@ -85,54 +85,94 @@ public class Translator {
 
     // BFS 基本块
     private final HashSet<BasicBlock> visited = new HashSet<>();
-    private final Queue<BasicBlock> queue = new LinkedList<>();
+    // private final Queue<BasicBlock> queue = new LinkedList<>();
     // 记录当前正在翻译的函数
     private FuncBlock currentFunc = null;
     private int currentStackSize = 0; // 当前正在翻译的函数已经用掉的栈的大小（局部变量+临时变量）
-    private final HashMap<Symbol, Integer> defUseMap = new HashMap<>();
 
     private void translateFunc(FuncBlock funcBlock) {
         currentFunc = funcBlock;
         currentStackSize = funcBlock.getStackSize();
         BasicBlock body = funcBlock.getBody();
         // mipsCode.addInstr(new Label(funcBlock.getLabel()));
-        queue.add(body);
-        while (!queue.isEmpty()) {
-            BasicBlock basicBlock = queue.poll();
-            if (visited.contains(basicBlock)) {
-                continue;
+        dfsBasicBlock(body);
+        // queue.add(body);
+        // while (!queue.isEmpty()) {
+        //     BasicBlock basicBlock = queue.poll();
+        //     if (visited.contains(basicBlock)) {
+        //         continue;
+        //     }
+        //     visited.add(basicBlock);
+        //     translateBasicBlock(basicBlock);
+        // }
+    }
+
+    private void dfsBasicBlock(BasicBlock basicBlock) {
+        if (visited.contains(basicBlock)) {
+            return;
+        }
+        visited.add(basicBlock);
+        // defUseMap.clear();
+        // addUsage(basicBlock.getOperandUsage());
+        mipsCode.addInstr(new Label(basicBlock.getLabel()));
+        // pay attention to label
+        for (BlockNode blockNode : basicBlock.getContent()) {
+            mipsCode.addInstr(new Comment(blockNode.toString()));
+            if (blockNode instanceof Branch) {
+                translateBranch((Branch) blockNode);
+                dfsBasicBlock(((Branch) blockNode).getThenBlock());
+                dfsBasicBlock(((Branch) blockNode).getElseBlock());
+            } else if (blockNode instanceof FourExpr) {
+                translateFourExpr((FourExpr) blockNode);
+            } else if (blockNode instanceof FuncCall) {
+                translateFuncCall((FuncCall) blockNode);
+            } else if (blockNode instanceof GetInt) {
+                translateGetInt((GetInt) blockNode);
+            } else if (blockNode instanceof Jump) {
+                translateJump((Jump) blockNode);
+                dfsBasicBlock(((Jump) blockNode).getTarget());
+            } else if (blockNode instanceof Memory) {
+                translateMemory((Memory) blockNode);
+            } else if (blockNode instanceof Pointer) {
+                translatePointer((Pointer) blockNode);
+            } else if (blockNode instanceof PrintInt) {
+                translatePrintInt((PrintInt) blockNode);
+            } else if (blockNode instanceof PrintStr) {
+                translatePrintStr((PrintStr) blockNode);
+            } else if (blockNode instanceof Return) {
+                translateReturn((Return) blockNode);
+            } else {
+                assert false;
             }
-            visited.add(basicBlock);
-            translateBasicBlock(basicBlock);
         }
     }
 
     // 记录所有（包括临时和局部和全局）变量的使用次数（表达式右端）
-    private void addUsage(ArrayList<Operand> operands) {
-        for (Operand operand : operands) {
-            if (operand instanceof Symbol) {
-                Symbol symbol = (Symbol) operand;
-                if (defUseMap.containsKey(symbol)) {
-                    defUseMap.put(symbol, defUseMap.get(symbol) + 1);
-                } else {
-                    defUseMap.put(symbol, 1);
-                }
-            }
-        }
-    }
+    // private void addUsage(ArrayList<Operand> operands) {
+    //     for (Operand operand : operands) {
+    //         if (operand instanceof Symbol) {
+    //             Symbol symbol = (Symbol) operand;
+    //             if (defUseMap.containsKey(symbol)) {
+    //                 defUseMap.put(symbol, defUseMap.get(symbol) + 1);
+    //             } else {
+    //                 defUseMap.put(symbol, 1);
+    //             }
+    //         }
+    //     }
+    // }
 
     // 所有变量使用次数减一， 如果减到零则释放它占用的寄存器
     public void consumeUsage(Operand operand) {
-        if (operand instanceof Symbol) {
+        if (operand instanceof Symbol && ((Symbol) operand).getScope() == Symbol.Scope.TEMP && !((Symbol) operand).hasAddress()) {
             Symbol symbol = (Symbol) operand;
-            assert defUseMap.containsKey(symbol);
-            if (defUseMap.get(symbol) == 1) {
-                defUseMap.remove(symbol);
+            assert symbolUsageMap.containsKey(symbol);
+            if (symbolUsageMap.get(symbol) == 1) {
+                symbolUsageMap.remove(symbol);
                 if (registers.occupyingRegister(symbol)) {
                     freeRegister(registers.getSymbolRegister(symbol), false);
                 }
             } else {
-                defUseMap.put(symbol, defUseMap.get(symbol) - 1);
+                symbolUsageMap.put(symbol, symbolUsageMap.get(symbol) - 1);
             }
         }
     }
@@ -173,7 +213,7 @@ public class Translator {
             if (symbol.getScope() == Symbol.Scope.GLOBAL) {
                 mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.lw, Registers.gp, symbol.getAddress(), target));
             } else {
-                assert symbol.hasAddress();  // could it be temp symbol? 即使是tempSymbol在saveSymbol时也会分配address
+                assert symbol.hasAddress();  // temp Symbol要么占有寄存器，要么具有地址
                 mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.lw, Registers.sp, -symbol.getAddress(), target));
             }
         }
@@ -233,41 +273,41 @@ public class Translator {
         }
     }
 
-    private void translateBasicBlock(BasicBlock basicBlock) {
-        defUseMap.clear();
-        addUsage(basicBlock.getOperandUsage());
-        mipsCode.addInstr(new Label(basicBlock.getLabel()));
-        // pay attention to label
-        for (BlockNode blockNode : basicBlock.getContent()) {
-            mipsCode.addInstr(new Comment(blockNode.toString()));
-            if (blockNode instanceof Branch) {
-                translateBranch((Branch) blockNode);
-            } else if (blockNode instanceof FourExpr) {
-                translateFourExpr((FourExpr) blockNode);
-            } else if (blockNode instanceof FuncCall) {
-                translateFuncCall((FuncCall) blockNode);
-            } else if (blockNode instanceof GetInt) {
-                translateGetInt((GetInt) blockNode);
-            } else if (blockNode instanceof Jump) {
-                translateJump((Jump) blockNode);
-            } else if (blockNode instanceof Memory) {
-                translateMemory((Memory) blockNode);
-            } else if (blockNode instanceof Pointer) {
-                translatePointer((Pointer) blockNode);
-            } else if (blockNode instanceof PrintInt) {
-                translatePrintInt((PrintInt) blockNode);
-            } else if (blockNode instanceof PrintStr) {
-                translatePrintStr((PrintStr) blockNode);
-            } else if (blockNode instanceof Return) {
-                translateReturn((Return) blockNode);
-            } else {
-                assert false;
-            }
-        }
-    }
+    // private void translateBasicBlock(BasicBlock basicBlock) {
+    //     defUseMap.clear();
+    //     addUsage(basicBlock.getOperandUsage());
+    //     mipsCode.addInstr(new Label(basicBlock.getLabel()));
+    //     // pay attention to label
+    //     for (BlockNode blockNode : basicBlock.getContent()) {
+    //         mipsCode.addInstr(new Comment(blockNode.toString()));
+    //         if (blockNode instanceof Branch) {
+    //             translateBranch((Branch) blockNode);
+    //         } else if (blockNode instanceof FourExpr) {
+    //             translateFourExpr((FourExpr) blockNode);
+    //         } else if (blockNode instanceof FuncCall) {
+    //             translateFuncCall((FuncCall) blockNode);
+    //         } else if (blockNode instanceof GetInt) {
+    //             translateGetInt((GetInt) blockNode);
+    //         } else if (blockNode instanceof Jump) {
+    //             translateJump((Jump) blockNode);
+    //         } else if (blockNode instanceof Memory) {
+    //             translateMemory((Memory) blockNode);
+    //         } else if (blockNode instanceof Pointer) {
+    //             translatePointer((Pointer) blockNode);
+    //         } else if (blockNode instanceof PrintInt) {
+    //             translatePrintInt((PrintInt) blockNode);
+    //         } else if (blockNode instanceof PrintStr) {
+    //             translatePrintStr((PrintStr) blockNode);
+    //         } else if (blockNode instanceof Return) {
+    //             translateReturn((Return) blockNode);
+    //         } else {
+    //             assert false;
+    //         }
+    //     }
+    // }
 
     private void translateBranch(Branch branch) {
-        freeAllRegisters(true);  // TODO: is it necessary? check
+        // freeAllRegisters(true);  // TODO: is it necessary? check
         Operand cond = branch.getCond();
         if (cond instanceof Immediate) {
             mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v1, ((Immediate) cond).getNumber()));
@@ -278,8 +318,8 @@ public class Translator {
         mipsCode.addInstr(
                 new BranchInstr(BranchInstr.BranchType.bne, Registers.v1, Registers.zero, branch.getThenBlock().getLabel()));
         mipsCode.addInstr(new J(branch.getElseBlock().getLabel()));
-        queue.add(branch.getThenBlock());
-        queue.add(branch.getElseBlock());
+        // queue.add(branch.getThenBlock());
+        // queue.add(branch.getElseBlock());
         consumeUsage(cond);
     }
 
@@ -348,6 +388,10 @@ public class Translator {
                     mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, resRegister, leftVal == rightVal ? 1 : 0));
                 } else if (op == FourExpr.ExprOp.NEQ) {
                     mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, resRegister, leftVal != rightVal ? 1 : 0));
+                } else if (op == FourExpr.ExprOp.OR) {   // only in cond Exp
+                    mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, resRegister, leftVal | rightVal));
+                } else if (op == FourExpr.ExprOp.AND) {
+                    mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, resRegister, leftVal & rightVal));
                 } else {
                     assert false;
                 }
@@ -382,6 +426,10 @@ public class Translator {
                     mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.seq, resRegister, leftRegister, rightVal));
                 } else if (op == FourExpr.ExprOp.NEQ) {
                     mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.sne, resRegister, leftRegister, rightVal));
+                } else if (op == FourExpr.ExprOp.OR) {   // only in cond Exp
+                    mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.ori, resRegister, leftRegister, rightVal));
+                } else if (op == FourExpr.ExprOp.AND) {
+                    mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.andi, resRegister, leftRegister, rightVal));
                 } else {
                     assert false;
                 }
@@ -417,6 +465,10 @@ public class Translator {
                     mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.seq, resRegister, rightRegister, leftVal));
                 } else if (op == FourExpr.ExprOp.NEQ) {
                     mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.sne, resRegister, rightRegister, leftVal));
+                } else if (op == FourExpr.ExprOp.OR) {   // only in cond Exp
+                    mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.ori, resRegister, rightRegister, leftVal));
+                } else if (op == FourExpr.ExprOp.AND) {
+                    mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.andi, resRegister, rightRegister, leftVal));
                 } else {
                     assert false;
                 }
@@ -448,6 +500,10 @@ public class Translator {
                     mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.seq, resRegister, leftRegister, rightRegister));
                 } else if (op == FourExpr.ExprOp.NEQ) {
                     mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.sne, resRegister, leftRegister, rightRegister));
+                } else if (op == FourExpr.ExprOp.OR) {   // only in cond Exp
+                    mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.ori, resRegister, leftRegister, rightRegister));
+                } else if (op == FourExpr.ExprOp.AND) {
+                    mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.andi, resRegister, leftRegister, rightRegister));
                 } else {
                     assert false;
                 }
@@ -513,9 +569,9 @@ public class Translator {
     }
 
     private void translateJump(Jump jump) {
-        freeAllRegisters(true);  // TODO: check
+        // freeAllRegisters(true);  // TODO: check
         mipsCode.addInstr(new J(jump.getTarget().getLabel()));
-        queue.add(jump.getTarget());
+        // queue.add(jump.getTarget());
     }
 
     private void translateMemory(Memory memory) {

@@ -1,8 +1,5 @@
 package Frontend;
 
-import BackEnd.Registers;
-import BackEnd.instructions.MemoryInstr;
-import BackEnd.instructions.MoveInstr;
 import Exceptions.IllegalBreakContinueException;
 import Exceptions.IllegalReturnException;
 import Exceptions.IllegalSymbolException;
@@ -714,17 +711,21 @@ public class SymbolTableBuilder {
             errors.add(new MissRparentException(whileStmt.getLine()));
         }
 
-        BasicBlock whileBlock = new BasicBlock("WHILE_LOOP_" + blockCount++);
+        BasicBlock whileBlock = new BasicBlock("WHILE_" + blockCount++);
         BasicBlock whileBody = new BasicBlock("WHILE_BODY_" + blockCount++);
         BasicBlock whileEnd = new BasicBlock("WHILE_END_" + blockCount++);
         inLoop.push(whileBlock);
         followLoop.push(whileEnd);
 
+        // step into while
+        currBlock.addContent(new Jump(whileBlock));
+        currBlock = whileBlock;
+
         // check Cond
         Operand cond = checkCond(whileStmt.getCond());
-        whileBlock.addContent(new Branch(cond, whileBody, whileEnd));
 
-        currBlock.addContent(new Jump(whileBlock));
+        // step into whileBody
+        whileBlock.addContent(new Branch(cond, whileBody, whileEnd));
         currBlock = whileBody;
 
         currSymbolTable = new SymbolTable(currSymbolTable);  // 下降一层
@@ -734,6 +735,7 @@ public class SymbolTableBuilder {
         loopDepth--;
         followLoop.pop();
         inLoop.pop();
+        currBlock.addContent(new Jump(whileBlock));
         currBlock = whileEnd;
     }
 
@@ -1061,11 +1063,11 @@ public class SymbolTableBuilder {
     // 短路求值
     // return Symbol
     public Operand checkLOrExp(LOrExp lOrExp) {
-        BasicBlock orEnd = new BasicBlock("B_OR_END_" + blockCount++);
+        BasicBlock orEnd = new BasicBlock("OR_END_" + blockCount++);
         Operand and = checkLAndExp(lOrExp.getFirstExp());
         Symbol orMidRes = Symbol.tempSymbol(SymbolType.BOOL);
         currBlock.addContent(new FourExpr(and, orMidRes, FourExpr.ExprOp.ASS));
-        BasicBlock falseBlock = new BasicBlock("B_OR_" + blockCount++);
+        BasicBlock falseBlock = new BasicBlock("OR_" + blockCount++);
         currBlock.addContent(new Branch(orMidRes, orEnd, falseBlock));
 
         currBlock = falseBlock;
@@ -1073,8 +1075,8 @@ public class SymbolTableBuilder {
         for (LAndExp lAndExp : andExps) {
             and = checkLAndExp(lAndExp);
             // Symbol orMidRes = Symbol.tempSymbol(SymbolType.INT);  maybe we can use former temp var res
-            currBlock.addContent(new FourExpr(and, orMidRes, FourExpr.ExprOp.ASS));
-            falseBlock = new BasicBlock("B_OR_" + blockCount++);
+            currBlock.addContent(new FourExpr(and, orMidRes, orMidRes, FourExpr.ExprOp.OR));
+            falseBlock = new BasicBlock("OR_" + blockCount++);
             currBlock.addContent(new Branch(orMidRes, orEnd, falseBlock));
             currBlock = falseBlock;
         }
@@ -1088,19 +1090,19 @@ public class SymbolTableBuilder {
     // return Symbol
     // TODO: 看看能不能省略midRes，直接根据Operand跳转
     public Operand checkLAndExp(LAndExp lAndExp) {
-        BasicBlock andEnd = new BasicBlock("B_AND_END_" + blockCount++);
+        BasicBlock andEnd = new BasicBlock("AND_END_" + blockCount++);
         Operand eq = checkEqExp(lAndExp.getFirstExp());
         Symbol andMidRes = Symbol.tempSymbol(SymbolType.BOOL);
         currBlock.addContent(new FourExpr(eq, andMidRes, FourExpr.ExprOp.ASS));
-        BasicBlock trueBlock = new BasicBlock("B_AND_" + blockCount++);
+        BasicBlock trueBlock = new BasicBlock("AND_" + blockCount++);
         currBlock.addContent(new Branch(eq, trueBlock, andEnd));
 
         currBlock = trueBlock;
         ArrayList<EqExp> eqExps = lAndExp.getExps();
         for (EqExp eqExp : eqExps) {
             eq = checkEqExp(eqExp);
-            currBlock.addContent(new FourExpr(eq, andMidRes, FourExpr.ExprOp.ASS));
-            trueBlock = new BasicBlock("B_AND_" + blockCount++);
+            currBlock.addContent(new FourExpr(eq, andMidRes, andMidRes, FourExpr.ExprOp.AND));
+            trueBlock = new BasicBlock("AND_" + blockCount++);
             currBlock.addContent(new Branch(andMidRes, trueBlock, andEnd));
             currBlock = trueBlock;
         }
