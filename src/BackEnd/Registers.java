@@ -19,10 +19,11 @@ public class Registers {
     public static final int a0 = 4;
     public static final int gp = 28;
     public static final int sp = 29;
+    public static final int fp = 30;
     public static final int ra = 31;
 
     private Integer[] availRegisters = {
-            5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 30
+            5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27
     };
 
     // free registers
@@ -44,6 +45,10 @@ public class Registers {
         return registerCache.remove();
     }
 
+    public int getFirstFreeRegister(){
+        return this.freeRegisters.peek();
+    }
+
     public int allocRegister(Symbol symbol) {
         if (symbolToRegister.containsKey(symbol)) {
             return symbolToRegister.get(symbol);
@@ -52,7 +57,7 @@ public class Registers {
         int register = freeRegisters.remove();
         registerToSymbol.put(register, symbol);
         symbolToRegister.put(symbol, register);
-        refreshCache(register);  // maybe not necessary
+        registerCache.add(register);
         return register;
     }
 
@@ -82,6 +87,10 @@ public class Registers {
     }
 
     public void refreshCache(int register) {
+        if ((0 <= register && register <= 4) || (28 <= register && register <= 31)) {
+            return;
+        }
+        assert registerCache.contains(register) : "更新的寄存器不在LRU序列中";
         registerCache.remove(register);
         registerCache.add(register);
     }
@@ -89,7 +98,6 @@ public class Registers {
     public boolean isOccupied(int register) {
         return this.registerToSymbol.containsKey(register);
     }
-
 
     public boolean occupyingRegister(Symbol symbol) {
         return symbolToRegister.containsKey(symbol);

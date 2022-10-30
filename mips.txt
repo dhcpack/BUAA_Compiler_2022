@@ -1,0 +1,278 @@
+# Yuelin's Compiler
+	
+.data
+	global:
+	
+	.space 4
+	STR_1: .asciiz "a is "
+	STR_3: .asciiz "b[0] is "
+	STR_2: .asciiz "\n"
+	STR_5: .asciiz "b is "
+	STR_4: .asciiz "b[1] is "
+.text
+	j FUNC_main
+FUNC_f:
+	# RETURN 0
+	li $2, 0
+	jr $ra
+FUNC_g:
+	# RETURN 1
+	li $2, 1
+	jr $ra
+FUNC_h:
+	# RETURN INT(a[sp-0x4])
+	lw $2, -0x4($29)
+	jr $ra
+FUNC_main:
+	# DEF, 4, INT(a[sp-0x4])
+	li $5, 4
+	# PRINT_STR STR_1
+	li $2, 4
+	la $4, STR_1
+	syscall
+	# PRINT_INT INT(a[sp-0x4])
+	li $2, 1
+	move $4, $5
+	syscall
+	# PRINT_STR STR_2
+	li $2, 4
+	la $4, STR_2
+	syscall
+	# OFFSET (12+0)->POINTER(tmp_pointer_0[temp])
+	addiu $6, $29, -12
+	# STORE POINTER(tmp_pointer_0[temp]), 1
+	li $3, 1
+	sw $3, 0x0($6)
+	# OFFSET (12+4)->POINTER(tmp_pointer_1[temp])
+	addiu $7, $29, -8
+	# STORE POINTER(tmp_pointer_1[temp]), 2
+	li $3, 2
+	sw $3, 0x0($7)
+	# PRINT_STR STR_3
+	li $2, 4
+	la $4, STR_3
+	syscall
+	# MUL, 0, 4, INT(tmp_int_0[temp])
+	li $8, 0
+	# ADD, INT(tmp_int_0[temp]), 0, INT(tmp_int_0[temp])
+	addiu $8, $8, 0
+	# OFFSET (12+INT(tmp_int_0[temp]))->POINTER(tmp_pointer_2[temp])
+	addiu $3, $29, -12
+	addu $9, $3, $8
+	# LOAD POINTER(tmp_pointer_2[temp]), INT(tmp_int_1[temp])
+	lw $10, 0x0($9)
+	# PRINT_INT INT(tmp_int_1[temp])
+	li $2, 1
+	move $4, $10
+	syscall
+	# PRINT_STR STR_2
+	li $2, 4
+	la $4, STR_2
+	syscall
+	# PRINT_STR STR_4
+	li $2, 4
+	la $4, STR_4
+	syscall
+	# MUL, 1, 4, INT(tmp_int_2[temp])
+	li $11, 4
+	# ADD, INT(tmp_int_2[temp]), 0, INT(tmp_int_2[temp])
+	addiu $11, $11, 0
+	# OFFSET (12+INT(tmp_int_2[temp]))->POINTER(tmp_pointer_3[temp])
+	addiu $3, $29, -12
+	addu $12, $3, $11
+	# LOAD POINTER(tmp_pointer_3[temp]), INT(tmp_int_3[temp])
+	lw $13, 0x0($12)
+	# PRINT_INT INT(tmp_int_3[temp])
+	li $2, 1
+	move $4, $13
+	syscall
+	# PRINT_STR STR_2
+	li $2, 4
+	la $4, STR_2
+	syscall
+	# JUMP B_3
+	sw $5, -0x4($29)
+	sw $10, -0x10($29)
+	sw $13, -0x14($29)
+	j B_3
+B_3:
+	# DEF, 1, INT(b[sp-0x4])
+	li $14, 1
+	# PRINT_STR STR_5
+	li $2, 4
+	la $4, STR_5
+	syscall
+	# PRINT_INT INT(b[sp-0x4])
+	li $2, 1
+	move $4, $14
+	syscall
+	# PRINT_STR STR_2
+	li $2, 4
+	la $4, STR_2
+	syscall
+	# JUMP B_4
+	sw $14, -0x4($29)
+	j B_4
+B_4:
+	# MUL, 0, 4, INT(tmp_int_4[temp])
+	li $15, 0
+	# ADD, INT(tmp_int_4[temp]), 0, INT(tmp_int_4[temp])
+	addiu $15, $15, 0
+	# OFFSET (12+INT(tmp_int_4[temp]))->POINTER(tmp_pointer_4[temp])
+	addiu $3, $29, -12
+	addu $16, $3, $15
+	# STORE POINTER(tmp_pointer_4[temp]), 2
+	li $3, 2
+	sw $3, 0x0($16)
+	# PRINT_STR STR_3
+	li $2, 4
+	la $4, STR_3
+	syscall
+	# MUL, 0, 4, INT(tmp_int_5[temp])
+	li $17, 0
+	# ADD, INT(tmp_int_5[temp]), 0, INT(tmp_int_5[temp])
+	addiu $17, $17, 0
+	# OFFSET (12+INT(tmp_int_5[temp]))->POINTER(tmp_pointer_5[temp])
+	addiu $3, $29, -12
+	addu $18, $3, $17
+	# LOAD POINTER(tmp_pointer_5[temp]), INT(tmp_int_6[temp])
+	lw $19, 0x0($18)
+	# PRINT_INT INT(tmp_int_6[temp])
+	li $2, 1
+	move $4, $19
+	syscall
+	# PRINT_STR STR_2
+	li $2, 4
+	la $4, STR_2
+	syscall
+	# PRINT_STR STR_4
+	li $2, 4
+	la $4, STR_4
+	syscall
+	# MUL, 1, 4, INT(tmp_int_7[temp])
+	li $20, 4
+	# ADD, INT(tmp_int_7[temp]), 0, INT(tmp_int_7[temp])
+	addiu $20, $20, 0
+	# OFFSET (12+INT(tmp_int_7[temp]))->POINTER(tmp_pointer_6[temp])
+	addiu $3, $29, -12
+	addu $21, $3, $20
+	# LOAD POINTER(tmp_pointer_6[temp]), INT(tmp_int_8[temp])
+	lw $22, 0x0($21)
+	# PRINT_INT INT(tmp_int_8[temp])
+	li $2, 1
+	move $4, $22
+	syscall
+	# PRINT_STR STR_2
+	li $2, 4
+	la $4, STR_2
+	syscall
+	# ASS, 0, INT(a[sp-0x4])
+	li $23, 0
+	# PRINT_STR STR_1
+	li $2, 4
+	la $4, STR_1
+	syscall
+	# PRINT_INT INT(a[sp-0x4])
+	li $2, 1
+	move $4, $23
+	syscall
+	# PRINT_STR STR_2
+	li $2, 4
+	la $4, STR_2
+	syscall
+	# GETINT INT(a[sp-0x4])
+	li $2, 5
+	syscall
+	move $23, $2
+	# PRINT_STR STR_1
+	li $2, 4
+	la $4, STR_1
+	syscall
+	# PRINT_INT INT(a[sp-0x4])
+	li $2, 1
+	move $4, $23
+	syscall
+	# PRINT_STR STR_2
+	li $2, 4
+	la $4, STR_2
+	syscall
+	# MUL, 1, 4, INT(tmp_int_9[temp])
+	li $24, 4
+	# ADD, INT(tmp_int_9[temp]), 0, INT(tmp_int_9[temp])
+	addiu $24, $24, 0
+	# OFFSET (12+INT(tmp_int_9[temp]))->POINTER(tmp_pointer_7[temp])
+	addiu $3, $29, -12
+	addu $25, $3, $24
+	# GETINT POINTER(tmp_pointer_7[temp])
+	li $2, 5
+	syscall
+	sw $2, 0x0($25)
+	# MUL, 0, 4, INT(tmp_int_10[temp])
+	li $26, 0
+	# ADD, INT(tmp_int_10[temp]), 0, INT(tmp_int_10[temp])
+	addiu $26, $26, 0
+	# OFFSET (12+INT(tmp_int_10[temp]))->POINTER(tmp_pointer_8[temp])
+	addiu $3, $29, -12
+	addu $27, $3, $26
+	# Call FUNC_h; Params: INT(a[sp-0x4]); RET INT(tmp_int_11[temp])
+	sw $19, -0x18($29)
+	sw $22, -0x1c($29)
+	sw $23, -0x4($29)
+	sw $27, -0x20($29)
+	sw $31, 0x0($29)
+	addiu $4, $29, -36
+	lw $3, -0x4($29)
+	sw $3, -0x4($4)
+	move $29, $4
+	jal FUNC_h
+	addiu $29, $29, 36
+	lw $31, 0x0($29)
+	move $6, $2
+	# STORE POINTER(tmp_pointer_8[sp-0x20]), INT(tmp_int_11[temp])
+	lw $7, -0x20($29)
+	sw $6, 0x0($7)
+	# PRINT_STR STR_3
+	li $2, 4
+	la $4, STR_3
+	syscall
+	# MUL, 0, 4, INT(tmp_int_12[temp])
+	li $7, 0
+	# ADD, INT(tmp_int_12[temp]), 0, INT(tmp_int_12[temp])
+	addiu $7, $7, 0
+	# OFFSET (12+INT(tmp_int_12[temp]))->POINTER(tmp_pointer_9[temp])
+	addiu $3, $29, -12
+	addu $8, $3, $7
+	# LOAD POINTER(tmp_pointer_9[temp]), INT(tmp_int_13[temp])
+	lw $9, 0x0($8)
+	# PRINT_INT INT(tmp_int_13[temp])
+	li $2, 1
+	move $4, $9
+	syscall
+	# PRINT_STR STR_2
+	li $2, 4
+	la $4, STR_2
+	syscall
+	# PRINT_STR STR_4
+	li $2, 4
+	la $4, STR_4
+	syscall
+	# MUL, 1, 4, INT(tmp_int_14[temp])
+	li $11, 4
+	# ADD, INT(tmp_int_14[temp]), 0, INT(tmp_int_14[temp])
+	addiu $11, $11, 0
+	# OFFSET (12+INT(tmp_int_14[temp]))->POINTER(tmp_pointer_10[temp])
+	addiu $3, $29, -12
+	addu $12, $3, $11
+	# LOAD POINTER(tmp_pointer_10[temp]), INT(tmp_int_15[temp])
+	lw $5, 0x0($12)
+	# PRINT_INT INT(tmp_int_15[temp])
+	li $2, 1
+	move $4, $5
+	syscall
+	# PRINT_STR STR_2
+	li $2, 4
+	la $4, STR_2
+	syscall
+	# RETURN 0
+	li $2, 10
+	syscall

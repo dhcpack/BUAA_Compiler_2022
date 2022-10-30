@@ -11,7 +11,7 @@ public class UnaryExp implements UnaryExpInterface {
     // UnaryOp could be null
     /*
      *  if UnaryOp is NULL then UnaryExp is PrimaryExp | FuncExp
-     *  else UnaryOp is UnaryOp UnaryExp
+     *  else UnaryExp is UnaryOp UnaryExp(this time PrimaryExp and FuncExp is NULL)
      */
     public UnaryExp(UnaryOp op, UnaryExpInterface unaryExpInterface) {
         this.op = op;

@@ -5,7 +5,7 @@ import Frontend.Lexer.Lexer;
 import Frontend.Parser.Parser;
 import Frontend.Parser.TokenHandler;
 import Frontend.Symbol.Errors;
-import Frontend.Symbol.SymbolTableBuilder;
+import Frontend.SymbolTableBuilder;
 import Middle.MiddleCode;
 
 import java.io.IOException;

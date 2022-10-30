@@ -20,6 +20,10 @@ public class MemoryInstr implements Instruction{
 
     @Override
     public String toString() {
-        return String.format("%s $%d, 0x%x($%d)\n", memoryType.name(), reg, offset, rBase);
+        if(offset>=0){
+            return String.format("%s $%d, 0x%x($%d)\n", memoryType.name(), reg, offset, rBase);
+        } else {
+            return String.format("%s $%d, -0x%x($%d)\n", memoryType.name(), reg, -offset, rBase);
+        }
     }
 }

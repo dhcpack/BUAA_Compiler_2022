@@ -29,6 +29,8 @@ public class BasicBlock {
             if (getInt.getTarget().getSymbolType() == SymbolType.POINTER) {
                 operandUsage.add(getInt.getTarget());
             }
+        } else if (blockNode instanceof Jump) {
+            return;
         } else if (blockNode instanceof Memory) {
             operandUsage.add(((Memory) blockNode).getOffset());
             operandUsage.add(((Memory) blockNode).getBase());
@@ -40,6 +42,8 @@ public class BasicBlock {
             }
         } else if (blockNode instanceof PrintInt) {
             operandUsage.add(((PrintInt) blockNode).getVal());
+        } else if (blockNode instanceof PrintStr) {
+            return;
         } else if (blockNode instanceof Return) {
             if (((Return) blockNode).hasReturnVal()) {
                 operandUsage.add(((Return) blockNode).getReturnVal());

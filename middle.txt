@@ -1,4 +1,9 @@
 ###### GLOBAL STRING ######
+STR_1 : a is 
+STR_3 : b[0] is 
+STR_2 : \n
+STR_5 : b is 
+STR_4 : b[1] is 
 
 ###### GLOBAL ARRAY ######
 
@@ -17,34 +22,93 @@ FUNC_g:
 	RETURN 1
 
 # func h : stack size 0x4
-# param: a[sp-0x4] :INT
+# param: INT(a[sp-0x4])
 FUNC_h:
-	RETURN a[sp-0x4] :INT
+	RETURN INT(a[sp-0x4])
 
 # func main : stack size 0xc
 # param: 
 FUNC_main:
-	DEF, 4, a[sp-0x4] :INT
-	OFFSET 4+0->tmp_pointer_0TEMP :POINTER
-	STORE tmp_pointer_0TEMP :POINTER, 1
-	OFFSET 4+4->tmp_pointer_1TEMP :POINTER
-	STORE tmp_pointer_1TEMP :POINTER, 2
+	DEF, 4, INT(a[sp-0x4])
+	PRINT_STR STR_1
+	PRINT_INT INT(a[sp-0x4])
+	PRINT_STR STR_2
+	OFFSET (12+0)->POINTER(tmp_pointer_0[temp])
+	STORE POINTER(tmp_pointer_0[temp]), 1
+	OFFSET (12+4)->POINTER(tmp_pointer_1[temp])
+	STORE POINTER(tmp_pointer_1[temp]), 2
+	PRINT_STR STR_3
+	MUL, 0, 4, INT(tmp_int_0[temp])
+	ADD, INT(tmp_int_0[temp]), 0, INT(tmp_int_0[temp])
+	OFFSET (12+INT(tmp_int_0[temp]))->POINTER(tmp_pointer_2[temp])
+	LOAD POINTER(tmp_pointer_2[temp]), INT(tmp_int_1[temp])
+	PRINT_INT INT(tmp_int_1[temp])
+	PRINT_STR STR_2
+	PRINT_STR STR_4
+	MUL, 1, 4, INT(tmp_int_2[temp])
+	ADD, INT(tmp_int_2[temp]), 0, INT(tmp_int_2[temp])
+	OFFSET (12+INT(tmp_int_2[temp]))->POINTER(tmp_pointer_3[temp])
+	LOAD POINTER(tmp_pointer_3[temp]), INT(tmp_int_3[temp])
+	PRINT_INT INT(tmp_int_3[temp])
+	PRINT_STR STR_2
 	JUMP B_3
 
 B_3:
-	DEF, 1, b[sp-0x4] :INT
+	DEF, 1, INT(b[sp-0x4])
+	PRINT_STR STR_5
+	PRINT_INT INT(b[sp-0x4])
+	PRINT_STR STR_2
 	JUMP B_4
 
 B_4:
-	MUL, 0, 4, tmp_int_0TEMP :INT
-	ADD, tmp_int_0TEMP :INT, 0, tmp_int_0TEMP :INT
-	OFFSET 4+tmp_int_0TEMP :INT->tmp_pointer_2TEMP :POINTER
-	STORE tmp_pointer_2TEMP :POINTER, 2
-	ASS, 0, a[sp-0x4] :INT
-	GETINT a[sp-0x4] :INT
-	MUL, 1, 4, tmp_int_1TEMP :INT
-	ADD, tmp_int_1TEMP :INT, 0, tmp_int_1TEMP :INT
-	OFFSET 4+tmp_int_1TEMP :INT->tmp_pointer_3TEMP :POINTER
-	GETINT tmp_pointer_3TEMP :POINTER
+	MUL, 0, 4, INT(tmp_int_4[temp])
+	ADD, INT(tmp_int_4[temp]), 0, INT(tmp_int_4[temp])
+	OFFSET (12+INT(tmp_int_4[temp]))->POINTER(tmp_pointer_4[temp])
+	STORE POINTER(tmp_pointer_4[temp]), 2
+	PRINT_STR STR_3
+	MUL, 0, 4, INT(tmp_int_5[temp])
+	ADD, INT(tmp_int_5[temp]), 0, INT(tmp_int_5[temp])
+	OFFSET (12+INT(tmp_int_5[temp]))->POINTER(tmp_pointer_5[temp])
+	LOAD POINTER(tmp_pointer_5[temp]), INT(tmp_int_6[temp])
+	PRINT_INT INT(tmp_int_6[temp])
+	PRINT_STR STR_2
+	PRINT_STR STR_4
+	MUL, 1, 4, INT(tmp_int_7[temp])
+	ADD, INT(tmp_int_7[temp]), 0, INT(tmp_int_7[temp])
+	OFFSET (12+INT(tmp_int_7[temp]))->POINTER(tmp_pointer_6[temp])
+	LOAD POINTER(tmp_pointer_6[temp]), INT(tmp_int_8[temp])
+	PRINT_INT INT(tmp_int_8[temp])
+	PRINT_STR STR_2
+	ASS, 0, INT(a[sp-0x4])
+	PRINT_STR STR_1
+	PRINT_INT INT(a[sp-0x4])
+	PRINT_STR STR_2
+	GETINT INT(a[sp-0x4])
+	PRINT_STR STR_1
+	PRINT_INT INT(a[sp-0x4])
+	PRINT_STR STR_2
+	MUL, 1, 4, INT(tmp_int_9[temp])
+	ADD, INT(tmp_int_9[temp]), 0, INT(tmp_int_9[temp])
+	OFFSET (12+INT(tmp_int_9[temp]))->POINTER(tmp_pointer_7[temp])
+	GETINT POINTER(tmp_pointer_7[temp])
+	MUL, 0, 4, INT(tmp_int_10[temp])
+	ADD, INT(tmp_int_10[temp]), 0, INT(tmp_int_10[temp])
+	OFFSET (12+INT(tmp_int_10[temp]))->POINTER(tmp_pointer_8[temp])
+	Call FUNC_h; Params: INT(a[sp-0x4]); RET INT(tmp_int_11[temp])
+	STORE POINTER(tmp_pointer_8[temp]), INT(tmp_int_11[temp])
+	PRINT_STR STR_3
+	MUL, 0, 4, INT(tmp_int_12[temp])
+	ADD, INT(tmp_int_12[temp]), 0, INT(tmp_int_12[temp])
+	OFFSET (12+INT(tmp_int_12[temp]))->POINTER(tmp_pointer_9[temp])
+	LOAD POINTER(tmp_pointer_9[temp]), INT(tmp_int_13[temp])
+	PRINT_INT INT(tmp_int_13[temp])
+	PRINT_STR STR_2
+	PRINT_STR STR_4
+	MUL, 1, 4, INT(tmp_int_14[temp])
+	ADD, INT(tmp_int_14[temp]), 0, INT(tmp_int_14[temp])
+	OFFSET (12+INT(tmp_int_14[temp]))->POINTER(tmp_pointer_10[temp])
+	LOAD POINTER(tmp_pointer_10[temp]), INT(tmp_int_15[temp])
+	PRINT_INT INT(tmp_int_15[temp])
+	PRINT_STR STR_2
 	RETURN 0
 
