@@ -1,6 +1,8 @@
 ###### GLOBAL STRING ######
-STR_1 : a is 
-STR_2 : \n, b is 
+STR_1 : n is 
+STR_3 : 1\n
+STR_2 : \n
+STR_4 : 2\n
 
 ###### GLOBAL ARRAY ######
 
@@ -8,37 +10,80 @@ STR_2 : \n, b is
 
 ###### TEXT ######
 JUMP FUNC_main
-# func main : stack size 0x8
+# func main : stack size 0x4
 # param: 
 FUNC_main:
-	DEF, 1, INT(a[sp-0x4])
-	DEF, 2, INT(b[sp-0x8])
-	EQ, INT(a[sp-0x4]), 1, BOOL(tmp_bool_0[temp])
+	DEF, 10, INT(n[sp-0x4])
+	JUMP WHILE_0
+WHILE_0:
+	ASS, INT(n[sp-0x4]), BOOL(tmp_bool_0[temp])
+	Branch INT(n[sp-0x4]) ? AND_5 : AND_END_4
+AND_5:
+	JUMP AND_END_4
+AND_END_4:
 	ASS, BOOL(tmp_bool_0[temp]), BOOL(tmp_bool_1[temp])
-	Branch BOOL(tmp_bool_0[temp]) ? AND_2 : AND_END_1
-AND_2:
-	EQ, INT(b[sp-0x8]), 2, BOOL(tmp_bool_2[temp])
-	AND, BOOL(tmp_bool_2[temp]), BOOL(tmp_bool_1[temp]), BOOL(tmp_bool_1[temp])
-	Branch BOOL(tmp_bool_1[temp]) ? AND_3 : AND_END_1
-AND_3:
-	JUMP AND_END_1
-AND_END_1:
-	ASS, BOOL(tmp_bool_1[temp]), BOOL(tmp_bool_3[temp])
-	Branch BOOL(tmp_bool_3[temp]) ? OR_END_0 : OR_4
-OR_END_0:
-	Branch BOOL(tmp_bool_3[temp]) ? IF_BODY_5 : IF_END_6
-IF_BODY_5:
+	Branch BOOL(tmp_bool_1[temp]) ? OR_END_3 : OR_6
+OR_6:
+	JUMP OR_END_3
+OR_END_3:
+	Branch BOOL(tmp_bool_1[temp]) ? WHILE_BODY_1 : WHILE_END_2
+WHILE_BODY_1:
 	JUMP B_7
 B_7:
+	SUB, INT(n[sp-0x4]), 1, BOOL(tmp_bool_2[temp])
+	ASS, BOOL(tmp_bool_2[temp]), INT(n[sp-0x4])
 	PRINT_STR STR_1
-	PRINT_INT INT(a[sp-0x4])
+	PRINT_INT INT(n[sp-0x4])
 	PRINT_STR STR_2
-	PRINT_INT INT(b[sp-0x8])
-	JUMP B_8
-B_8:
-	JUMP IF_END_6
-IF_END_6:
-	RETURN 0
-OR_4:
-	JUMP OR_END_0
+	LT, INT(n[sp-0x4]), 5, BOOL(tmp_bool_3[temp])
+	ASS, BOOL(tmp_bool_3[temp]), BOOL(tmp_bool_4[temp])
+	Branch BOOL(tmp_bool_3[temp]) ? AND_10 : AND_END_9
+AND_10:
+	JUMP AND_END_9
+AND_END_9:
+	ASS, BOOL(tmp_bool_4[temp]), BOOL(tmp_bool_5[temp])
+	Branch BOOL(tmp_bool_5[temp]) ? OR_END_8 : OR_11
+OR_11:
+	JUMP OR_END_8
+OR_END_8:
+	Branch BOOL(tmp_bool_5[temp]) ? IF_BODY_12 : IF_END_13
+IF_BODY_12:
+	JUMP B_14
+B_14:
+	JUMP WHILE_0
+	JUMP B_15
+B_15:
+	JUMP IF_END_13
+IF_END_13:
+	EQ, INT(n[sp-0x4]), 1, BOOL(tmp_bool_6[temp])
+	ASS, BOOL(tmp_bool_6[temp]), BOOL(tmp_bool_7[temp])
+	Branch BOOL(tmp_bool_6[temp]) ? AND_18 : AND_END_17
+AND_18:
+	JUMP AND_END_17
+AND_END_17:
+	ASS, BOOL(tmp_bool_7[temp]), BOOL(tmp_bool_8[temp])
+	Branch BOOL(tmp_bool_8[temp]) ? OR_END_16 : OR_19
+OR_19:
+	JUMP OR_END_16
+OR_END_16:
+	Branch BOOL(tmp_bool_8[temp]) ? IF_BODY_20 : IF_ELSE_22
+IF_BODY_20:
+	JUMP B_23
+B_23:
+	PRINT_STR STR_3
+	JUMP B_24
+B_24:
+	JUMP IF_END_21
+IF_END_21:
+IF_ELSE_22:
+	JUMP B_25
+B_25:
+	PRINT_STR STR_4
+	JUMP B_26
+B_26:
+	JUMP IF_END_21
+	JUMP B_27
+B_27:
+	JUMP WHILE_0
+WHILE_END_2:
 

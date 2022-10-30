@@ -188,9 +188,15 @@ public class MiddleCode implements Output {
                 dfsBlock(target, print);
             } else if (blockNode instanceof Branch) {
                 BasicBlock thenBlock = ((Branch) blockNode).getThenBlock();
-                dfsBlock(thenBlock, print);
                 BasicBlock elseBlock = ((Branch) blockNode).getElseBlock();
-                dfsBlock(elseBlock, print);
+                if (((Branch) blockNode).isThenFirst()) {
+                    dfsBlock(thenBlock, print);
+                    dfsBlock(elseBlock, print);
+                } else {
+                    dfsBlock(elseBlock, print);
+                    dfsBlock(thenBlock, print);
+                }
+
             }
         }
     }

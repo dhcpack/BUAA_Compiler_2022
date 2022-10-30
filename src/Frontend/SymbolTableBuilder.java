@@ -617,7 +617,7 @@ public class SymbolTableBuilder {
         // ArrayList<Stmt> stmts = ifStmt.getStmts();
         if (ifStmt.hasElse()) {
             BasicBlock ifElse = new BasicBlock("IF_ELSE_" + blockCount++);
-            currBlock.addContent(new Branch(cond, ifBody, ifElse));
+            currBlock.addContent(new Branch(cond, ifBody, ifElse, true));
             currBlock = ifBody;
             checkStmt(ifStmt.getStmts().get(0));
             currBlock.addContent(new Jump(ifEnd));
@@ -625,7 +625,7 @@ public class SymbolTableBuilder {
             checkStmt(ifStmt.getStmts().get(1));
             currBlock.addContent(new Jump(ifEnd));
         } else {
-            currBlock.addContent(new Branch(cond, ifBody, ifEnd));
+            currBlock.addContent(new Branch(cond, ifBody, ifEnd, true));
             currBlock = ifBody;
             checkStmt(ifStmt.getStmts().get(0));
             currBlock.addContent(new Jump(ifEnd));
@@ -725,7 +725,7 @@ public class SymbolTableBuilder {
         Operand cond = checkCond(whileStmt.getCond());
 
         // step into whileBody
-        whileBlock.addContent(new Branch(cond, whileBody, whileEnd));
+        whileBlock.addContent(new Branch(cond, whileBody, whileEnd, true));
         currBlock = whileBody;
 
         currSymbolTable = new SymbolTable(currSymbolTable);  // 下降一层
@@ -1068,7 +1068,7 @@ public class SymbolTableBuilder {
         Symbol orMidRes = Symbol.tempSymbol(SymbolType.BOOL);
         currBlock.addContent(new FourExpr(and, orMidRes, FourExpr.ExprOp.ASS));
         BasicBlock falseBlock = new BasicBlock("OR_" + blockCount++);
-        currBlock.addContent(new Branch(orMidRes, orEnd, falseBlock));
+        currBlock.addContent(new Branch(orMidRes, orEnd, falseBlock, false));
 
         currBlock = falseBlock;
         ArrayList<LAndExp> andExps = lOrExp.getExps();
@@ -1077,7 +1077,7 @@ public class SymbolTableBuilder {
             // Symbol orMidRes = Symbol.tempSymbol(SymbolType.INT);  maybe we can use former temp var res
             currBlock.addContent(new FourExpr(and, orMidRes, orMidRes, FourExpr.ExprOp.OR));
             falseBlock = new BasicBlock("OR_" + blockCount++);
-            currBlock.addContent(new Branch(orMidRes, orEnd, falseBlock));
+            currBlock.addContent(new Branch(orMidRes, orEnd, falseBlock, false));
             currBlock = falseBlock;
         }
         currBlock.addContent(new Jump(orEnd));
@@ -1095,7 +1095,7 @@ public class SymbolTableBuilder {
         Symbol andMidRes = Symbol.tempSymbol(SymbolType.BOOL);
         currBlock.addContent(new FourExpr(eq, andMidRes, FourExpr.ExprOp.ASS));
         BasicBlock trueBlock = new BasicBlock("AND_" + blockCount++);
-        currBlock.addContent(new Branch(eq, trueBlock, andEnd));
+        currBlock.addContent(new Branch(eq, trueBlock, andEnd, true));
 
         currBlock = trueBlock;
         ArrayList<EqExp> eqExps = lAndExp.getExps();
@@ -1103,7 +1103,7 @@ public class SymbolTableBuilder {
             eq = checkEqExp(eqExp);
             currBlock.addContent(new FourExpr(eq, andMidRes, andMidRes, FourExpr.ExprOp.AND));
             trueBlock = new BasicBlock("AND_" + blockCount++);
-            currBlock.addContent(new Branch(andMidRes, trueBlock, andEnd));
+            currBlock.addContent(new Branch(andMidRes, trueBlock, andEnd, true));
             currBlock = trueBlock;
         }
         currBlock.addContent(new Jump(andEnd));
