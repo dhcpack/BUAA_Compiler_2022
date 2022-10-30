@@ -158,6 +158,8 @@ public class Translator {
     }
 
     // 将symbol加载到target寄存器(从内存中取值)，这个函数可以指定寄存器
+    // TODO: WARNING!!! loadSymbol函数可能会造成某个符号占用两个寄存器的情况，导致Registers出错
+    // TODO: 目前loadSymbol主要用于特殊寄存器，allocRegister调用时也会保证symbol没有占用寄存器
     public void loadSymbol(Symbol symbol, int target) {
         if (registers.occupyingRegister(symbol)) {
             int register = registers.getSymbolRegister(symbol);
@@ -165,7 +167,7 @@ public class Translator {
                 return;
             }
             assert !registers.isOccupied(target);  // 寄存器没有被占用
-            mipsCode.addInstr(new MoveInstr(registers.getSymbolRegister(symbol), Registers.a0));
+            mipsCode.addInstr(new MoveInstr(registers.getSymbolRegister(symbol), target));
         } else {
             assert !registers.isOccupied(target);  // 寄存器没有被占用
             if (symbol.getScope() == Symbol.Scope.GLOBAL) {
@@ -190,7 +192,7 @@ public class Translator {
         int register = registers.getSymbolRegister(symbol);
         if (symbol.getScope() == Symbol.Scope.GLOBAL) {
             mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.gp, symbol.getAddress(), register));
-        } else if (symbol.getScope() == Symbol.Scope.LOCAL) {
+        } else if (symbol.getScope() == Symbol.Scope.LOCAL || symbol.getScope() == Symbol.Scope.PARAM) {
             mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.sp, -symbol.getAddress(), register));
         } else if (symbol.getScope() == Symbol.Scope.TEMP) {
             if (saveTemp) {
@@ -467,7 +469,7 @@ public class Translator {
         // 被调用的函数的参数保存在函数栈指针的前几个位置
         int offset = 0;
         for (Operand param : funcCall.getrParams()) {
-            offset -= 4;  // 函数从4开始放参数
+            offset -= 4;  // 函数从addr = 4开始放参数
             if (param instanceof Immediate) {
                 mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v1, ((Immediate) param).getNumber()));
                 mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.a0, offset, Registers.v1));
@@ -531,8 +533,11 @@ public class Translator {
                         -base.getAddress() + ((Immediate) offset).getNumber()));
             }
         } else if (offset instanceof Symbol) {
+            // base是global或local时，可以直接计算出它在内存中的地址(sp, gp)，但是base是param时，需要先把base在内存中的地址取出来，再和offset相加
             if (base.getScope() == Symbol.Scope.GLOBAL) {
                 mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.addiu, Registers.v1, Registers.gp, base.getAddress()));
+            } else if (base.getScope() == Symbol.Scope.PARAM) {  // base是param，先把base在内存中的地址取出来，再和offset相加
+                mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.lw, Registers.sp, -base.getAddress(), Registers.v1));
             } else {
                 mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.addiu, Registers.v1, Registers.sp, -base.getAddress()));
             }

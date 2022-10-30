@@ -36,6 +36,7 @@ import Frontend.Symbol.Errors;
 import Frontend.Symbol.Symbol;
 import Frontend.Symbol.SymbolTable;
 import Frontend.Symbol.SymbolType;
+import Middle.type.BlockNode;
 import Middle.type.Immediate;
 import Frontend.Parser.expr.types.LAndExp;
 import Frontend.Parser.expr.types.LOrExp;
@@ -191,9 +192,9 @@ public class SymbolTableBuilder {
                 } else {
                     Operand val;
                     if (initVal.isConst()) {
-                        val = checkConstExp(initVal.getConstExp());
+                        val = checkConstExp(initVal.getConstExp(), false);
                     } else {
-                        val = checkExp(initVal.getExp());
+                        val = checkExp(initVal.getExp(), false);
                     }
                     currBlock.addContent(new Middle.type.FourExpr(val, symbol, FourExpr.ExprOp.DEF));
                     symbol.setScope(Symbol.Scope.LOCAL);
@@ -238,7 +239,7 @@ public class SymbolTableBuilder {
                 } else {
                     int offset = 0;
                     for (AddExp addExp : initExp) {
-                        Operand exp = checkAddExp(addExp);
+                        Operand exp = checkAddExp(addExp, false);
                         Symbol ptr = Symbol.tempSymbol(SymbolType.POINTER);
                         currBlock.addContent(new Memory(symbol, new Immediate(offset * 4), ptr));  // 局部数组
                         currBlock.addContent(new Pointer(Pointer.Op.STORE, ptr, exp));
@@ -355,13 +356,14 @@ public class SymbolTableBuilder {
         // check FuncFParams
         ArrayList<FuncFParam> funcFParams = funcDef.getFuncFParams();
         ArrayList<Symbol> params = new ArrayList<>();
-        int addr = 4;  // 函数栈基地址处放ra，从4开始放参数（也从4开始取参数）
+        // int addr = 4;  // 函数栈基地址处放ra，从4开始放参数（也从4开始取参数）
         for (FuncFParam funcFParam : funcFParams) {
             Symbol symbol = checkFuncFParam(funcFParam); // checkFuncFParam could return null
             if (symbol != null) {
                 params.add(symbol);
-                symbol.setAddress(addr);
-                addr += symbol.getSize();
+                symbol.setAddress(currSymbolTable.getStackSize());
+                // symbol.setAddress(addr);
+                // addr += symbol.getSize();
             }
         }
 
@@ -425,6 +427,7 @@ public class SymbolTableBuilder {
         }
 
         // add to symbol table
+        // 函数参数每一个的大小都是4
         if (!redefine) {
             if (funcFParam.isArray()) {
                 ArrayList<ConstExp> dimExp = funcFParam.getDimExp();
@@ -432,12 +435,14 @@ public class SymbolTableBuilder {
                 ArrayList<Integer> dimSize = dimExp.stream().map(constExpCalculator::calcConstExp)
                         .collect(Collectors.toCollection(ArrayList::new));
                 dimSize.add(0, -20231164);  // 第一维省略
-                Symbol array = new Symbol(SymbolType.ARRAY, ident, dimSize, dimSize.size(), false, Symbol.Scope.LOCAL);
+                Symbol array = new Symbol(SymbolType.ARRAY, ident, dimSize, dimSize.size(), false, Symbol.Scope.PARAM);
                 currSymbolTable.addSymbol(array);
+                // array.setAddress(currSymbolTable.getStackSize());  // 在checkFunc中设置地址
                 return array;
             } else {
                 Symbol val = new Symbol(SymbolType.INT, ident, false, Symbol.Scope.LOCAL);
                 currSymbolTable.addSymbol(val);
+                // val.setAddress(currSymbolTable.getStackSize());
                 return val;
             }
         } else {
@@ -491,7 +496,7 @@ public class SymbolTableBuilder {
         // check LVal, and LVal could not be const
         Symbol lVal = checkLVal(assignStmt.getLVal(), true);
         // check right Val
-        Operand operand = checkExp(assignStmt.getExp());
+        Operand operand = checkExp(assignStmt.getExp(), false);
         if (lVal.getSymbolType() == SymbolType.POINTER) {
             currBlock.addContent(new Pointer(Pointer.Op.STORE, lVal, operand));  // 数组存内存
         } else if (lVal.getSymbolType() == SymbolType.INT) {
@@ -586,7 +591,7 @@ public class SymbolTableBuilder {
 
     // Exp ';'
     public void checkExpStmt(ExpStmt expStmt) {
-        checkExp(expStmt.getExp());
+        checkExp(expStmt.getExp(), false);
     }
 
     // LVal '=' 'getint''('')'
@@ -655,22 +660,34 @@ public class SymbolTableBuilder {
         // String[] s = printfStmt.getFormatString().getContent().split("%d");
         formatString = formatString.substring(1, formatString.length() - 1);
         String formatChar = "%d";
+        ArrayList<BlockNode> printBlocks = new ArrayList<>();
+        ArrayList<Operand> printExps = new ArrayList<>();
         int index = 0, prev = 0;
         for (Exp exp : exps) {
             index = formatString.indexOf(formatChar, index);  // find %d and point to %
             if (index > prev) {
                 String str = formatString.substring(prev, index);
                 String strName = middleCode.addAsciiz(str);
-                currBlock.addContent(new PrintStr(strName));
+                printBlocks.add(new PrintStr(strName));
             }
-            currBlock.addContent(new PrintInt(checkExp(exp)));
+            printExps.add(checkExp(exp, false));
+            printBlocks.add(new PrintInt());
             index += 2;
             prev = index;
         }
         if (index != formatString.length()) {
             String str = formatString.substring(index);
             String strName = middleCode.addAsciiz(str);
-            currBlock.addContent(new PrintStr(strName));
+            printBlocks.add(new PrintStr(strName));
+        }
+        int i = 0;
+        for (BlockNode print : printBlocks) {
+            if (print instanceof PrintStr) {
+                currBlock.addContent(print);
+            } else {
+                ((PrintInt) print).setVal(printExps.get(i++));
+                currBlock.addContent(print);
+            }
         }
         return;
     }
@@ -681,7 +698,7 @@ public class SymbolTableBuilder {
             errors.add(new IllegalReturnException(returnStmt.getReturnToken().getLine()));
         }
         if (returnStmt.getReturnExp() != null) {
-            Operand returnVal = checkExp(returnStmt.getReturnExp());
+            Operand returnVal = checkExp(returnStmt.getReturnExp(), false);
             currBlock.addContent(new Return(returnVal));
         } else {
             currBlock.addContent(new Return());
@@ -720,25 +737,25 @@ public class SymbolTableBuilder {
         currBlock = whileEnd;
     }
 
-    public Operand checkConstExp(ConstExp constExp) {
-        return checkAddExp(constExp.getAddExp());
+    public Operand checkConstExp(ConstExp constExp, boolean returnPointer) {
+        return checkAddExp(constExp.getAddExp(), returnPointer);
     }
 
-    public Operand checkExp(Exp exp) {
-        return checkAddExp(exp.getAddExp());
+    public Operand checkExp(Exp exp, boolean returnPointer) {
+        return checkAddExp(exp.getAddExp(), returnPointer);
     }
 
     // 四元式表达
     // AddExp → MulExp {('+' | '−') MulExp}
-    public Operand checkAddExp(AddExp addExp) {
-        Operand left = checkMulExp(addExp.getFirstExp());
+    public Operand checkAddExp(AddExp addExp, boolean returnPointer) {
+        Operand left = checkMulExp(addExp.getFirstExp(), returnPointer);
         ArrayList<MulExp> mulExps = addExp.getExps();
         // ArrayList<LeafNode> nodes = addExp.getExps().stream().map(this::checkMulExp)
         //         .collect(Collectors.toCollection(ArrayList::new));
         ArrayList<Token> seps = addExp.getSeps();
         for (int i = 0; i < seps.size(); i++) {
             Symbol temp = Symbol.tempSymbol(SymbolType.BOOL);
-            Operand right = checkMulExp(mulExps.get(i));
+            Operand right = checkMulExp(mulExps.get(i), returnPointer);
             if (seps.get(i).getType() == TokenType.PLUS) {
                 currBlock.addContent(new FourExpr(left, right, temp, FourExpr.ExprOp.ADD));
             } else if (seps.get(i).getType() == TokenType.MINU) {
@@ -752,15 +769,15 @@ public class SymbolTableBuilder {
     }
 
     // MulExp → UnaryExp {('*' | '/' | '%') UnaryExp}
-    public Operand checkMulExp(MulExp mulExp) {
-        Operand left = checkUnaryExp(mulExp.getFirstExp());
+    public Operand checkMulExp(MulExp mulExp, boolean returnPointer) {
+        Operand left = checkUnaryExp(mulExp.getFirstExp(), returnPointer);
         ArrayList<UnaryExp> unaryExps = mulExp.getExps();
         // ArrayList<LeafNode> nodes = mulExp.getExps().stream().map(this::checkUnaryExp)
         //         .collect(Collectors.toCollection(ArrayList::new));
         ArrayList<Token> seps = mulExp.getSeps();
         for (int i = 0; i < seps.size(); i++) {
             Symbol temp = Symbol.tempSymbol(SymbolType.INT);
-            Operand right = checkUnaryExp(unaryExps.get(i));
+            Operand right = checkUnaryExp(unaryExps.get(i), returnPointer);
             if (seps.get(i).getType() == TokenType.MULT) {
                 currBlock.addContent(new FourExpr(left, right, temp, FourExpr.ExprOp.MUL));
             } else if (seps.get(i).getType() == TokenType.DIV) {
@@ -781,16 +798,16 @@ public class SymbolTableBuilder {
     // }
 
 
-    public Operand checkUnaryExp(UnaryExp unaryExp) {
+    public Operand checkUnaryExp(UnaryExp unaryExp, boolean returnPointer) {
         UnaryExpInterface unaryExpInterface = unaryExp.getUnaryExpInterface();
         UnaryOp unaryOp = unaryExp.getOp();
         if (unaryExpInterface instanceof FuncExp) {
             return checkFuncExp((FuncExp) unaryExpInterface);
         } else if (unaryExpInterface instanceof PrimaryExp) {
-            return checkPrimaryExp((PrimaryExp) unaryExpInterface);
+            return checkPrimaryExp((PrimaryExp) unaryExpInterface, returnPointer);
         } else {
             assert unaryOp != null;
-            Operand midRes = checkUnaryExp((UnaryExp) unaryExpInterface);
+            Operand midRes = checkUnaryExp((UnaryExp) unaryExpInterface, returnPointer);
             if (unaryOp.getToken().getType() == TokenType.PLUS) {
                 return midRes;
             }
@@ -817,20 +834,24 @@ public class SymbolTableBuilder {
     //     return null;
     // }
 
-    public Operand checkPrimaryExp(PrimaryExp primaryExp) {
-        return checkPrimaryExpInterFace(primaryExp.getPrimaryExpInterface());
+    public Operand checkPrimaryExp(PrimaryExp primaryExp, boolean returnPointer) {
+        return checkPrimaryExpInterFace(primaryExp.getPrimaryExpInterface(), returnPointer);
     }
 
-    public Operand checkPrimaryExpInterFace(PrimaryExpInterface primaryExpInterface) {
+    public Operand checkPrimaryExpInterFace(PrimaryExpInterface primaryExpInterface, boolean returnPointer) {
         if (primaryExpInterface instanceof BraceExp) {
             return checkBraceExp((BraceExp) primaryExpInterface);
         } else if (primaryExpInterface instanceof LVal) {
             // TODO: check LVal using right or not（LVal是否正确使用，和Exp是否匹配，int）
             Symbol lVal = checkLVal((LVal) primaryExpInterface, false);
             if (lVal.getSymbolType() == SymbolType.POINTER) {
-                Symbol temp = Symbol.tempSymbol(SymbolType.INT);
-                currBlock.addContent(new Pointer(Pointer.Op.LOAD, lVal, temp));  // 取出数值并返回
-                return temp;
+                if (returnPointer) {
+                    return lVal;
+                } else {
+                    Symbol temp = Symbol.tempSymbol(SymbolType.INT);
+                    currBlock.addContent(new Pointer(Pointer.Op.LOAD, lVal, temp));  // 取出数值并返回
+                    return temp;
+                }
             } else if (lVal.getSymbolType() == SymbolType.INT) {
                 return lVal;
             } else {
@@ -850,7 +871,7 @@ public class SymbolTableBuilder {
         if (braceExp.missRightParenthesis()) {
             errors.add(new MissRparentException(braceExp.getLine()));
         }
-        return checkExp(braceExp.getExp());
+        return checkExp(braceExp.getExp(), false);
     }
 
     // LVal → Ident {'[' Exp ']'}
@@ -904,7 +925,7 @@ public class SymbolTableBuilder {
             for (int i = placeExp.size() - 1; i >= 0; i--) {
                 Operand weight = new Immediate(suffix.get(i) * 4);  // 后缀积
                 Symbol mid = Symbol.tempSymbol(SymbolType.INT);
-                Operand currPlace = checkExp(placeExp.get(i));
+                Operand currPlace = checkExp(placeExp.get(i), false);
                 currBlock.addContent(new FourExpr(currPlace, weight, mid, FourExpr.ExprOp.MUL));
                 currBlock.addContent(new FourExpr(mid, offset, mid, FourExpr.ExprOp.ADD));
                 offset = mid;
@@ -958,7 +979,7 @@ public class SymbolTableBuilder {
         ArrayList<Operand> Rparams = new ArrayList<>();  // LeafNode is LVal or Number or funcExp
         if (funcRParams != null) {
             for (Exp exp : funcRParams.getExps()) {
-                Operand res = checkExp(exp);
+                Operand res = checkExp(exp, true);  // 如果是数组则返回数组指针
                 if (res == null) {
                     assert false : "check";
                     return null;
@@ -1116,14 +1137,14 @@ public class SymbolTableBuilder {
     // 四元式表达
     // return Symbol
     public Operand checkRelExp(RelExp relExp) {
-        Operand left = checkAddExp(relExp.getFirstExp());
+        Operand left = checkAddExp(relExp.getFirstExp(), false);
         ArrayList<AddExp> exps = relExp.getExps();
         // ArrayList<LeafNode> nodes = relExp.getExps().stream().map(this::checkAddExp)
         //         .collect(Collectors.toCollection(ArrayList::new));  // 一个一个算 要不然可能会造成寄存器的浪费和冲突
         ArrayList<Token> seps = relExp.getSeps();
         for (int i = 0; i < exps.size(); i++) {
             Symbol temp = Symbol.tempSymbol(SymbolType.BOOL);
-            Operand right = checkAddExp(exps.get(i));
+            Operand right = checkAddExp(exps.get(i), false);
             if (seps.get(i).getType() == TokenType.LSS) {
                 currBlock.addContent(new FourExpr(left, right, temp, FourExpr.ExprOp.LT));
             } else if (seps.get(i).getType() == TokenType.LEQ) {

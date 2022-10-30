@@ -11,6 +11,7 @@ public class Symbol implements LeafNode, Operand {
         GLOBAL,
         LOCAL,
         TEMP,
+        PARAM,  // 只记录函数实参中的array类型变量
     }
 
     private String name;
@@ -193,6 +194,9 @@ public class Symbol implements LeafNode, Operand {
     }
 
     public int getSize() {
+        if (scope == Scope.PARAM) {
+            return 4;
+        }
         if (symbolType == SymbolType.INT) {
             return 4;
         } else if (symbolType == SymbolType.POINTER) {
@@ -252,7 +256,7 @@ public class Symbol implements LeafNode, Operand {
         String addr;
         if (scope == Scope.GLOBAL) {
             addr = String.format("[data+0x%x]", this.address);
-        } else if (scope == Scope.LOCAL) {
+        } else if (scope == Scope.LOCAL || scope == Scope.PARAM) {
             addr = String.format("[sp-0x%x]", this.address);
         } else {
             if (hasAddress) {

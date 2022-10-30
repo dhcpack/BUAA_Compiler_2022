@@ -7,11 +7,19 @@ public class PrintInt extends BlockNode {
         PRINT_INT,
         PRINT_STR,
     }
+
     private final PrintType type = PrintType.PRINT_INT;
 
-    private final Operand val;
+    private Operand val;
+
+    public PrintInt() {
+    }
 
     public PrintInt(Operand val) {
+        this.val = val;
+    }
+
+    public void setVal(Operand val) {
         this.val = val;
     }
 
