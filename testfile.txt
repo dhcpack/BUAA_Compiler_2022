@@ -1,13 +1,8 @@
-int f(){
-    return 999;
-}
-
 int main(){
-    int a[1] = {8};
-    int b = a[0];
-    b = 10;
-    f();
-    printf("%d\n", b);
-    printf("%d\n", a[0]);
+    int a = 1;
+    int b = 2;
+    if(a == 1 && b == 2){
+        printf("a is %d\n, b is %d", a, b);
+    }
     return 0;
 }

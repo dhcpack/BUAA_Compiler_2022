@@ -1,5 +1,6 @@
 package Middle;
 
+import BackEnd.instructions.J;
 import Config.MiddleWriter;
 import Config.Output;
 import Frontend.Symbol.Symbol;
@@ -8,6 +9,7 @@ import Middle.type.BlockNode;
 import Middle.type.Branch;
 import Middle.type.FuncBlock;
 import Middle.type.Jump;
+import Middle.type.Operand;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -84,6 +86,8 @@ public class MiddleCode implements Output {
         return this.nameToFunc.get(funcName);
     }
 
+    public HashSet<BasicBlock> visited = new HashSet<>();
+
     @Override
     public void output() {
         MiddleWriter.print("###### GLOBAL STRING ######");
@@ -113,8 +117,8 @@ public class MiddleCode implements Output {
         MiddleWriter.print("###### TEXT ######");
         MiddleWriter.print("JUMP FUNC_main");
 
-        HashSet<BasicBlock> visited = new HashSet<>();
-        Queue<BasicBlock> queue = new LinkedList<>();
+        // HashSet<BasicBlock> visited = new HashSet<>();
+        // Queue<BasicBlock> queue = new LinkedList<>();
 
         for (FuncBlock funcBlock : nameToFunc.values()) {
             MiddleWriter.print(
@@ -124,34 +128,92 @@ public class MiddleCode implements Output {
                 params.add(param.toString());
             }
             MiddleWriter.print(String.format("# param: %s", params));
-            queue.add(funcBlock.getBody());
-            while (!queue.isEmpty()) {
-                BasicBlock front = queue.poll();
-                if (visited.contains(front)) {
-                    continue;
-                }
-                visited.add(front);
-                MiddleWriter.print(front.getLabel() + ":");
-                ArrayList<BlockNode> blockNodes = front.getContent();
-                for (BlockNode blockNode : blockNodes) {
-                    if (blockNode instanceof Jump) {
-                        BasicBlock target = ((Jump) blockNode).getTarget();
-                        queue.add(target);
-                    } else if (blockNode instanceof Branch) {
-                        BasicBlock thenBlock = ((Branch) blockNode).getThenBlock();
-                        queue.add(thenBlock);
-                        BasicBlock elseBlock = ((Branch) blockNode).getElseBlock();
-                        queue.add(elseBlock);
-                    }
-                    MiddleWriter.print("\t" + blockNode);
-                }
-                MiddleWriter.print("\n");
-            }
+            dfsBlock(funcBlock.getBody(), true);
+            MiddleWriter.print("\n");
+            // queue.add(funcBlock.getBody());
+            // while (!queue.isEmpty()) {
+            //     BasicBlock front = queue.poll();
+            //     if (visited.contains(front)) {
+            //         continue;
+            //     }
+            //     visited.add(front);
+            //     MiddleWriter.print(front.getLabel() + ":");
+            //     ArrayList<BlockNode> blockNodes = front.getContent();
+            //     for (BlockNode blockNode : blockNodes) {
+            //         if (blockNode instanceof Jump) {
+            //             BasicBlock target = ((Jump) blockNode).getTarget();
+            //             queue.add(target);
+            //         } else if (blockNode instanceof Branch) {
+            //             BasicBlock thenBlock = ((Branch) blockNode).getThenBlock();
+            //             queue.add(thenBlock);
+            //             BasicBlock elseBlock = ((Branch) blockNode).getElseBlock();
+            //             queue.add(elseBlock);
+            //         }
+            //         MiddleWriter.print("\t" + blockNode);
+            //     }
+            //     MiddleWriter.print("\n");
+            // }
         }
         try {
             MiddleWriter.flush();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void dfsBlock(BasicBlock block, boolean print) {
+        if (visited.contains(block)) {
+            return;
+        }
+        visited.add(block);
+        if (print) {
+            MiddleWriter.print(block.getLabel() + ":");
+        }
+        for (Operand operand : block.getOperandUsage()) {
+            if (operand instanceof Symbol && ((Symbol) operand).getScope() == Symbol.Scope.TEMP && !((Symbol) operand).hasAddress()) {
+                Symbol symbol = (Symbol) operand;
+                if (symbolUsageMap.containsKey(symbol)) {
+                    symbolUsageMap.put(symbol, symbolUsageMap.get(symbol) + 1);
+                } else {
+                    symbolUsageMap.put(symbol, 1);
+                }
+            }
+        }
+        for (BlockNode blockNode : block.getContent()) {
+            if (print) {
+                MiddleWriter.print("\t" + blockNode);
+            }
+            if (blockNode instanceof Jump) {
+                BasicBlock target = ((Jump) blockNode).getTarget();
+                dfsBlock(target, print);
+            } else if (blockNode instanceof Branch) {
+                BasicBlock thenBlock = ((Branch) blockNode).getThenBlock();
+                dfsBlock(thenBlock, print);
+                BasicBlock elseBlock = ((Branch) blockNode).getElseBlock();
+                dfsBlock(elseBlock, print);
+            }
+        }
+    }
+
+    private final HashMap<Symbol, Integer> symbolUsageMap = new HashMap<>();
+
+    // for (Operand operand : operands) {
+    //     if (operand instanceof Symbol) {
+    //         Symbol symbol = (Symbol) operand;
+    //         if (defUseMap.containsKey(symbol)) {
+    //             defUseMap.put(symbol, defUseMap.get(symbol) + 1);
+    //         } else {
+    //             defUseMap.put(symbol, 1);
+    //         }
+    //     }
+    // }
+    public HashMap<Symbol, Integer> getSymbolUsageMap() {
+        if (visited.size() != 0) {
+            return symbolUsageMap;
+        }
+        for (FuncBlock funcBlock : nameToFunc.values()) {
+            dfsBlock(funcBlock.getBody(), false);
+        }
+        return symbolUsageMap;
     }
 }
