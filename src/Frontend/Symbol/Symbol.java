@@ -229,15 +229,12 @@ public class Symbol implements LeafNode, Operand {
 
     private static int tempIntCount = 0;
     private static int tempPointerCount = 0;
-    private static int tempBoolCount = 0;
 
     public static Symbol tempSymbol(SymbolType symbolType) {
         if (symbolType == SymbolType.INT) {
             return new Symbol(symbolType, "tmp_int_" + tempIntCount++, false, Scope.TEMP);
         } else if (symbolType == SymbolType.POINTER) {
             return new Symbol(symbolType, "tmp_pointer_" + tempPointerCount++, false, Scope.TEMP);
-        } else if (symbolType == SymbolType.BOOL) {
-            return new Symbol(symbolType, "tmp_bool_" + tempBoolCount++, false, Scope.TEMP);
         }
         assert false;
         return null;

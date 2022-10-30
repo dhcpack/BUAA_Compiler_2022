@@ -5,8 +5,7 @@ public enum SymbolType {
     ARRAY,
     FUNCTION,
     VOID,
-    POINTER,
-    BOOL;
+    POINTER;
 
     @Override
     public String toString() {
