@@ -770,7 +770,7 @@ public class SymbolTableBuilder {
         //         .collect(Collectors.toCollection(ArrayList::new));
         ArrayList<Token> seps = addExp.getSeps();
         for (int i = 0; i < seps.size(); i++) {
-            Symbol temp = Symbol.tempSymbol(SymbolType.BOOL);
+            Symbol temp = Symbol.tempSymbol(SymbolType.INT);
             Operand right = checkMulExp(mulExps.get(i), returnPointer);
             if (seps.get(i).getType() == TokenType.PLUS) {
                 currBlock.addContent(new FourExpr(left, right, temp, FourExpr.ExprOp.ADD));
@@ -1079,7 +1079,7 @@ public class SymbolTableBuilder {
     public Operand checkLOrExp(LOrExp lOrExp) {
         BasicBlock orEnd = new BasicBlock("OR_END_" + blockCount++);
         Operand and = checkLAndExp(lOrExp.getFirstExp());
-        Symbol orMidRes = Symbol.tempSymbol(SymbolType.BOOL);
+        Symbol orMidRes = Symbol.tempSymbol(SymbolType.INT);
         currBlock.addContent(new FourExpr(and, orMidRes, FourExpr.ExprOp.ASS));
         BasicBlock falseBlock = new BasicBlock("OR_" + blockCount++);
         currBlock.addContent(new Branch(orMidRes, orEnd, falseBlock, false));
@@ -1106,7 +1106,7 @@ public class SymbolTableBuilder {
     public Operand checkLAndExp(LAndExp lAndExp) {
         BasicBlock andEnd = new BasicBlock("AND_END_" + blockCount++);
         Operand eq = checkEqExp(lAndExp.getFirstExp());
-        Symbol andMidRes = Symbol.tempSymbol(SymbolType.BOOL);
+        Symbol andMidRes = Symbol.tempSymbol(SymbolType.INT);
         currBlock.addContent(new FourExpr(eq, andMidRes, FourExpr.ExprOp.ASS));
         BasicBlock trueBlock = new BasicBlock("AND_" + blockCount++);
         currBlock.addContent(new Branch(eq, trueBlock, andEnd, true));
@@ -1135,7 +1135,7 @@ public class SymbolTableBuilder {
         //         .collect(Collectors.toCollection(ArrayList::new));
         ArrayList<Token> seps = eqExp.getSeps();
         for (int i = 0; i < relExps.size(); i++) {
-            Symbol temp = Symbol.tempSymbol(SymbolType.BOOL);
+            Symbol temp = Symbol.tempSymbol(SymbolType.INT);
             Operand right = checkRelExp(relExps.get(i));
             if (seps.get(i).getType() == TokenType.EQL) {
                 currBlock.addContent(new FourExpr(left, right, temp, FourExpr.ExprOp.EQ));
@@ -1159,7 +1159,7 @@ public class SymbolTableBuilder {
         //         .collect(Collectors.toCollection(ArrayList::new));  // 一个一个算 要不然可能会造成寄存器的浪费和冲突
         ArrayList<Token> seps = relExp.getSeps();
         for (int i = 0; i < exps.size(); i++) {
-            Symbol temp = Symbol.tempSymbol(SymbolType.BOOL);
+            Symbol temp = Symbol.tempSymbol(SymbolType.INT);
             Operand right = checkAddExp(exps.get(i), false);
             if (seps.get(i).getType() == TokenType.LSS) {
                 currBlock.addContent(new FourExpr(left, right, temp, FourExpr.ExprOp.LT));

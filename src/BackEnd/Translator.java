@@ -96,6 +96,7 @@ public class Translator {
         BasicBlock body = funcBlock.getBody();
         // mipsCode.addInstr(new Label(funcBlock.getLabel()));
         dfsBasicBlock(body);
+        mipsCode.addInstr(new Comment(""));
         // queue.add(body);
         // while (!queue.isEmpty()) {
         //     BasicBlock basicBlock = queue.poll();
@@ -343,11 +344,11 @@ public class Translator {
                 }
             } else if (op == FourExpr.ExprOp.NOT) {
                 if (left instanceof Immediate) {
-                    mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.sne, resRegister, Registers.zero,
+                    mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.seq, resRegister, Registers.zero,  // 等于0时候not值为1
                             ((Immediate) left).getNumber()));
                 } else if (left instanceof Symbol) {
                     int leftRegister = allocRegister((Symbol) left, true);
-                    mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.sne, resRegister, Registers.zero, leftRegister));
+                    mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.seq, resRegister, Registers.zero, leftRegister));
                 } else {
                     assert false;
                 }
