@@ -1,18 +1,31 @@
 ###### GLOBAL STRING ######
-STR_1 : n is 
-STR_3 : 1\n
+STR_7 : Break is error!\n
+STR_6 : + is error!\n
+STR_9 : a2+b2 is 
+STR_8 : a1+b1 is 
+STR_1 : 19231204
+STR_3 : Continue is error!\n
 STR_2 : \n
-STR_4 : 2\n
+STR_5 : + is correct!\n
+STR_4 : Break is error!And < is error!\n
 
 ###### GLOBAL ARRAY ######
 
 ###### GLOBAL VAR ######
+[0x0]a1: 1
+[0x10]b2: -5
+[0x4]a2: 3
+[0x14]b3: 6
+[0x8]a3: 8
+[0xc]b1: 2
 
 ###### TEXT ######
 JUMP FUNC_main
 # func main : stack size 0x4
 # param: 
 FUNC_main:
+	PRINT_STR STR_1
+	PRINT_STR STR_2
 	DEF, 10, INT(n[sp-0x4])
 	JUMP WHILE_0
 WHILE_0:
@@ -32,10 +45,7 @@ WHILE_BODY_1:
 B_7:
 	SUB, INT(n[sp-0x4]), 1, BOOL(tmp_bool_2[temp])
 	ASS, BOOL(tmp_bool_2[temp]), INT(n[sp-0x4])
-	PRINT_STR STR_1
-	PRINT_INT INT(n[sp-0x4])
-	PRINT_STR STR_2
-	LT, INT(n[sp-0x4]), 5, BOOL(tmp_bool_3[temp])
+	LT, INT(n[sp-0x4]), INT(b3[data+0x14]), BOOL(tmp_bool_3[temp])
 	ASS, BOOL(tmp_bool_3[temp]), BOOL(tmp_bool_4[temp])
 	Branch BOOL(tmp_bool_3[temp]) ? AND_10 : AND_END_9
 AND_10:
@@ -51,11 +61,12 @@ IF_BODY_12:
 	JUMP B_14
 B_14:
 	JUMP WHILE_0
+	PRINT_STR STR_3
 	JUMP B_15
 B_15:
 	JUMP IF_END_13
 IF_END_13:
-	EQ, INT(n[sp-0x4]), 1, BOOL(tmp_bool_6[temp])
+	LT, INT(n[sp-0x4]), INT(a1[data+0x0]), BOOL(tmp_bool_6[temp])
 	ASS, BOOL(tmp_bool_6[temp]), BOOL(tmp_bool_7[temp])
 	Branch BOOL(tmp_bool_6[temp]) ? AND_18 : AND_END_17
 AND_18:
@@ -66,24 +77,122 @@ AND_END_17:
 OR_19:
 	JUMP OR_END_16
 OR_END_16:
-	Branch BOOL(tmp_bool_8[temp]) ? IF_BODY_20 : IF_ELSE_22
+	Branch BOOL(tmp_bool_8[temp]) ? IF_BODY_20 : IF_END_21
 IF_BODY_20:
+	JUMP B_22
+B_22:
+	JUMP WHILE_END_2
+WHILE_END_2:
+	NEQ, INT(n[sp-0x4]), INT(b1[data+0xc]), BOOL(tmp_bool_15[temp])
+	ASS, BOOL(tmp_bool_15[temp]), BOOL(tmp_bool_16[temp])
+	Branch BOOL(tmp_bool_15[temp]) ? AND_46 : AND_END_45
+AND_46:
+	JUMP AND_END_45
+AND_END_45:
+	ASS, BOOL(tmp_bool_16[temp]), BOOL(tmp_bool_17[temp])
+	Branch BOOL(tmp_bool_17[temp]) ? OR_END_44 : OR_47
+OR_47:
+	JUMP OR_END_44
+OR_END_44:
+	Branch BOOL(tmp_bool_17[temp]) ? IF_BODY_48 : IF_END_49
+IF_BODY_48:
+	JUMP B_50
+B_50:
+	EQ, INT(n[sp-0x4]), 0, BOOL(tmp_bool_18[temp])
+	ASS, BOOL(tmp_bool_18[temp]), BOOL(tmp_bool_19[temp])
+	Branch BOOL(tmp_bool_18[temp]) ? AND_53 : AND_END_52
+AND_53:
+	JUMP AND_END_52
+AND_END_52:
+	ASS, BOOL(tmp_bool_19[temp]), BOOL(tmp_bool_20[temp])
+	Branch BOOL(tmp_bool_20[temp]) ? OR_END_51 : OR_54
+OR_54:
+	JUMP OR_END_51
+OR_END_51:
+	Branch BOOL(tmp_bool_20[temp]) ? IF_BODY_55 : IF_ELSE_57
+IF_BODY_55:
+	JUMP B_58
+B_58:
+	PRINT_STR STR_7
+	JUMP B_59
+B_59:
+	JUMP IF_END_56
+IF_END_56:
+	JUMP B_62
+B_62:
+	JUMP IF_END_49
+IF_END_49:
+	ADD, INT(a1[data+0x0]), INT(b1[data+0xc]), BOOL(tmp_bool_21[temp])
+	PRINT_STR STR_8
+	PRINT_INT BOOL(tmp_bool_21[temp])
+	PRINT_STR STR_2
+	ADD, INT(a2[data+0x4]), INT(b2[data+0x10]), BOOL(tmp_bool_22[temp])
+	PRINT_STR STR_9
+	PRINT_INT BOOL(tmp_bool_22[temp])
+	PRINT_STR STR_2
+	RETURN 0
+IF_ELSE_57:
+	JUMP B_60
+B_60:
+	PRINT_STR STR_3
+	JUMP B_61
+B_61:
+	JUMP IF_END_56
+	JUMP B_62
+	PRINT_STR STR_4
 	JUMP B_23
 B_23:
-	PRINT_STR STR_3
-	JUMP B_24
-B_24:
 	JUMP IF_END_21
 IF_END_21:
-IF_ELSE_22:
-	JUMP B_25
-B_25:
-	PRINT_STR STR_4
-	JUMP B_26
-B_26:
-	JUMP IF_END_21
-	JUMP B_27
-B_27:
+	EQ, INT(n[sp-0x4]), INT(a2[data+0x4]), BOOL(tmp_bool_9[temp])
+	ASS, BOOL(tmp_bool_9[temp]), BOOL(tmp_bool_10[temp])
+	Branch BOOL(tmp_bool_9[temp]) ? AND_26 : AND_END_25
+AND_26:
+	JUMP AND_END_25
+AND_END_25:
+	ASS, BOOL(tmp_bool_10[temp]), BOOL(tmp_bool_11[temp])
+	Branch BOOL(tmp_bool_11[temp]) ? OR_END_24 : OR_27
+OR_27:
+	JUMP OR_END_24
+OR_END_24:
+	Branch BOOL(tmp_bool_11[temp]) ? IF_BODY_28 : IF_ELSE_30
+IF_BODY_28:
+	JUMP B_31
+B_31:
+	PRINT_STR STR_5
+	JUMP B_32
+B_32:
+	JUMP IF_END_29
+IF_END_29:
+	EQ, INT(n[sp-0x4]), INT(b1[data+0xc]), BOOL(tmp_bool_12[temp])
+	ASS, BOOL(tmp_bool_12[temp]), BOOL(tmp_bool_13[temp])
+	Branch BOOL(tmp_bool_12[temp]) ? AND_37 : AND_END_36
+AND_37:
+	JUMP AND_END_36
+AND_END_36:
+	ASS, BOOL(tmp_bool_13[temp]), BOOL(tmp_bool_14[temp])
+	Branch BOOL(tmp_bool_14[temp]) ? OR_END_35 : OR_38
+OR_38:
+	JUMP OR_END_35
+OR_END_35:
+	Branch BOOL(tmp_bool_14[temp]) ? IF_BODY_39 : IF_END_40
+IF_BODY_39:
+	JUMP B_41
+B_41:
+	JUMP WHILE_END_2
+	JUMP B_42
+B_42:
+	JUMP IF_END_40
+IF_END_40:
+	JUMP B_43
+B_43:
 	JUMP WHILE_0
-WHILE_END_2:
+IF_ELSE_30:
+	JUMP B_33
+B_33:
+	PRINT_STR STR_6
+	JUMP B_34
+B_34:
+	JUMP IF_END_29
+	JUMP B_43
 

@@ -120,7 +120,7 @@ public class Translator {
             mipsCode.addInstr(new Comment(blockNode.toString()));
             if (blockNode instanceof Branch) {
                 translateBranch((Branch) blockNode);
-                if(((Branch)blockNode).isThenFirst()){
+                if (((Branch) blockNode).isThenFirst()) {
                     dfsBasicBlock(((Branch) blockNode).getThenBlock());
                     dfsBasicBlock(((Branch) blockNode).getElseBlock());
                 } else {
@@ -196,10 +196,8 @@ public class Translator {
         if (loadVal) {
             int target = registers.getFirstFreeRegister();
             loadSymbol(symbol, target);
-            return target;
-        } else {
-            return registers.allocRegister(symbol);
         }
+        return registers.allocRegister(symbol);
     }
 
     // 将symbol加载到target寄存器(从内存中取值)，这个函数可以指定寄存器

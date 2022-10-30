@@ -69,6 +69,14 @@ public class BasicBlock {
         return label;
     }
 
+    public BlockNode getLastContent() {
+        if (content.size() == 0) {
+            return null;
+        } else {
+            return this.content.get(this.content.size() - 1);
+        }
+    }
+
     @Override
     public String toString() {
         return this.label.toString();

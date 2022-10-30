@@ -2,15 +2,29 @@
 	
 .data
 	global:
-	
+	1 3 8 2 -5 6
 	.space 4
-	STR_1: .asciiz "n is "
-	STR_3: .asciiz "1\n"
+	STR_7: .asciiz "Break is error!\n"
+	STR_6: .asciiz "+ is error!\n"
+	STR_9: .asciiz "a2+b2 is "
+	STR_8: .asciiz "a1+b1 is "
+	STR_1: .asciiz "19231204"
+	STR_3: .asciiz "Continue is error!\n"
 	STR_2: .asciiz "\n"
-	STR_4: .asciiz "2\n"
+	STR_5: .asciiz "+ is correct!\n"
+	STR_4: .asciiz "Break is error!And < is error!\n"
 .text
+	la $gp, global
 	j FUNC_main
 FUNC_main:
+	# PRINT_STR STR_1
+	li $2, 4
+	la $4, STR_1
+	syscall
+	# PRINT_STR STR_2
+	li $2, 4
+	la $4, STR_2
+	syscall
 	# DEF, 10, INT(n[sp-0x4])
 	li $5, 10
 	# JUMP WHILE_0
@@ -48,22 +62,11 @@ B_7:
 	addiu $8, $5, -1
 	# ASS, BOOL(tmp_bool_2[temp]), INT(n[sp-0x4])
 	move $5, $8
-	# PRINT_STR STR_1
-	li $2, 4
-	la $4, STR_1
-	syscall
-	# PRINT_INT INT(n[sp-0x4])
-	li $2, 1
-	move $4, $5
-	syscall
-	# PRINT_STR STR_2
-	li $2, 4
-	la $4, STR_2
-	syscall
-	# LT, INT(n[sp-0x4]), 5, BOOL(tmp_bool_3[temp])
-	slti $9, $5, 5
+	# LT, INT(n[sp-0x4]), INT(b3[data+0x14]), BOOL(tmp_bool_3[temp])
+	lw $10, 0x14($28)
+	slt $9, $5, $10
 	# ASS, BOOL(tmp_bool_3[temp]), BOOL(tmp_bool_4[temp])
-	move $10, $9
+	move $11, $9
 	# Branch BOOL(tmp_bool_3[temp]) ? AND_10 : AND_END_9
 	move $3, $9
 	bne $3, $0, AND_10
@@ -73,9 +76,9 @@ AND_10:
 	j AND_END_9
 AND_END_9:
 	# ASS, BOOL(tmp_bool_4[temp]), BOOL(tmp_bool_5[temp])
-	move $11, $10
+	move $12, $11
 	# Branch BOOL(tmp_bool_5[temp]) ? OR_END_8 : OR_11
-	move $3, $11
+	move $3, $12
 	bne $3, $0, OR_END_8
 	j OR_11
 OR_11:
@@ -83,7 +86,7 @@ OR_11:
 	j OR_END_8
 OR_END_8:
 	# Branch BOOL(tmp_bool_5[temp]) ? IF_BODY_12 : IF_END_13
-	move $3, $11
+	move $3, $12
 	bne $3, $0, IF_BODY_12
 	j IF_END_13
 IF_BODY_12:
@@ -92,18 +95,23 @@ IF_BODY_12:
 B_14:
 	# JUMP WHILE_0
 	j WHILE_0
+	# PRINT_STR STR_3
+	li $2, 4
+	la $4, STR_3
+	syscall
 	# JUMP B_15
 	j B_15
 B_15:
 	# JUMP IF_END_13
 	j IF_END_13
 IF_END_13:
-	# EQ, INT(n[sp-0x4]), 1, BOOL(tmp_bool_6[temp])
-	seq $12, $5, 1
+	# LT, INT(n[sp-0x4]), INT(a1[data+0x0]), BOOL(tmp_bool_6[temp])
+	lw $14, 0x0($28)
+	slt $13, $5, $14
 	# ASS, BOOL(tmp_bool_6[temp]), BOOL(tmp_bool_7[temp])
-	move $13, $12
+	move $15, $13
 	# Branch BOOL(tmp_bool_6[temp]) ? AND_18 : AND_END_17
-	move $3, $12
+	move $3, $13
 	bne $3, $0, AND_18
 	j AND_END_17
 AND_18:
@@ -111,49 +119,256 @@ AND_18:
 	j AND_END_17
 AND_END_17:
 	# ASS, BOOL(tmp_bool_7[temp]), BOOL(tmp_bool_8[temp])
-	move $14, $13
+	move $16, $15
 	# Branch BOOL(tmp_bool_8[temp]) ? OR_END_16 : OR_19
-	move $3, $14
+	move $3, $16
 	bne $3, $0, OR_END_16
 	j OR_19
 OR_19:
 	# JUMP OR_END_16
 	j OR_END_16
 OR_END_16:
-	# Branch BOOL(tmp_bool_8[temp]) ? IF_BODY_20 : IF_ELSE_22
-	move $3, $14
+	# Branch BOOL(tmp_bool_8[temp]) ? IF_BODY_20 : IF_END_21
+	move $3, $16
 	bne $3, $0, IF_BODY_20
-	j IF_ELSE_22
+	j IF_END_21
 IF_BODY_20:
-	# JUMP B_23
-	j B_23
-B_23:
+	# JUMP B_22
+	j B_22
+B_22:
+	# JUMP WHILE_END_2
+	j WHILE_END_2
+WHILE_END_2:
+	# NEQ, INT(n[sp-0x4]), INT(b1[data+0xc]), BOOL(tmp_bool_15[temp])
+	lw $18, 0xc($28)
+	sne $17, $5, $18
+	# ASS, BOOL(tmp_bool_15[temp]), BOOL(tmp_bool_16[temp])
+	move $19, $17
+	# Branch BOOL(tmp_bool_15[temp]) ? AND_46 : AND_END_45
+	move $3, $17
+	bne $3, $0, AND_46
+	j AND_END_45
+AND_46:
+	# JUMP AND_END_45
+	j AND_END_45
+AND_END_45:
+	# ASS, BOOL(tmp_bool_16[temp]), BOOL(tmp_bool_17[temp])
+	move $20, $19
+	# Branch BOOL(tmp_bool_17[temp]) ? OR_END_44 : OR_47
+	move $3, $20
+	bne $3, $0, OR_END_44
+	j OR_47
+OR_47:
+	# JUMP OR_END_44
+	j OR_END_44
+OR_END_44:
+	# Branch BOOL(tmp_bool_17[temp]) ? IF_BODY_48 : IF_END_49
+	move $3, $20
+	bne $3, $0, IF_BODY_48
+	j IF_END_49
+IF_BODY_48:
+	# JUMP B_50
+	j B_50
+B_50:
+	# EQ, INT(n[sp-0x4]), 0, BOOL(tmp_bool_18[temp])
+	seq $21, $5, 0
+	# ASS, BOOL(tmp_bool_18[temp]), BOOL(tmp_bool_19[temp])
+	move $22, $21
+	# Branch BOOL(tmp_bool_18[temp]) ? AND_53 : AND_END_52
+	move $3, $21
+	bne $3, $0, AND_53
+	j AND_END_52
+AND_53:
+	# JUMP AND_END_52
+	j AND_END_52
+AND_END_52:
+	# ASS, BOOL(tmp_bool_19[temp]), BOOL(tmp_bool_20[temp])
+	move $23, $22
+	# Branch BOOL(tmp_bool_20[temp]) ? OR_END_51 : OR_54
+	move $3, $23
+	bne $3, $0, OR_END_51
+	j OR_54
+OR_54:
+	# JUMP OR_END_51
+	j OR_END_51
+OR_END_51:
+	# Branch BOOL(tmp_bool_20[temp]) ? IF_BODY_55 : IF_ELSE_57
+	move $3, $23
+	bne $3, $0, IF_BODY_55
+	j IF_ELSE_57
+IF_BODY_55:
+	# JUMP B_58
+	j B_58
+B_58:
+	# PRINT_STR STR_7
+	li $2, 4
+	la $4, STR_7
+	syscall
+	# JUMP B_59
+	j B_59
+B_59:
+	# JUMP IF_END_56
+	j IF_END_56
+IF_END_56:
+	# JUMP B_62
+	j B_62
+B_62:
+	# JUMP IF_END_49
+	j IF_END_49
+IF_END_49:
+	# ADD, INT(a1[data+0x0]), INT(b1[data+0xc]), BOOL(tmp_bool_21[temp])
+	addu $24, $14, $18
+	# PRINT_STR STR_8
+	li $2, 4
+	la $4, STR_8
+	syscall
+	# PRINT_INT BOOL(tmp_bool_21[temp])
+	li $2, 1
+	move $4, $24
+	syscall
+	# PRINT_STR STR_2
+	li $2, 4
+	la $4, STR_2
+	syscall
+	# ADD, INT(a2[data+0x4]), INT(b2[data+0x10]), BOOL(tmp_bool_22[temp])
+	lw $26, 0x4($28)
+	lw $27, 0x10($28)
+	addu $25, $26, $27
+	# PRINT_STR STR_9
+	li $2, 4
+	la $4, STR_9
+	syscall
+	# PRINT_INT BOOL(tmp_bool_22[temp])
+	li $2, 1
+	move $4, $25
+	syscall
+	# PRINT_STR STR_2
+	li $2, 4
+	la $4, STR_2
+	syscall
+	# RETURN 0
+	li $2, 10
+	syscall
+IF_ELSE_57:
+	# JUMP B_60
+	j B_60
+B_60:
 	# PRINT_STR STR_3
 	li $2, 4
 	la $4, STR_3
 	syscall
-	# JUMP B_24
-	j B_24
-B_24:
-	# JUMP IF_END_21
-	j IF_END_21
-IF_END_21:
-IF_ELSE_22:
-	# JUMP B_25
-	j B_25
-B_25:
+	# JUMP B_61
+	j B_61
+B_61:
+	# JUMP IF_END_56
+	j IF_END_56
+	# JUMP B_62
+	j B_62
 	# PRINT_STR STR_4
 	li $2, 4
 	la $4, STR_4
 	syscall
-	# JUMP B_26
-	j B_26
-B_26:
+	# JUMP B_23
+	j B_23
+B_23:
 	# JUMP IF_END_21
 	j IF_END_21
-	# JUMP B_27
-	j B_27
-B_27:
+IF_END_21:
+	# EQ, INT(n[sp-0x4]), INT(a2[data+0x4]), BOOL(tmp_bool_9[temp])
+	seq $6, $5, $26
+	# ASS, BOOL(tmp_bool_9[temp]), BOOL(tmp_bool_10[temp])
+	move $7, $6
+	# Branch BOOL(tmp_bool_9[temp]) ? AND_26 : AND_END_25
+	move $3, $6
+	bne $3, $0, AND_26
+	j AND_END_25
+AND_26:
+	# JUMP AND_END_25
+	j AND_END_25
+AND_END_25:
+	# ASS, BOOL(tmp_bool_10[temp]), BOOL(tmp_bool_11[temp])
+	move $8, $7
+	# Branch BOOL(tmp_bool_11[temp]) ? OR_END_24 : OR_27
+	move $3, $8
+	bne $3, $0, OR_END_24
+	j OR_27
+OR_27:
+	# JUMP OR_END_24
+	j OR_END_24
+OR_END_24:
+	# Branch BOOL(tmp_bool_11[temp]) ? IF_BODY_28 : IF_ELSE_30
+	move $3, $8
+	bne $3, $0, IF_BODY_28
+	j IF_ELSE_30
+IF_BODY_28:
+	# JUMP B_31
+	j B_31
+B_31:
+	# PRINT_STR STR_5
+	li $2, 4
+	la $4, STR_5
+	syscall
+	# JUMP B_32
+	j B_32
+B_32:
+	# JUMP IF_END_29
+	j IF_END_29
+IF_END_29:
+	# EQ, INT(n[sp-0x4]), INT(b1[data+0xc]), BOOL(tmp_bool_12[temp])
+	seq $9, $5, $18
+	# ASS, BOOL(tmp_bool_12[temp]), BOOL(tmp_bool_13[temp])
+	move $11, $9
+	# Branch BOOL(tmp_bool_12[temp]) ? AND_37 : AND_END_36
+	move $3, $9
+	bne $3, $0, AND_37
+	j AND_END_36
+AND_37:
+	# JUMP AND_END_36
+	j AND_END_36
+AND_END_36:
+	# ASS, BOOL(tmp_bool_13[temp]), BOOL(tmp_bool_14[temp])
+	move $12, $11
+	# Branch BOOL(tmp_bool_14[temp]) ? OR_END_35 : OR_38
+	move $3, $12
+	bne $3, $0, OR_END_35
+	j OR_38
+OR_38:
+	# JUMP OR_END_35
+	j OR_END_35
+OR_END_35:
+	# Branch BOOL(tmp_bool_14[temp]) ? IF_BODY_39 : IF_END_40
+	move $3, $12
+	bne $3, $0, IF_BODY_39
+	j IF_END_40
+IF_BODY_39:
+	# JUMP B_41
+	j B_41
+B_41:
+	# JUMP WHILE_END_2
+	j WHILE_END_2
+	# JUMP B_42
+	j B_42
+B_42:
+	# JUMP IF_END_40
+	j IF_END_40
+IF_END_40:
+	# JUMP B_43
+	j B_43
+B_43:
 	# JUMP WHILE_0
 	j WHILE_0
-WHILE_END_2:
+IF_ELSE_30:
+	# JUMP B_33
+	j B_33
+B_33:
+	# PRINT_STR STR_6
+	li $2, 4
+	la $4, STR_6
+	syscall
+	# JUMP B_34
+	j B_34
+B_34:
+	# JUMP IF_END_29
+	j IF_END_29
+	# JUMP B_43
+	j B_43
