@@ -1,5 +1,8 @@
-package Frontend.Symbol;
+package Frontend;
 
+import BackEnd.Registers;
+import BackEnd.instructions.MemoryInstr;
+import BackEnd.instructions.MoveInstr;
 import Exceptions.IllegalBreakContinueException;
 import Exceptions.IllegalReturnException;
 import Exceptions.IllegalSymbolException;
@@ -28,6 +31,11 @@ import Frontend.Parser.expr.types.EqExp;
 import Frontend.Parser.expr.types.Exp;
 import Frontend.Parser.expr.types.FuncExp;
 import Frontend.Parser.expr.types.FuncRParams;
+import Frontend.Parser.expr.types.UnaryOp;
+import Frontend.Symbol.Errors;
+import Frontend.Symbol.Symbol;
+import Frontend.Symbol.SymbolTable;
+import Frontend.Symbol.SymbolType;
 import Middle.type.Immediate;
 import Frontend.Parser.expr.types.LAndExp;
 import Frontend.Parser.expr.types.LOrExp;
@@ -221,7 +229,7 @@ public class SymbolTableBuilder {
                         int offset = 0;
                         for (Integer num : initNum) {
                             Symbol ptr = Symbol.tempSymbol(SymbolType.POINTER);
-                            currBlock.addContent(new Memory(symbol, new Immediate(offset * 4), ptr));
+                            currBlock.addContent(new Memory(symbol, new Immediate(offset * 4), ptr));  // 局部数组
                             currBlock.addContent(new Pointer(Pointer.Op.STORE, ptr, new Immediate(num)));
                             offset++;
                         }
@@ -232,7 +240,7 @@ public class SymbolTableBuilder {
                     for (AddExp addExp : initExp) {
                         Operand exp = checkAddExp(addExp);
                         Symbol ptr = Symbol.tempSymbol(SymbolType.POINTER);
-                        currBlock.addContent(new Memory(symbol, new Immediate(offset * 4), ptr));
+                        currBlock.addContent(new Memory(symbol, new Immediate(offset * 4), ptr));  // 局部数组
                         currBlock.addContent(new Pointer(Pointer.Op.STORE, ptr, exp));
                         offset++;
                     }
@@ -302,8 +310,8 @@ public class SymbolTableBuilder {
         if (!redefine) {
             Symbol symbol = new Symbol(var.getDimCount() == 0 ? SymbolType.INT : SymbolType.ARRAY, ident, dimSize,
                     var.getDimCount(), var.isConst(), null);  // checkVal没有设置scope
-            symbol.setAddress(currSymbolTable.getStackSize());
             currSymbolTable.addSymbol(symbol);  // 会同时为Symbol申请空间
+            symbol.setAddress(currSymbolTable.getStackSize());
             return symbol;
         }
         assert false : "redefine";
@@ -347,10 +355,13 @@ public class SymbolTableBuilder {
         // check FuncFParams
         ArrayList<FuncFParam> funcFParams = funcDef.getFuncFParams();
         ArrayList<Symbol> params = new ArrayList<>();
+        int addr = 4;  // 函数栈基地址处放ra，从4开始放参数（也从4开始取参数）
         for (FuncFParam funcFParam : funcFParams) {
             Symbol symbol = checkFuncFParam(funcFParam); // checkFuncFParam could return null
             if (symbol != null) {
                 params.add(symbol);
+                symbol.setAddress(addr);
+                addr += symbol.getSize();
             }
         }
 
@@ -482,13 +493,26 @@ public class SymbolTableBuilder {
         // check right Val
         Operand operand = checkExp(assignStmt.getExp());
         if (lVal.getSymbolType() == SymbolType.POINTER) {
-            currBlock.addContent(new Pointer(Pointer.Op.STORE, lVal, operand));
+            currBlock.addContent(new Pointer(Pointer.Op.STORE, lVal, operand));  // 数组存内存
         } else if (lVal.getSymbolType() == SymbolType.INT) {
             currBlock.addContent(new FourExpr(operand, lVal, FourExpr.ExprOp.ASS));
         } else {
             assert false;
         }
         return;
+
+
+        // Symbol symbol = getInt.getTarget();
+        // if (symbol.getSymbolType() == SymbolType.INT) {
+        //     int register = allocRegister(symbol);
+        //     mipsCode.addInstr(new MoveInstr(Registers.v0, register));
+        // } else if (symbol.getSymbolType() == SymbolType.POINTER) {
+        //     int pointer = registers.getSymbolRegister(symbol);
+        //     mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, pointer, 0, Registers.v0));
+        //     consumeUsage(symbol);
+        // } else {
+        //     assert false;
+        // }
 
     }
 
@@ -629,6 +653,7 @@ public class SymbolTableBuilder {
         //         .collect(Collectors.toCollection(ArrayList::new));
         String formatString = printfStmt.getFormatString().getContent();
         // String[] s = printfStmt.getFormatString().getContent().split("%d");
+        formatString = formatString.substring(1, formatString.length() - 1);
         String formatChar = "%d";
         int index = 0, prev = 0;
         for (Exp exp : exps) {
@@ -750,22 +775,47 @@ public class SymbolTableBuilder {
         return left;
     }
 
+    // 优化UnaryOp合并
+    // private ArrayList<UnaryOp> getUnaryOp(UnaryExp unaryExp) {
+    //
+    // }
+
+
     public Operand checkUnaryExp(UnaryExp unaryExp) {
-        return checkUnaryExpInterFace(unaryExp.getUnaryExpInterface());
+        UnaryExpInterface unaryExpInterface = unaryExp.getUnaryExpInterface();
+        UnaryOp unaryOp = unaryExp.getOp();
+        if (unaryExpInterface instanceof FuncExp) {
+            return checkFuncExp((FuncExp) unaryExpInterface);
+        } else if (unaryExpInterface instanceof PrimaryExp) {
+            return checkPrimaryExp((PrimaryExp) unaryExpInterface);
+        } else {
+            assert unaryOp != null;
+            Operand midRes = checkUnaryExp((UnaryExp) unaryExpInterface);
+            if (unaryOp.getToken().getType() == TokenType.PLUS) {
+                return midRes;
+            }
+            Symbol res = Symbol.tempSymbol(SymbolType.INT);
+            if (unaryOp.getToken().getType() == TokenType.MINU) {
+                currBlock.addContent(new FourExpr(midRes, res, FourExpr.ExprOp.NEG));
+            } else if (unaryOp.getToken().getType() == TokenType.NOT) {
+                currBlock.addContent(new FourExpr(midRes, res, FourExpr.ExprOp.NOT));
+            }
+            return res;
+        }
     }
 
-    public Operand checkUnaryExpInterFace(UnaryExpInterface unaryExpInterface) {
-        if (unaryExpInterface instanceof PrimaryExp) {
-            return checkPrimaryExp((PrimaryExp) unaryExpInterface);
-        } else if (unaryExpInterface instanceof FuncExp) {  // TODO: 检查FuncExp的returnType是否匹配
-            return checkFuncExp((FuncExp) unaryExpInterface);
-        } else if (unaryExpInterface instanceof UnaryExp) {
-            return checkUnaryExp((UnaryExp) unaryExpInterface);
-        }
-        // not output
-        assert false;
-        return null;
-    }
+    // public Operand checkUnaryExpInterFace(UnaryExpInterface unaryExpInterface) {
+    //     if (unaryExpInterface instanceof PrimaryExp) {
+    //         return checkPrimaryExp((PrimaryExp) unaryExpInterface);
+    //     } else if (unaryExpInterface instanceof FuncExp) {  // TODO: 检查FuncExp的returnType是否匹配
+    //         return checkFuncExp((FuncExp) unaryExpInterface);
+    //     } else if (unaryExpInterface instanceof UnaryExp) {
+    //         return checkUnaryExp((UnaryExp) unaryExpInterface);
+    //     }
+    //     // not output
+    //     assert false;
+    //     return null;
+    // }
 
     public Operand checkPrimaryExp(PrimaryExp primaryExp) {
         return checkPrimaryExpInterFace(primaryExp.getPrimaryExpInterface());
@@ -776,7 +826,16 @@ public class SymbolTableBuilder {
             return checkBraceExp((BraceExp) primaryExpInterface);
         } else if (primaryExpInterface instanceof LVal) {
             // TODO: check LVal using right or not（LVal是否正确使用，和Exp是否匹配，int）
-            return checkLVal((LVal) primaryExpInterface, false);
+            Symbol lVal = checkLVal((LVal) primaryExpInterface, false);
+            if (lVal.getSymbolType() == SymbolType.POINTER) {
+                Symbol temp = Symbol.tempSymbol(SymbolType.INT);
+                currBlock.addContent(new Pointer(Pointer.Op.LOAD, lVal, temp));  // 取出数值并返回
+                return temp;
+            } else if (lVal.getSymbolType() == SymbolType.INT) {
+                return lVal;
+            } else {
+                assert false;
+            }
         } else if (primaryExpInterface instanceof Number) {
             return checkNumber((Number) primaryExpInterface);
         }
@@ -829,7 +888,7 @@ public class SymbolTableBuilder {
         /*
          * translate to middle code
          * */
-        if (symbol.getSymbolType() == SymbolType.INT) {  // 局部变量
+        if (symbol.getSymbolType() == SymbolType.INT) {  // int变量
             return symbol;
         } else if (symbol.getSymbolType() == SymbolType.ARRAY) {  // 数组变量
             ArrayList<Integer> dimSize = symbol.getDimSize();
@@ -838,20 +897,22 @@ public class SymbolTableBuilder {
             for (int i = dimSize.size() - 1; i > 0; i--) {
                 suffix.add(0, suffix.get(0) * dimSize.get(i));
             }
-            ArrayList<Operand> place = lVal.getExps().stream().map(this::checkExp)  // 数组最多二维
-                    .collect(Collectors.toCollection(ArrayList::new));  // 每一维的取值
+            // ArrayList<Operand> place = lVal.getExps().stream().map(this::checkExp)  // 数组最多二维
+            //         .collect(Collectors.toCollection(ArrayList::new));  // 每一维的取值
+            ArrayList<Exp> placeExp = lVal.getExps();
             Operand offset = new Immediate(0);
-            for (int i = place.size() - 1; i >= 0; i--) {
+            for (int i = placeExp.size() - 1; i >= 0; i--) {
                 Operand weight = new Immediate(suffix.get(i) * 4);  // 后缀积
                 Symbol mid = Symbol.tempSymbol(SymbolType.INT);
-                currBlock.addContent(new FourExpr(place.get(i), weight, mid, FourExpr.ExprOp.MUL));
+                Operand currPlace = checkExp(placeExp.get(i));
+                currBlock.addContent(new FourExpr(currPlace, weight, mid, FourExpr.ExprOp.MUL));
                 currBlock.addContent(new FourExpr(mid, offset, mid, FourExpr.ExprOp.ADD));
                 offset = mid;
             }
             // Symbol addr = Symbol.tempSymbol(SymbolType.INT);
             // currBlock.addContent(new FourExpr(new Immediate(symbol.getAddress()), offset, addr, FourExpr.ExprOp
             // .ADD));
-            Symbol ptr = Symbol.tempSymbol(SymbolType.POINTER);
+            Symbol ptr = Symbol.tempSymbol(SymbolType.POINTER);  // 数组变量
             currBlock.addContent(new Memory(symbol, offset, ptr));  // return the pointer to array
             // Symbol res = Symbol.tempSymbol(SymbolType.INT);
             // currBlock.addContent(new Pointer(Pointer.Op.LOAD, ptr, res));

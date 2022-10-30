@@ -48,7 +48,7 @@ public class FuncBlock extends BlockNode {
         this.body = body;
     }
 
-    public Boolean getMainFunc() {
+    public Boolean isMainFunc() {
         return isMainFunc;
     }
 

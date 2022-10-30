@@ -1,6 +1,6 @@
 package BackEnd.instructions;
 
-public class Label {
+public class Label implements Instruction {
     private final InstructionType type = InstructionType.Label;
 
     private final String label;

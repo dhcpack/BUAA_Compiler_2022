@@ -32,17 +32,29 @@ public class FuncCall extends BlockNode {
         return rParams;
     }
 
+    public String getTargetLabel() {
+        return this.funcBlock.getLabel();
+    }
+
+    public boolean saveRet() {
+        return this.saveRet;
+    }
+
+    public Symbol getRet() {
+        return this.ret;
+    }
+
     @Override
     public String toString() {
-        String call = String.format("CALL %s\n", funcBlock.getLabel());
+        String call = String.format("CALL %s", funcBlock.getLabel());
         StringJoiner params = new StringJoiner(", ");
         for (Operand para : rParams) {
             params.add(para.toString());
         }
         if (ret == null) {
-            return call + params + "\n";
+            return String.format("Call %s; Params: %s", funcBlock.getLabel(), params);
         } else {
-            return call + params + "\n" + "RET " + ret + "\n";
+            return String.format("Call %s; Params: %s; RET %s", funcBlock.getLabel(), params, ret);
         }
     }
 }

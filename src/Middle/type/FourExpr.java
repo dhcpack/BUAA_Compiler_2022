@@ -1,21 +1,15 @@
 package Middle.type;
 
-import Frontend.Parser.expr.types.LeafNode;
 import Frontend.Symbol.Symbol;
 
 public class FourExpr extends BlockNode {
     public enum ExprOp {
-        DEF,  // int a = b + c;
-
+        // 双操作数
         ADD,
         SUB,
         MUL,
         DIV,
         MOD,
-
-        AND,
-        OR,
-
         GT,
         GE,
         LT,
@@ -23,9 +17,16 @@ public class FourExpr extends BlockNode {
         EQ,
         NEQ,
 
-        NOT,
 
+        // 单操作数
+        DEF,  // int a = b + c;
         ASS,
+        NOT,
+        NEG,
+
+        // not used
+        AND,  // 短路求值
+        OR,  // 短路求值
     }
 
     private final Operand left;
@@ -53,6 +54,10 @@ public class FourExpr extends BlockNode {
 
     public Operand getRight() {
         return right;
+    }
+
+    public boolean isSingle() {
+        return this.right == null;
     }
 
     public Symbol getRes() {

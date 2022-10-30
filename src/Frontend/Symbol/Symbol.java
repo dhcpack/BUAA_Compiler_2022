@@ -253,14 +253,14 @@ public class Symbol implements LeafNode, Operand {
         if (scope == Scope.GLOBAL) {
             addr = String.format("[data+0x%x]", this.address);
         } else if (scope == Scope.LOCAL) {
-            addr = String.format("[sp-0x%x]", this.address + this.getSize());
+            addr = String.format("[sp-0x%x]", this.address);
         } else {
             if (hasAddress) {
-                addr = String.format("TEMP[sp-0x%x]", this.address);
+                addr = String.format("[sp-0x%x]", this.address);
             } else {
-                addr = "TEMP";
+                addr = "[temp]";
             }
         }
-        return String.format("%s%s :%s", this.name, addr, this.symbolType);
+        return String.format("%s(%s%s)", this.symbolType, this.name, addr);
     }
 }

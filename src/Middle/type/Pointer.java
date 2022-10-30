@@ -11,8 +11,8 @@ public class Pointer extends BlockNode {
 
     private Symbol load;
     private Operand store;
-    private Op op;
-    private Symbol pointer;
+    private final Op op;
+    private final Symbol pointer;
 
     public Pointer(Op op, Symbol pointer, Symbol load) {
         this.op = op;

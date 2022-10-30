@@ -7,19 +7,26 @@ public class ALUDouble implements Instruction {
         andi,
         ori,
 
+        sne,
+        seq,
+
+        slti,
+        sle,
+        sgt,
+        sge,
     }
 
     private final InstructionType type = InstructionType.ALU;
 
     private final ALUDoubleType aluDoubleType;
-    private final int rOperand;
     private final int rResult;
+    private final int rOperand;
     private final int immediate;
 
-    public ALUDouble(ALUDoubleType aluDoubleType, int rOperand, int rResult, int immediate) {
+    public ALUDouble(ALUDoubleType aluDoubleType, int rResult, int rOperand, int immediate) {
         this.aluDoubleType = aluDoubleType;
-        this.rOperand = rOperand;
         this.rResult = rResult;
+        this.rOperand = rOperand;
         this.immediate = immediate;
     }
 

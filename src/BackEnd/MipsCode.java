@@ -5,6 +5,7 @@ import BackEnd.instructions.Label;
 import Config.MipsWriter;
 import Config.Output;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +31,7 @@ public class MipsCode implements Output {
     @Override
     public void output() {
         MipsWriter.print("# Yuelin's Compiler", "title");
+        MipsWriter.print("\n");
         MipsWriter.print(".data", "segment");
         MipsWriter.print("global:");
         StringJoiner wordJoiner = new StringJoiner(" ");
@@ -50,6 +52,11 @@ public class MipsCode implements Output {
             } else {
                 MipsWriter.print(instruction.toString());
             }
+        }
+        try {
+            MipsWriter.flush();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }
