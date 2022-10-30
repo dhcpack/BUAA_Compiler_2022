@@ -120,8 +120,13 @@ public class Translator {
             mipsCode.addInstr(new Comment(blockNode.toString()));
             if (blockNode instanceof Branch) {
                 translateBranch((Branch) blockNode);
-                dfsBasicBlock(((Branch) blockNode).getThenBlock());
-                dfsBasicBlock(((Branch) blockNode).getElseBlock());
+                if(((Branch)blockNode).isThenFirst()){
+                    dfsBasicBlock(((Branch) blockNode).getThenBlock());
+                    dfsBasicBlock(((Branch) blockNode).getElseBlock());
+                } else {
+                    dfsBasicBlock(((Branch) blockNode).getElseBlock());
+                    dfsBasicBlock(((Branch) blockNode).getThenBlock());
+                }
             } else if (blockNode instanceof FourExpr) {
                 translateFourExpr((FourExpr) blockNode);
             } else if (blockNode instanceof FuncCall) {
@@ -501,9 +506,9 @@ public class Translator {
                 } else if (op == FourExpr.ExprOp.NEQ) {
                     mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.sne, resRegister, leftRegister, rightRegister));
                 } else if (op == FourExpr.ExprOp.OR) {   // only in cond Exp
-                    mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.ori, resRegister, leftRegister, rightRegister));
+                    mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.or, resRegister, leftRegister, rightRegister));
                 } else if (op == FourExpr.ExprOp.AND) {
-                    mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.andi, resRegister, leftRegister, rightRegister));
+                    mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.or, resRegister, leftRegister, rightRegister));
                 } else {
                     assert false;
                 }
