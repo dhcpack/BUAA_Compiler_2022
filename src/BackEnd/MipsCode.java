@@ -45,6 +45,7 @@ public class MipsCode implements Output {
         }
 
         MipsWriter.print(".text", "segment");
+        MipsWriter.print("la $gp, global");
         MipsWriter.print("j FUNC_main");
         for (Instruction instruction : instructions) {
             if (instruction instanceof Label) {

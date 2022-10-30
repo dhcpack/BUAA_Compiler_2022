@@ -1,5 +1,6 @@
 package Frontend;
 
+import BackEnd.instructions.J;
 import Exceptions.IllegalBreakContinueException;
 import Exceptions.IllegalReturnException;
 import Exceptions.IllegalSymbolException;
@@ -180,9 +181,11 @@ public class SymbolTableBuilder {
                         val = new ConstExpCalculator(currSymbolTable, errors).calcConstExp(initVal.getConstExp());
                     }
                     if (currFunc == null) {  // pre decl, not in a function  全局
+                        symbol.setAddress(currSymbolTable.getStackSize() - symbol.getSize());
                         middleCode.addInt(def.getVar().getIdent().getContent(), symbol.getAddress(), val);
                         symbol.setScope(Symbol.Scope.GLOBAL);
                     } else {  // decl in a function  // 局部
+                        symbol.setAddress(currSymbolTable.getStackSize());
                         currBlock.addContent(new Middle.type.FourExpr(new Immediate(val), symbol, FourExpr.ExprOp.DEF));
                         symbol.setScope(Symbol.Scope.LOCAL);
                     }
@@ -193,15 +196,18 @@ public class SymbolTableBuilder {
                     } else {
                         val = checkExp(initVal.getExp(), false);
                     }
+                    symbol.setAddress(currSymbolTable.getStackSize());
                     currBlock.addContent(new Middle.type.FourExpr(val, symbol, FourExpr.ExprOp.DEF));
                     symbol.setScope(Symbol.Scope.LOCAL);
                 }
             } else {  // 没有初始化
                 Symbol symbol = checkVar(def.getVar());  // 先检查initial Val，再检查Var
                 if (currFunc == null) {  // pre decl, not in a function
+                    symbol.setAddress(currSymbolTable.getStackSize() - symbol.getSize());
                     middleCode.addInt(def.getVar().getIdent().getContent(), symbol.getAddress(), 0);
                     symbol.setScope(Symbol.Scope.GLOBAL);
                 } else {  // decl in a function
+                    symbol.setAddress(currSymbolTable.getStackSize());
                     currBlock.addContent(new Middle.type.FourExpr(new Immediate(0), symbol, FourExpr.ExprOp.DEF));
                     symbol.setScope(Symbol.Scope.LOCAL);
                 }
@@ -221,6 +227,7 @@ public class SymbolTableBuilder {
                     ArrayList<Integer> initNum = initExp.stream().map(constExpCalculator::calcAddExp)
                             .collect(Collectors.toCollection(ArrayList::new));
                     if (currFunc == null) {  // 全局变量
+                        symbol.setAddress(currSymbolTable.getStackSize() - symbol.getSize());
                         middleCode.addArray(symbol.getIdent().getContent(), symbol.getAddress(), initNum);
                         symbol.setScope(Symbol.Scope.GLOBAL);
                     } else {  // 局部变量
@@ -231,6 +238,7 @@ public class SymbolTableBuilder {
                             currBlock.addContent(new Pointer(Pointer.Op.STORE, ptr, new Immediate(num)));
                             offset++;
                         }
+                        symbol.setAddress(currSymbolTable.getStackSize());
                         symbol.setScope(Symbol.Scope.LOCAL);
                     }
                 } else {
@@ -242,6 +250,7 @@ public class SymbolTableBuilder {
                         currBlock.addContent(new Pointer(Pointer.Op.STORE, ptr, exp));
                         offset++;
                     }
+                    symbol.setAddress(currSymbolTable.getStackSize());
                     symbol.setScope(Symbol.Scope.LOCAL);
                 }
             } else {
@@ -249,9 +258,11 @@ public class SymbolTableBuilder {
                 if (currFunc == null) {
                     ArrayList<Integer> initZero = new ArrayList<>();
                     for (int i = 0; i < def.getDimCount(); i++) initZero.add(0);
+                    symbol.setAddress(currSymbolTable.getStackSize() - symbol.getSize());
                     middleCode.addArray(symbol.getIdent().getContent(), symbol.getAddress(), initZero);
                     symbol.setScope(Symbol.Scope.GLOBAL);
                 } else {
+                    symbol.setAddress(currSymbolTable.getStackSize());
                     symbol.setScope(Symbol.Scope.LOCAL);
                     // nothing to do
                     // 函数中的局部变量，没有初始化
@@ -309,7 +320,7 @@ public class SymbolTableBuilder {
             Symbol symbol = new Symbol(var.getDimCount() == 0 ? SymbolType.INT : SymbolType.ARRAY, ident, dimSize,
                     var.getDimCount(), var.isConst(), null);  // checkVal没有设置scope
             currSymbolTable.addSymbol(symbol);  // 会同时为Symbol申请空间
-            symbol.setAddress(currSymbolTable.getStackSize());
+            // symbol.setAddress(currSymbolTable.getStackSize());  // setAddress移动到调用LVal的函数中做，便于判断GLOBAL or LOCAL
             return symbol;
         }
         assert false : "redefine";
@@ -560,6 +571,9 @@ public class SymbolTableBuilder {
         blockDepth--;
         if (!isFunc) {
             basicBlock.addContent(new Jump(nextBlock));
+        }
+        if (currBlock.getLastContent() == null || !(currBlock.getLastContent() instanceof Jump || currBlock.getLastContent() instanceof Return)) {
+            currBlock.addContent(new Jump(nextBlock));
         }
         currBlock = nextBlock;
         if (!isFunc) {
