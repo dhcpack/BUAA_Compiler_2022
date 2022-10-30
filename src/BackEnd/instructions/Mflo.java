@@ -11,6 +11,6 @@ public class Mflo implements Instruction{
 
     @Override
     public String toString() {
-        return "mflo " + rRes + "\n";
+        return "mflo $" + rRes + "\n";
     }
 }
