@@ -1,35 +1,13 @@
 int f(){
-    return 0;
-}
-
-int g(){
-    return 1;
-}
-
-int h(int a){
-    return a;
+    return 999;
 }
 
 int main(){
-    int a = 4;
-    printf("a is %d\n", a);
-    int b[2] = {1, 2};
-    printf("b[0] is %d\n", b[0]);
-    printf("b[1] is %d\n", b[1]);
-    {
-        int b = 1;
-        printf("b is %d\n", b);
-    }
-    b[0] = 2;
-    printf("b[0] is %d\n", b[0]);
-    printf("b[1] is %d\n", b[1]);
-    a = 0;
-    printf("a is %d\n", a);
-    a = getint();
-    printf("a is %d\n", a);
-    b[1] = getint();
-    b[0] = h(a);
-    printf("b[0] is %d\n", b[0]);
-    printf("b[1] is %d\n", b[1]);
+    int a[1] = {8};
+    int b = a[0];
+    b = 10;
+    f();
+    printf("%d\n", b);
+    printf("%d\n", a[0]);
     return 0;
 }
