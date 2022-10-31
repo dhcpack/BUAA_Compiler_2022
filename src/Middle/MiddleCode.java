@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
@@ -86,8 +87,6 @@ public class MiddleCode implements Output {
         return this.nameToFunc.get(funcName);
     }
 
-    public HashSet<BasicBlock> visited = new HashSet<>();
-
     @Override
     public void output() {
         MiddleWriter.print("###### GLOBAL STRING ######");
@@ -117,10 +116,11 @@ public class MiddleCode implements Output {
         MiddleWriter.print("###### TEXT ######");
         MiddleWriter.print("JUMP FUNC_main");
 
-        // HashSet<BasicBlock> visited = new HashSet<>();
-        // Queue<BasicBlock> queue = new LinkedList<>();
-
-        for (FuncBlock funcBlock : nameToFunc.values()) {
+        if (visited.size() == 0) {
+            getBlocks();
+        }
+        for (Map.Entry<FuncBlock, ArrayList<BasicBlock>> funcAndBlock : funcToSortedBlock.entrySet()) {
+            FuncBlock funcBlock = funcAndBlock.getKey();
             MiddleWriter.print(
                     String.format("# func %s : stack size 0x%x", funcBlock.getFuncName(), funcBlock.getStackSize()));
             StringJoiner params = new StringJoiner(", ");
@@ -128,31 +128,12 @@ public class MiddleCode implements Output {
                 params.add(param.toString());
             }
             MiddleWriter.print(String.format("# param: %s", params));
-            dfsBlock(funcBlock.getBody(), true);
-            MiddleWriter.print("\n");
-            // queue.add(funcBlock.getBody());
-            // while (!queue.isEmpty()) {
-            //     BasicBlock front = queue.poll();
-            //     if (visited.contains(front)) {
-            //         continue;
-            //     }
-            //     visited.add(front);
-            //     MiddleWriter.print(front.getLabel() + ":");
-            //     ArrayList<BlockNode> blockNodes = front.getContent();
-            //     for (BlockNode blockNode : blockNodes) {
-            //         if (blockNode instanceof Jump) {
-            //             BasicBlock target = ((Jump) blockNode).getTarget();
-            //             queue.add(target);
-            //         } else if (blockNode instanceof Branch) {
-            //             BasicBlock thenBlock = ((Branch) blockNode).getThenBlock();
-            //             queue.add(thenBlock);
-            //             BasicBlock elseBlock = ((Branch) blockNode).getElseBlock();
-            //             queue.add(elseBlock);
-            //         }
-            //         MiddleWriter.print("\t" + blockNode);
-            //     }
-            //     MiddleWriter.print("\n");
-            // }
+            for (BasicBlock block : funcAndBlock.getValue()) {
+                MiddleWriter.print(block.getLabel() + ":");
+                for (BlockNode blockNode : block.getContent()) {
+                    MiddleWriter.print("\t" + blockNode);
+                }
+            }
         }
         try {
             MiddleWriter.flush();
@@ -161,14 +142,27 @@ public class MiddleCode implements Output {
         }
     }
 
-    private void dfsBlock(BasicBlock block, boolean print) {
+
+    private HashSet<BasicBlock> visited = new HashSet<>();
+    private LinkedHashMap<FuncBlock, ArrayList<BasicBlock>> funcToSortedBlock = new LinkedHashMap<>();
+
+    // 通过dfs得到每个函数包含的基本块并排序
+    public void getBlocks() {
+        for (FuncBlock funcBlock : nameToFunc.values()) {
+            BasicBlock body = funcBlock.getBody();
+            ArrayList<BasicBlock> sortedBlock = new ArrayList<>();
+            dfsBlock(body, sortedBlock);
+            sortedBlock.sort(BasicBlock::compareTo);
+            funcToSortedBlock.put(funcBlock, sortedBlock);
+        }
+    }
+
+    private void dfsBlock(BasicBlock block, ArrayList<BasicBlock> sortedBlock) {
         if (visited.contains(block)) {
             return;
         }
         visited.add(block);
-        if (print) {
-            MiddleWriter.print(block.getLabel() + ":");
-        }
+        sortedBlock.add(block);
         for (Operand operand : block.getOperandUsage()) {
             if (operand instanceof Symbol && ((Symbol) operand).getScope() == Symbol.Scope.TEMP && !((Symbol) operand).hasAddress()) {
                 Symbol symbol = (Symbol) operand;
@@ -180,21 +174,18 @@ public class MiddleCode implements Output {
             }
         }
         for (BlockNode blockNode : block.getContent()) {
-            if (print) {
-                MiddleWriter.print("\t" + blockNode);
-            }
             if (blockNode instanceof Jump) {
                 BasicBlock target = ((Jump) blockNode).getTarget();
-                dfsBlock(target, print);
+                dfsBlock(target, sortedBlock);
             } else if (blockNode instanceof Branch) {
                 BasicBlock thenBlock = ((Branch) blockNode).getThenBlock();
                 BasicBlock elseBlock = ((Branch) blockNode).getElseBlock();
                 if (((Branch) blockNode).isThenFirst()) {
-                    dfsBlock(thenBlock, print);
-                    dfsBlock(elseBlock, print);
+                    dfsBlock(thenBlock, sortedBlock);
+                    dfsBlock(elseBlock, sortedBlock);
                 } else {
-                    dfsBlock(elseBlock, print);
-                    dfsBlock(thenBlock, print);
+                    dfsBlock(elseBlock, sortedBlock);
+                    dfsBlock(thenBlock, sortedBlock);
                 }
 
             }
@@ -203,23 +194,17 @@ public class MiddleCode implements Output {
 
     private final HashMap<Symbol, Integer> symbolUsageMap = new HashMap<>();
 
-    // for (Operand operand : operands) {
-    //     if (operand instanceof Symbol) {
-    //         Symbol symbol = (Symbol) operand;
-    //         if (defUseMap.containsKey(symbol)) {
-    //             defUseMap.put(symbol, defUseMap.get(symbol) + 1);
-    //         } else {
-    //             defUseMap.put(symbol, 1);
-    //         }
-    //     }
-    // }
+    public LinkedHashMap<FuncBlock, ArrayList<BasicBlock>> getFuncToSortedBlock() {
+        if (visited.size() == 0) {
+            getBlocks();
+        }
+        return this.funcToSortedBlock;
+    }
+
     public HashMap<Symbol, Integer> getSymbolUsageMap() {
-        if (visited.size() != 0) {
-            return symbolUsageMap;
+        if (visited.size() == 0) {
+            getBlocks();
         }
-        for (FuncBlock funcBlock : nameToFunc.values()) {
-            dfsBlock(funcBlock.getBody(), false);
-        }
-        return symbolUsageMap;
+        return this.symbolUsageMap;
     }
 }

@@ -39,7 +39,6 @@ import Middle.type.Immediate;
 import Frontend.Parser.expr.types.LAndExp;
 import Frontend.Parser.expr.types.LOrExp;
 import Frontend.Parser.expr.types.LVal;
-import Frontend.Parser.expr.types.LeafNode;
 import Frontend.Parser.expr.types.MulExp;
 import Frontend.Parser.expr.types.Number;
 import Frontend.Parser.expr.types.PrimaryExp;
@@ -81,7 +80,6 @@ import Middle.type.Return;
 
 
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
@@ -98,8 +96,9 @@ public class SymbolTableBuilder {
 
     // about block
     private BasicBlock currBlock;
-    private int blockCount = 0;
+    private int blockCount = 0;  // 根据这个来命名
     private int blockDepth = 0;
+    private int blockId = 0;  // 根据这个来排序
 
     // about function
     private FuncBlock currFunc;
@@ -563,9 +562,9 @@ public class SymbolTableBuilder {
         }
         BasicBlock basicBlock;
         if (isFunc) {
-            basicBlock = new BasicBlock(funcLabel);
+            basicBlock = new BasicBlock(funcLabel, blockId++);
         } else {
-            basicBlock = new BasicBlock("B_" + blockCount++);
+            basicBlock = new BasicBlock("B_" + blockCount++, blockId++);
         }
         if (currBlock != null) {
             currBlock.addContent(new Jump(basicBlock));
@@ -577,7 +576,7 @@ public class SymbolTableBuilder {
         for (BlockItem blockItem : blockItems) {
             checkBlockItem(blockItem);
         }
-        BasicBlock nextBlock = new BasicBlock("B_" + blockCount++);
+        BasicBlock nextBlock = new BasicBlock("B_" + blockCount++, blockId++);
         blockDepth--;
         if (!isFunc) {
             basicBlock.addContent(new Jump(nextBlock));
@@ -634,6 +633,7 @@ public class SymbolTableBuilder {
         if (ifStmt.missRightParenthesis()) {
             errors.add(new MissRparentException(ifStmt.getIfLine()));
         }
+        // 通过ID保证中间代码和mips代码中基本块的顺序和遍历顺序一致
         currSymbolTable = new SymbolTable(currSymbolTable);  // 下降一层
         BasicBlock ifBody = new BasicBlock("IF_BODY_" + blockCount++);
         BasicBlock ifEnd = new BasicBlock("IF_END_" + blockCount++);
@@ -643,18 +643,22 @@ public class SymbolTableBuilder {
             BasicBlock ifElse = new BasicBlock("IF_ELSE_" + blockCount++);
             currBlock.addContent(new Branch(cond, ifBody, ifElse, true));
             currBlock = ifBody;
+            ifBody.setIndex(blockId++);
             checkStmt(ifStmt.getStmts().get(0));
             currBlock.addContent(new Jump(ifEnd));
             currBlock = ifElse;
+            ifElse.setIndex(blockId++);
             checkStmt(ifStmt.getStmts().get(1));
             currBlock.addContent(new Jump(ifEnd));
         } else {
             currBlock.addContent(new Branch(cond, ifBody, ifEnd, true));
             currBlock = ifBody;
+            ifBody.setIndex(blockId++);
             checkStmt(ifStmt.getStmts().get(0));
             currBlock.addContent(new Jump(ifEnd));
         }
         currBlock = ifEnd;
+        ifEnd.setIndex(blockId++);  // 最后给ifEnd设置Id
         currSymbolTable = currSymbolTable.getParent();  // 上升一层
     }
 
@@ -735,6 +739,7 @@ public class SymbolTableBuilder {
             errors.add(new MissRparentException(whileStmt.getLine()));
         }
 
+        // 通过ID保证中间代码和mips代码中基本块的顺序和遍历顺序一致
         BasicBlock whileBlock = new BasicBlock("WHILE_" + blockCount++);
         BasicBlock whileBody = new BasicBlock("WHILE_BODY_" + blockCount++);
         BasicBlock whileEnd = new BasicBlock("WHILE_END_" + blockCount++);
@@ -744,13 +749,15 @@ public class SymbolTableBuilder {
         // step into while
         currBlock.addContent(new Jump(whileBlock));
         currBlock = whileBlock;
+        currBlock.setIndex(blockId++);
 
         // check Cond
         Operand cond = checkCond(whileStmt.getCond());
 
         // step into whileBody
-        whileBlock.addContent(new Branch(cond, whileBody, whileEnd, true));
+        currBlock.addContent(new Branch(cond, whileBody, whileEnd, true));
         currBlock = whileBody;
+        whileBody.setIndex(blockId++);
 
         currSymbolTable = new SymbolTable(currSymbolTable);  // 下降一层
         // check Stmt
@@ -761,6 +768,7 @@ public class SymbolTableBuilder {
         inLoop.pop();
         currBlock.addContent(new Jump(whileBlock));
         currBlock = whileEnd;
+        whileEnd.setIndex(blockId++);
     }
 
     public Operand checkConstExp(ConstExp constExp, boolean returnPointer) {
@@ -1089,6 +1097,10 @@ public class SymbolTableBuilder {
     // 短路求值
     // return Symbol
     public Operand checkLOrExp(LOrExp lOrExp) {
+        BasicBlock lOrExpBlock = new BasicBlock("L_OR_EXP_" + blockCount++);
+        currBlock.addContent(new Jump(lOrExpBlock));
+        currBlock = lOrExpBlock;
+        currBlock.setIndex(blockId++);
         BasicBlock orEnd = new BasicBlock("OR_END_" + blockCount++);
         Operand and = checkLAndExp(lOrExp.getFirstExp());
         Symbol orMidRes = Symbol.tempSymbol(SymbolType.INT);
@@ -1097,6 +1109,7 @@ public class SymbolTableBuilder {
         currBlock.addContent(new Branch(orMidRes, orEnd, falseBlock, false));
 
         currBlock = falseBlock;
+        currBlock.setIndex(blockId++);
         ArrayList<LAndExp> andExps = lOrExp.getExps();
         for (LAndExp lAndExp : andExps) {
             and = checkLAndExp(lAndExp);
@@ -1105,9 +1118,11 @@ public class SymbolTableBuilder {
             falseBlock = new BasicBlock("OR_" + blockCount++);
             currBlock.addContent(new Branch(orMidRes, orEnd, falseBlock, false));
             currBlock = falseBlock;
+            currBlock.setIndex(blockId++);
         }
         currBlock.addContent(new Jump(orEnd));
         currBlock = orEnd;
+        currBlock.setIndex(blockId++);
         return orMidRes;
     }
 
@@ -1116,6 +1131,10 @@ public class SymbolTableBuilder {
     // return Symbol
     // TODO: 看看能不能省略midRes，直接根据Operand跳转
     public Operand checkLAndExp(LAndExp lAndExp) {
+        BasicBlock lAndExpBlock = new BasicBlock("L_AND_EXP_" + blockCount++);
+        currBlock.addContent(new Jump(lAndExpBlock));
+        currBlock = lAndExpBlock;
+        currBlock.setIndex(blockId++);
         BasicBlock andEnd = new BasicBlock("AND_END_" + blockCount++);
         Operand eq = checkEqExp(lAndExp.getFirstExp());
         Symbol andMidRes = Symbol.tempSymbol(SymbolType.INT);
@@ -1124,6 +1143,7 @@ public class SymbolTableBuilder {
         currBlock.addContent(new Branch(eq, trueBlock, andEnd, true));
 
         currBlock = trueBlock;
+        currBlock.setIndex(blockId++);
         ArrayList<EqExp> eqExps = lAndExp.getExps();
         for (EqExp eqExp : eqExps) {
             eq = checkEqExp(eqExp);
@@ -1131,9 +1151,11 @@ public class SymbolTableBuilder {
             trueBlock = new BasicBlock("AND_" + blockCount++);
             currBlock.addContent(new Branch(andMidRes, trueBlock, andEnd, true));
             currBlock = trueBlock;
+            currBlock.setIndex(blockId++);
         }
         currBlock.addContent(new Jump(andEnd));
         currBlock = andEnd;
+        currBlock.setIndex(blockId++);
         return andMidRes;
     }
 

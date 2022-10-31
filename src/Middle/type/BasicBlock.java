@@ -4,13 +4,31 @@ import Frontend.Symbol.SymbolType;
 
 import java.util.ArrayList;
 
-public class BasicBlock {
+public class BasicBlock implements Comparable<BasicBlock> {
+    private int index;
+    private boolean hasIndex = false;
     private final String label;
     private final ArrayList<BlockNode> content = new ArrayList<>();
     private final ArrayList<Operand> operandUsage = new ArrayList<>();
 
     public BasicBlock(String label) {
         this.label = label;
+    }
+
+    public BasicBlock(String label, int index) {
+        this.label = label;
+        this.index = index;
+        this.hasIndex = true;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public void setIndex(int index) {
+        assert !hasIndex;
+        this.index = index;
+        this.hasIndex = true;
     }
 
     public void addContent(BlockNode blockNode) {
@@ -80,5 +98,11 @@ public class BasicBlock {
     @Override
     public String toString() {
         return this.label.toString();
+    }
+
+    @Override
+    public int compareTo(BasicBlock o) {
+        assert hasIndex;
+        return this.index - o.index;
     }
 }
