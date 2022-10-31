@@ -485,7 +485,7 @@ public class Translator {
                     mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.subu, resRegister, leftRegister, rightRegister));
                 } else if (op == FourExpr.ExprOp.MUL) {
                     mipsCode.addInstr(new Mult(leftRegister, rightRegister));
-                    mipsCode.addInstr(new Mfhi(resRegister));
+                    mipsCode.addInstr(new Mflo(resRegister));
                 } else if (op == FourExpr.ExprOp.DIV) {
                     mipsCode.addInstr(new Div(leftRegister, rightRegister));
                     mipsCode.addInstr(new Mflo(resRegister));
