@@ -11,6 +11,10 @@ public class Token {
         this.line = line;
     }
 
+    public static Token tempToken(TokenType tokenType, int line) {
+        return new Token(tokenType, "temp20231164", line);
+    }
+
     public TokenType getType() {
         return this.tokenType;
     }
