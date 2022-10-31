@@ -89,7 +89,7 @@ import java.util.stream.Collectors;
  *
  */
 public class SymbolTableBuilder {
-    private SymbolTable currSymbolTable = new SymbolTable(null);
+    private SymbolTable currSymbolTable = new SymbolTable(null, null);
     private final Errors errors = new Errors();
     private final CompUnit compUnit;
     // private FuncDef currFunc;  // not using
@@ -359,7 +359,7 @@ public class SymbolTableBuilder {
             // return;  // stop here or not?
         }
 
-        currSymbolTable = new SymbolTable(currSymbolTable);  // 下降一层
+        currSymbolTable = new SymbolTable(currSymbolTable, null);  // 下降一层(函数符号表)
 
         // check missing Parenthesis
         if (funcDef.missRightParenthesis()) {
@@ -564,7 +564,7 @@ public class SymbolTableBuilder {
 
     public BasicBlock checkBlockStmt(BlockStmt blockStmt, boolean isFunc, String funcLabel) {
         if (!isFunc) {
-            currSymbolTable = new SymbolTable(currSymbolTable);  // 下降一层
+            currSymbolTable = new SymbolTable(currSymbolTable, currFunc.getFuncSymbolTable());  // 下降一层
         }
         BasicBlock basicBlock;
         if (isFunc) {
@@ -640,7 +640,7 @@ public class SymbolTableBuilder {
             errors.add(new MissRparentException(ifStmt.getIfLine()));
         }
         // 通过ID保证中间代码和mips代码中基本块的顺序和遍历顺序一致
-        currSymbolTable = new SymbolTable(currSymbolTable);  // 下降一层
+        currSymbolTable = new SymbolTable(currSymbolTable, currFunc.getFuncSymbolTable());  // 下降一层
         BasicBlock ifBody = new BasicBlock("IF_BODY_" + blockCount++);
         BasicBlock ifEnd = new BasicBlock("IF_END_" + blockCount++);
         // currBlock.addContent(new Jump());
@@ -765,7 +765,7 @@ public class SymbolTableBuilder {
         currBlock = whileBody;
         whileBody.setIndex(blockId++);
 
-        currSymbolTable = new SymbolTable(currSymbolTable);  // 下降一层
+        currSymbolTable = new SymbolTable(currSymbolTable, currFunc.getFuncSymbolTable());  // 下降一层
         // check Stmt
         checkStmt(whileStmt.getStmt());
         currSymbolTable = currSymbolTable.getParent();  // 上升一层
