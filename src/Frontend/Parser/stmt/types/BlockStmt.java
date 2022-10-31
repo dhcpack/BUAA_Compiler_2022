@@ -39,6 +39,7 @@ public class BlockStmt implements StmtInterface, Output {
     }
 
     // BlockItem -> Stmt(StmtInterface) -> ReturnStmt
+    // 最后一条语句是否是return
     public Token getReturn() {
         if (blockItems.size() == 0) {
             return null;

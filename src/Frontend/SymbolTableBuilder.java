@@ -389,8 +389,18 @@ public class SymbolTableBuilder {
                     returnType.getType() == TokenType.INTTK ? SymbolType.INT : SymbolType.VOID, params, ident));
         }
 
+        // 给末尾没有return语句的void函数加return(直接在所有函数结尾无脑加jr $ra)
+        if (returnType.getType() == TokenType.VOIDTK) {
+            BlockStmt funcBody = funcDef.getBlockStmt();
+            if (funcBody.getReturn() == null) {
+                funcBody.getBlockItems()
+                        .add(new Stmt(new ReturnStmt(Token.tempToken(TokenType.RETURNTK, funcBody.getRightBrace().getLine()))));
+            }
+        }
+
         // check func block
         BasicBlock body = checkBlockStmt(funcDef.getBlockStmt(), true, funcBlock.getLabel());
+
         // BasicBlock body = new BasicBlock(funcBlock.getLabel());
         // body.addContent(new Jump(block));
         currFunc.setBody(body);
@@ -1063,8 +1073,10 @@ public class SymbolTableBuilder {
             Symbol res = Symbol.tempSymbol(SymbolType.INT);
             currBlock.addContent(new FuncCall(funcBlock, Rparams, res));
             return res;
+        } else {
+            currBlock.addContent(new FuncCall(funcBlock, Rparams));
+            return new Immediate(0);
         }
-        return new Immediate(0);
     }
 
     // Cond → LOrExp
