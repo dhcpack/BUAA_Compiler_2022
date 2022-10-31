@@ -1,102 +1,242 @@
 ###### GLOBAL STRING ######
-STR_1 : this is d\n
-STR_3 : \n
-STR_2 : 19182650\n
+STR_7 : 2
+STR_6 : 1
+STR_9 : 4
+STR_8 : 3
+STR_10 : 6
+STR_1 : 20373276\n
+STR_3 : point1\n
+STR_2 : break\n
+STR_5 : end while\n
+STR_4 : point2\n
 
 ###### GLOBAL ARRAY ######
 
 ###### GLOBAL VAR ######
-[0x0]q: 5
 
 ###### TEXT ######
 JUMP FUNC_main
-# func dd : stack size 0x0
-# param: 
-FUNC_dd:
-	PRINT_STR STR_1
-	RETURN VOID
-
-# func ee : stack size 0x0
-# param: 
-FUNC_ee:
-	RETURN VOID
-
-# func aa : stack size 0x4
-# param: 
-FUNC_aa:
-	DEF, 2, INT(m[sp-0x4])
-	ADD, INT(m[sp-0x4]), 1, INT(tmp_int_0[temp])
-	ASS, INT(tmp_int_0[temp]), INT(m[sp-0x4])
-	RETURN INT(m[sp-0x4])
-
-# func bb : stack size 0x4
-# param: INT(j[sp-0x4])
-FUNC_bb:
-	ADD, INT(j[sp-0x4]), 1, INT(tmp_int_1[temp])
-	ASS, INT(tmp_int_1[temp]), INT(j[sp-0x4])
-	RETURN INT(j[sp-0x4])
-
-# func cc : stack size 0x8
-# param: INT(k[sp-0x4]), INT(l[sp-0x8])
-FUNC_cc:
-	ADD, INT(k[sp-0x4]), INT(l[sp-0x8]), INT(tmp_int_2[temp])
-	ASS, INT(tmp_int_2[temp]), INT(k[sp-0x4])
-	RETURN INT(k[sp-0x4])
-
-# func main : stack size 0x24
+# func main : stack size 0x10
 # param: 
 FUNC_main:
 	DEF, 0, INT(a[sp-0x4])
 	DEF, 0, INT(b[sp-0x8])
+	GETINT INT(a[sp-0x4])
+	GETINT INT(b[sp-0x8])
+	PRINT_STR STR_1
 	DEF, 0, INT(c[sp-0xc])
-	DEF, 0, INT(e[sp-0x10])
-	DEF, 3, INT(j[sp-0x14])
-	DEF, 2, INT(k[sp-0x18])
-	DEF, 4, INT(l[sp-0x1c])
-	DEF, 0, INT(z[sp-0x20])
-	DEF, 1, INT(x[sp-0x24])
-	GETINT INT(e[sp-0x10])
-	Call FUNC_aa; Params: ; RET INT(tmp_int_3[temp])
-	ADD, INT(tmp_int_3[temp]), 1, INT(tmp_int_4[temp])
-	ASS, INT(tmp_int_4[temp]), INT(a[sp-0x4])
-	Call FUNC_bb; Params: INT(j[sp-0x14]); RET INT(tmp_int_5[temp])
-	ADD, INT(tmp_int_5[temp]), 1, INT(tmp_int_6[temp])
-	ASS, INT(tmp_int_6[temp]), INT(b[sp-0x8])
-	Call FUNC_cc; Params: INT(k[sp-0x18]), INT(l[sp-0x1c]); RET INT(tmp_int_7[temp])
-	SUB, INT(tmp_int_7[temp]), 2, INT(tmp_int_8[temp])
-	ASS, INT(tmp_int_8[temp]), INT(c[sp-0xc])
-	NOT, INT(z[sp-0x20]), INT(tmp_int_9[temp])
-	ASS, INT(tmp_int_9[temp]), INT(tmp_int_10[temp])
-	Branch INT(tmp_int_9[temp]) ? AND_7 : AND_END_6
-AND_7:
-	JUMP AND_END_6
-AND_END_6:
-	ASS, INT(tmp_int_10[temp]), INT(tmp_int_11[temp])
-	Branch INT(tmp_int_11[temp]) ? OR_END_5 : OR_8
-OR_8:
-	JUMP OR_END_5
-OR_END_5:
-	Branch INT(tmp_int_11[temp]) ? IF_BODY_9 : IF_END_10
-IF_BODY_9:
-	JUMP B_11
-B_11:
-	ASS, 2, INT(x[sp-0x24])
-	JUMP B_12
-B_12:
-	JUMP IF_END_10
-IF_END_10:
-	PRINT_STR STR_2
-	Call FUNC_dd; Params: 
-	Call FUNC_ee; Params: 
-	PRINT_INT INT(a[sp-0x4])
-	PRINT_STR STR_3
-	PRINT_INT INT(b[sp-0x8])
-	PRINT_STR STR_3
+	DEF, 0, INT(flag[sp-0x10])
+	EQ, INT(a[sp-0x4]), 1, INT(tmp_int_0[temp])
+	ASS, INT(tmp_int_0[temp]), INT(tmp_int_1[temp])
+	Branch INT(tmp_int_0[temp]) ? AND_2 : AND_END_1
+AND_2:
+	JUMP AND_END_1
+AND_END_1:
+	ASS, INT(tmp_int_1[temp]), INT(tmp_int_2[temp])
+	Branch INT(tmp_int_2[temp]) ? OR_END_0 : OR_3
+OR_3:
+	JUMP OR_END_0
+OR_END_0:
+	Branch INT(tmp_int_2[temp]) ? IF_BODY_4 : IF_ELSE_6
+IF_BODY_4:
+	ASS, 1, INT(c[sp-0xc])
+	JUMP IF_END_5
+IF_END_5:
 	PRINT_INT INT(c[sp-0xc])
-	PRINT_STR STR_3
-	PRINT_INT INT(e[sp-0x10])
-	PRINT_STR STR_3
-	PRINT_INT INT(x[sp-0x24])
-	PRINT_STR STR_3
+	EQ, INT(a[sp-0x4]), 2, INT(tmp_int_3[temp])
+	ASS, INT(tmp_int_3[temp]), INT(tmp_int_4[temp])
+	Branch INT(tmp_int_3[temp]) ? AND_11 : AND_END_10
+AND_11:
+	JUMP AND_END_10
+AND_END_10:
+	ASS, INT(tmp_int_4[temp]), INT(tmp_int_5[temp])
+	Branch INT(tmp_int_5[temp]) ? OR_END_9 : OR_12
+OR_12:
+	JUMP OR_END_9
+OR_END_9:
+	Branch INT(tmp_int_5[temp]) ? IF_BODY_13 : IF_END_14
+IF_BODY_13:
+	ASS, 2, INT(c[sp-0xc])
+	JUMP IF_END_14
+IF_END_14:
+	JUMP WHILE_15
+WHILE_15:
+	LT, INT(c[sp-0xc]), 1000, INT(tmp_int_6[temp])
+	ASS, INT(tmp_int_6[temp]), INT(tmp_int_7[temp])
+	Branch INT(tmp_int_6[temp]) ? AND_20 : AND_END_19
+AND_20:
+	JUMP AND_END_19
+AND_END_19:
+	ASS, INT(tmp_int_7[temp]), INT(tmp_int_8[temp])
+	Branch INT(tmp_int_8[temp]) ? OR_END_18 : OR_21
+OR_21:
+	JUMP OR_END_18
+OR_END_18:
+	Branch INT(tmp_int_8[temp]) ? WHILE_BODY_16 : WHILE_END_17
+WHILE_BODY_16:
+	JUMP B_22
+B_22:
+	EQ, INT(a[sp-0x4]), 1, INT(tmp_int_9[temp])
+	ASS, INT(tmp_int_9[temp]), INT(tmp_int_10[temp])
+	Branch INT(tmp_int_9[temp]) ? AND_25 : AND_END_24
+AND_25:
+	JUMP AND_END_24
+AND_END_24:
+	ASS, INT(tmp_int_10[temp]), INT(tmp_int_11[temp])
+	Branch INT(tmp_int_11[temp]) ? OR_END_23 : OR_26
+OR_26:
+	JUMP OR_END_23
+OR_END_23:
+	Branch INT(tmp_int_11[temp]) ? IF_BODY_27 : IF_END_28
+IF_BODY_27:
+	JUMP B_29
+B_29:
+	PRINT_STR STR_2
+	JUMP WHILE_END_17
+WHILE_END_17:
+
+
+	PRINT_STR STR_5
+	PRINT_INT INT(a[sp-0x4])
+	PRINT_INT INT(b[sp-0x8])
+	PRINT_INT INT(c[sp-0xc])
+	GT, INT(a[sp-0x4]), 5, INT(tmp_int_20[temp])
+	ASS, INT(tmp_int_20[temp]), INT(tmp_int_21[temp])
+	Branch INT(tmp_int_20[temp]) ? AND_43 : AND_END_42
+AND_43:
+	JUMP AND_END_42
+AND_END_42:
+	ASS, INT(tmp_int_21[temp]), INT(tmp_int_22[temp])
+	Branch INT(tmp_int_22[temp]) ? OR_END_41 : OR_44
+OR_44:
+	JUMP OR_END_41
+OR_END_41:
+	Branch INT(tmp_int_22[temp]) ? IF_BODY_45 : IF_END_46
+IF_BODY_45:
+	PRINT_STR STR_6
+	JUMP IF_END_46
+IF_END_46:
+	LT, INT(a[sp-0x4]), 5, INT(tmp_int_23[temp])
+	ASS, INT(tmp_int_23[temp]), INT(tmp_int_24[temp])
+	Branch INT(tmp_int_23[temp]) ? AND_49 : AND_END_48
+AND_49:
+	JUMP AND_END_48
+AND_END_48:
+	ASS, INT(tmp_int_24[temp]), INT(tmp_int_25[temp])
+	Branch INT(tmp_int_25[temp]) ? OR_END_47 : OR_50
+OR_50:
+	JUMP OR_END_47
+OR_END_47:
+	Branch INT(tmp_int_25[temp]) ? IF_BODY_51 : IF_END_52
+IF_BODY_51:
+	PRINT_STR STR_7
+	JUMP IF_END_52
+IF_END_52:
+	GE, INT(a[sp-0x4]), 5, INT(tmp_int_26[temp])
+	ASS, INT(tmp_int_26[temp]), INT(tmp_int_27[temp])
+	Branch INT(tmp_int_26[temp]) ? AND_55 : AND_END_54
+AND_55:
+	JUMP AND_END_54
+AND_END_54:
+	ASS, INT(tmp_int_27[temp]), INT(tmp_int_28[temp])
+	Branch INT(tmp_int_28[temp]) ? OR_END_53 : OR_56
+OR_56:
+	JUMP OR_END_53
+OR_END_53:
+	Branch INT(tmp_int_28[temp]) ? IF_BODY_57 : IF_END_58
+IF_BODY_57:
+	PRINT_STR STR_8
+	JUMP IF_END_58
+IF_END_58:
+	LE, INT(a[sp-0x4]), 5, INT(tmp_int_29[temp])
+	ASS, INT(tmp_int_29[temp]), INT(tmp_int_30[temp])
+	Branch INT(tmp_int_29[temp]) ? AND_61 : AND_END_60
+AND_61:
+	JUMP AND_END_60
+AND_END_60:
+	ASS, INT(tmp_int_30[temp]), INT(tmp_int_31[temp])
+	Branch INT(tmp_int_31[temp]) ? OR_END_59 : OR_62
+OR_62:
+	JUMP OR_END_59
+OR_END_59:
+	Branch INT(tmp_int_31[temp]) ? IF_BODY_63 : IF_END_64
+IF_BODY_63:
+	PRINT_STR STR_9
+	JUMP IF_END_64
+IF_END_64:
+	EQ, INT(a[sp-0x4]), 1, INT(tmp_int_32[temp])
+	ASS, INT(tmp_int_32[temp]), INT(tmp_int_33[temp])
+	Branch INT(tmp_int_32[temp]) ? AND_67 : AND_END_66
+AND_67:
+	EQ, INT(b[sp-0x8]), 4, INT(tmp_int_34[temp])
+	AND, INT(tmp_int_34[temp]), INT(tmp_int_33[temp]), INT(tmp_int_33[temp])
+	Branch INT(tmp_int_33[temp]) ? AND_68 : AND_END_66
+AND_68:
+	JUMP AND_END_66
+AND_END_66:
+	ASS, INT(tmp_int_33[temp]), INT(tmp_int_35[temp])
+	Branch INT(tmp_int_35[temp]) ? OR_END_65 : OR_69
+OR_69:
+	JUMP OR_END_65
+OR_END_65:
+	Branch INT(tmp_int_35[temp]) ? IF_BODY_70 : IF_END_71
+IF_BODY_70:
+	JUMP B_72
+B_72:
+	PRINT_STR STR_10
+	JUMP B_73
+B_73:
+	JUMP IF_END_71
+IF_END_71:
 	RETURN 0
+	JUMP B_30
+B_30:
+	JUMP IF_END_28
+IF_END_28:
+	NEQ, INT(a[sp-0x4]), 1, INT(tmp_int_12[temp])
+	ASS, INT(tmp_int_12[temp]), INT(tmp_int_13[temp])
+	Branch INT(tmp_int_12[temp]) ? AND_33 : AND_END_32
+AND_33:
+	EQ, INT(flag[sp-0x10]), 0, INT(tmp_int_14[temp])
+	AND, INT(tmp_int_14[temp]), INT(tmp_int_13[temp]), INT(tmp_int_13[temp])
+	Branch INT(tmp_int_13[temp]) ? AND_34 : AND_END_32
+AND_34:
+	JUMP AND_END_32
+AND_END_32:
+	ASS, INT(tmp_int_13[temp]), INT(tmp_int_15[temp])
+	Branch INT(tmp_int_15[temp]) ? OR_END_31 : OR_35
+OR_35:
+	JUMP OR_END_31
+OR_END_31:
+	Branch INT(tmp_int_15[temp]) ? IF_BODY_36 : IF_END_37
+IF_BODY_36:
+	JUMP B_38
+B_38:
+	PRINT_STR STR_3
+	SUB, INT(a[sp-0x4]), 1, INT(tmp_int_16[temp])
+	ASS, INT(tmp_int_16[temp]), INT(a[sp-0x4])
+	ASS, 1, INT(flag[sp-0x10])
+	JUMP WHILE_15
+	JUMP B_39
+B_39:
+	JUMP IF_END_37
+IF_END_37:
+	PRINT_STR STR_4
+	SUB, INT(a[sp-0x4]), 1, INT(tmp_int_17[temp])
+	ASS, INT(tmp_int_17[temp]), INT(a[sp-0x4])
+	ADD, INT(b[sp-0x8]), 1, INT(tmp_int_18[temp])
+	ASS, INT(tmp_int_18[temp]), INT(b[sp-0x8])
+	ADD, INT(c[sp-0xc]), 1, INT(tmp_int_19[temp])
+	ASS, INT(tmp_int_19[temp]), INT(c[sp-0xc])
+	JUMP B_40
+B_40:
+	JUMP WHILE_15
+	JUMP B_40
+IF_ELSE_6:
+	JUMP B_7
+B_7:
+	ASS, 3, INT(c[sp-0xc])
+	JUMP B_8
+B_8:
+	JUMP IF_END_5
 
