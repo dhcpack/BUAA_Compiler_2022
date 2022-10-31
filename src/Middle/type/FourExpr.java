@@ -71,9 +71,9 @@ public class FourExpr extends BlockNode {
     @Override
     public String toString() {
         if (this.right != null) {
-            return this.op.name() + ", " + this.left + ", " + this.right + ", " + this.res;
+            return this.op.name() + ", " + this.res + ", " + this.left + ", " + this.right;
         } else {
-            return this.op.name() + ", " + this.left + ", " + this.res;
+            return this.op.name() + ", " + this.res + ", " + this.left;
         }
     }
 }

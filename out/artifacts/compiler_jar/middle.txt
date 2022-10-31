@@ -1,0 +1,36 @@
+###### GLOBAL STRING ######
+
+###### GLOBAL ARRAY ######
+
+###### GLOBAL VAR ######
+[0x0]a: 0
+[0x4]b: 4
+[0x8]c: 5
+
+###### TEXT ######
+JUMP FUNC_main
+# func fun1 : stack size 0x0
+# param: 
+FUNC_fun1:
+	RETURN 0
+# func fun2 : stack size 0x4
+# param: INT(i[sp-0x4])
+FUNC_fun2:
+	RETURN INT(i[sp-0x4])
+# func fun3 : stack size 0x0
+# param: 
+FUNC_fun3:
+	RETURN VOID
+# func fun4 : stack size 0x0
+# param: 
+FUNC_fun4:
+	RETURN VOID
+# func fun5 : stack size 0x8
+# param: INT(i[sp-0x4]), INT(j[sp-0x8])
+FUNC_fun5:
+	ADD, INT(tmp_int_0[temp]), INT(i[sp-0x4]), INT(j[sp-0x8])
+	RETURN INT(tmp_int_0[temp])
+# func main : stack size 0x0
+# param: 
+FUNC_main:
+	RETURN 0
