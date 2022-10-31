@@ -179,6 +179,7 @@ public class SymbolTableBuilder {
                     } else {
                         val = new ConstExpCalculator(currSymbolTable, errors).calcConstExp(initVal.getConstExp());
                     }
+                    symbol.setConstInitInt(val);
                     if (currFunc == null) {  // pre decl, not in a function  全局
                         symbol.setAddress(currSymbolTable.getStackSize() - symbol.getSize());
                         middleCode.addInt(def.getVar().getIdent().getContent(), symbol.getAddress(), val);
@@ -195,6 +196,7 @@ public class SymbolTableBuilder {
                     } else {
                         val = checkExp(initVal.getExp(), false);
                     }
+
                     symbol.setAddress(currSymbolTable.getStackSize());
                     currBlock.addContent(new Middle.type.FourExpr(val, symbol, FourExpr.ExprOp.DEF));
                     symbol.setScope(Symbol.Scope.LOCAL);
@@ -205,10 +207,12 @@ public class SymbolTableBuilder {
                     symbol.setAddress(currSymbolTable.getStackSize() - symbol.getSize());
                     middleCode.addInt(def.getVar().getIdent().getContent(), symbol.getAddress(), 0);
                     symbol.setScope(Symbol.Scope.GLOBAL);
+                    symbol.setConstInitInt(0);
                 } else {  // decl in a function
                     symbol.setAddress(currSymbolTable.getStackSize());
                     currBlock.addContent(new Middle.type.FourExpr(new Immediate(0), symbol, FourExpr.ExprOp.DEF));
                     symbol.setScope(Symbol.Scope.LOCAL);
+                    // 未初始化的局部变量
                 }
             }
         } else {  // 数组
@@ -225,6 +229,7 @@ public class SymbolTableBuilder {
                     ConstExpCalculator constExpCalculator = new ConstExpCalculator(currSymbolTable, errors);
                     ArrayList<Integer> initNum = initExp.stream().map(constExpCalculator::calcAddExp)
                             .collect(Collectors.toCollection(ArrayList::new));
+                    symbol.setInitArray(initNum);
                     if (currFunc == null) {  // 全局变量
                         symbol.setAddress(currSymbolTable.getStackSize() - symbol.getSize());
                         middleCode.addArray(symbol.getIdent().getContent(), symbol.getAddress(), initNum);
@@ -260,6 +265,7 @@ public class SymbolTableBuilder {
                     symbol.setAddress(currSymbolTable.getStackSize() - symbol.getSize());
                     middleCode.addArray(symbol.getIdent().getContent(), symbol.getAddress(), initZero);
                     symbol.setScope(Symbol.Scope.GLOBAL);
+                    symbol.setInitArray(initZero);
                 } else {
                     symbol.setAddress(currSymbolTable.getStackSize());
                     symbol.setScope(Symbol.Scope.LOCAL);
@@ -319,7 +325,7 @@ public class SymbolTableBuilder {
             Symbol symbol = new Symbol(var.getDimCount() == 0 ? SymbolType.INT : SymbolType.ARRAY, ident, dimSize,
                     var.getDimCount(), var.isConst(), null);  // checkVal没有设置scope
             currSymbolTable.addSymbol(symbol);  // 会同时为Symbol申请空间
-            // symbol.setAddress(currSymbolTable.getStackSize());  // setAddress移动到调用LVal的函数中做，便于判断GLOBAL or LOCAL
+            // symbol.setAddress(currSymbolTable.getStackSize());  // setAddress移动到调用LVal的函数中做，便于根据GLOBAL or LOCAL设定不同的address
             return symbol;
         }
         assert false : "redefine";

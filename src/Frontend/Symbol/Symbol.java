@@ -23,12 +23,14 @@ public class Symbol implements LeafNode, Operand {
     private int address;
     private boolean hasAddress = false;
     // int
-    private int initInt;
+    private int constInitInt;
+    private boolean hasConstInitint = false;
 
     // 数组
     // 指针(省略第一维的数组) ???
     private final ArrayList<Integer> dimSize;
     private ArrayList<Integer> initArray;
+    private boolean hasInitArray = false;
     private final int dimCount;
     // private final ArrayList<Token> bracks;  // 数组维数（定义时的Const Exp，未经过化简计算）
 
@@ -71,7 +73,7 @@ public class Symbol implements LeafNode, Operand {
         this.ident = ident;
         this.name = ident.getContent();
         this.isConst = isConst;
-        this.initInt = -20231164;
+        this.constInitInt = -20231164;
         this.dimSize = dimSize;
         this.dimCount = dimCount;
         this.params = null;
@@ -84,7 +86,7 @@ public class Symbol implements LeafNode, Operand {
         this.symbolType = symbolType;
         this.name = name;
         this.isConst = isConst;
-        this.initInt = -20231164;
+        this.constInitInt = -20231164;
         this.dimSize = dimSize;
         this.dimCount = dimCount;
         this.params = null;
@@ -99,7 +101,7 @@ public class Symbol implements LeafNode, Operand {
         this.ident = ident;
         this.name = ident.getContent();
         this.isConst = true;
-        this.initInt = -20231164;
+        this.constInitInt = -20231164;
         this.dimSize = null;
         this.initArray = null;
         this.dimCount = 0;
@@ -112,7 +114,7 @@ public class Symbol implements LeafNode, Operand {
         this.symbolType = symbolType;
         this.name = name;
         this.isConst = true;
-        this.initInt = -20231164;
+        this.constInitInt = -20231164;
         this.dimSize = null;
         this.initArray = null;
         this.dimCount = 0;
@@ -138,12 +140,14 @@ public class Symbol implements LeafNode, Operand {
     }
 
     // int
-    public void setInitInt(int initInt) {
-        this.initInt = initInt;
+    public void setConstInitInt(int constInitInt) {
+        this.constInitInt = constInitInt;
+        this.hasConstInitint = true;
     }
 
     public int getInitInt() {
-        return initInt;
+        assert this.hasConstInitint;
+        return constInitInt;
     }
 
 
@@ -161,10 +165,12 @@ public class Symbol implements LeafNode, Operand {
     // 数组初始值
     public void setInitArray(ArrayList<Integer> initArray) {
         this.initArray = initArray;
+        this.hasInitArray = true;
     }
 
     // 数组初始值
     public ArrayList<Integer> getInitArray() {
+        assert this.hasInitArray;
         return initArray;
     }
 
@@ -172,6 +178,7 @@ public class Symbol implements LeafNode, Operand {
     public int queryVal(ArrayList<Integer> place) {
         assert dimSize != null;
         assert place.size() == dimCount;
+        assert this.hasInitArray;
         int cw = 1, res = 0;
         for (int i = dimCount - 1; i >= 0; i--) {
             res += (cw * place.get(i));
