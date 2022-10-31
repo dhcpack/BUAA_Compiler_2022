@@ -305,7 +305,7 @@ public class Translator {
     }
 
     private void translateBranch(Branch branch) {
-        // freeAllRegisters(true);  // TODO: is it necessary? check
+        freeAllRegisters(true);  // TODO: is it necessary? check
         Operand cond = branch.getCond();
         if (cond instanceof Immediate) {
             mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v1, ((Immediate) cond).getNumber()));
@@ -567,7 +567,7 @@ public class Translator {
     }
 
     private void translateJump(Jump jump) {
-        // freeAllRegisters(true);  // TODO: check
+        freeAllRegisters(true);  // TODO: check
         mipsCode.addInstr(new J(jump.getTarget().getLabel()));
         // queue.add(jump.getTarget());
     }
