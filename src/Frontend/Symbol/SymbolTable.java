@@ -40,8 +40,11 @@ public class SymbolTable {
 
     public int getStackSize() {
         SymbolTable curr = this;
+        if (curr.parent == null) {
+            return this.stackSize;
+        }
         int size = 0;
-        while (curr.parent != null){
+        while (curr.parent != null) {
             size += curr.stackSize;
             curr = curr.parent;
         }
