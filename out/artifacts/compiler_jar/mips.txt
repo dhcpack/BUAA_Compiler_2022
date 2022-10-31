@@ -1,0 +1,44 @@
+# Yuelin's Compiler
+	
+.data
+	global:
+	0 4 5
+	.space 4
+.text
+	la $gp, global
+	j FUNC_main
+FUNC_fun1:
+	# RETURN 0
+	li $2, 0
+	jr $ra
+	
+FUNC_fun2:
+	# RETURN INT(i[sp-0x4])
+	lw $2, -0x4($29)
+	jr $ra
+	
+FUNC_fun3:
+	# RETURN VOID
+	jr $ra
+	
+FUNC_fun4:
+	# RETURN VOID
+	jr $ra
+	
+FUNC_fun5:
+	# ADD, INT(tmp_int_0[temp]), INT(i[sp-0x4]), INT(j[sp-0x8])
+	lw $6, -0x4($29)
+	lw $7, -0x8($29)
+	addu $5, $6, $7
+	# RETURN INT(tmp_int_0[temp])
+	move $2, $5
+	sw $5, -0xc($29)
+	sw $6, -0x4($29)
+	sw $7, -0x8($29)
+	jr $ra
+	
+FUNC_main:
+	# RETURN 0
+	li $2, 10
+	syscall
+	
