@@ -1020,9 +1020,10 @@ public class SymbolTableBuilder {
 
         // 实参表
         FuncRParams funcRParams = funcExp.getParams();
-        ArrayList<Exp> RParamExp = funcRParams.getExps();
+        ArrayList<Exp> RParamExp = new ArrayList<>();
         ArrayList<Operand> Rparams = new ArrayList<>();  // LeafNode is LVal or Number or funcExp
         if (funcRParams != null) {
+            RParamExp = funcRParams.getExps();
             if (Fparams.size() != RParamExp.size()) {
                 errors.add(new MismatchParamCountException(funcExp.getLine()));  // param count mismatch
                 assert false : "参数个数不匹配";

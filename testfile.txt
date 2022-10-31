@@ -1,94 +1,93 @@
-const int a = 1;
-const int b= 7 * 9, c = 0;
+// {Decl}
+const int a_c_num_1 = 1;
+const int a_c_num_2 = 2, a_c_num_3 = 3;
+const int a_c_num_4 = 4, a_c_num_5 = 5, a_c_num_6 = 6;
+int a_v_num;
+int a_v_num_1 = 1, a_v_num_2 = 2;
 
-int d = 8;
-int e, f = -7;
-
-const int g[3] = {29, -29, 0};
-const int h[3][2/1] = {{1, 2}, {3, 4}, {5*1, 2+(((2)))+1*2}};
-
-int i[300], j[2][1] = {{2}, {-9}};
-
-int i_t_e_r(int b) {
-    printf("@%d ", b);
-    if (b > 0) {
-        return b * i_t_e_r(b - 1) - 1;
-    } else {
-        return b - 1;
-    }
-    return 0;
+// {FuncDef}
+/*
+int getint() {
+    int n;
+    scanf("%d", &n);
+    return n;
+}
+*/
+void non_param_func() {
+    {}
+    return ;
 }
 
-int iter_pro(int b_) {
-    printf("*%d ", b_);
-    if (b_ < 0) {
-        return -1;
-    } else {
-        return iter_pro(b_ - 1) + i_t_e_r(b_);
-    }
-    return 0;
+int one_param_func(int a) {
+    int n;
+    int n1 = 1, n2 = 2;
+    return a + 1;
 }
 
-void change(int k, int m[], int n[][1]) {
-    k = k - 1;
-    m[0] = m[0] - 1;
-    n[0][0] = n[0][0] - 1;
-    return;
+int two_param_func(int a1, int a2) {
+    return a1 + a2;
 }
 
-void m() {
-    ;
-    return;
+int more_than_two_param_func(int a1, int a2, int a3) {
+    return a1 + a2 - a3;
 }
 
+// MainFuncDef
 int main() {
-    int k, l = 9;
-    int m[9];
-    int n[2][1] = {{1}, {5}};
-    k = getint();
-    l = getint();
-    n[0][0] = getint();
-    printf("19231133\n");
-    printf("%d\n%d\n%d\n", i_t_e_r(k), i_t_e_r(l), i_t_e_r(i_t_e_r(0)));
-    printf("%d\n", iter_pro(iter_pro(iter_pro(n[0][0])) + 1));
-    printf("before: %d, %d, %d\n", l, i[0], n[0][0]);
-    change(l, i, n);
-    printf("after: %d, %d, %d\n", l, i[0], n[0][0]);
-    while (7 == 7) {
-        if (-8 >= -7) {
-            continue;
-        }
-        printf("Con");
-        while (1-1+1*1) {
-            if (4 <= 3) {
-                continue;
-            }
-            printf("gra");
-            while (!0) {
-                if (-1 < -9) {
-                    continue;
-                }
-                printf("tul");
-                while ((((((1)))))) {
-                    if (0 > 0) {
-                        continue;
-                    }
-                    printf("ati");
-                    while (1) {
-                        if (0) {
-                            continue;
-                        } else {
-                            printf("on!\n");
-                        }
-                        break;
-                    }
+
+// decl
+    const int m_c_num1 = 1, m_c_num2 = 2;
+    int m_v_num1 = 1;
+    int m_v_num;
+    int m_v_num2;
+    int m_v_num_3 = 3, m_v_num_4 = 4, m_v_num_5 = 5;
+
+// stmt
+
+    // LVal = Exp;
+    m_v_num2 = 2;
+
+    // Block
+    {
+        // [Exp]
+        ;
+        1-1;
+        non_param_func();
+        more_than_two_param_func(m_v_num_3, m_v_num_4, m_v_num_5);
+    }
+
+
+
+    if (/*Cond*/1) {
+        int if_v_num3 = m_v_num2 + 1;
+        m_v_num = two_param_func(m_c_num1, if_v_num3);
+        if (m_v_num * m_c_num1 == m_c_num1 + if_v_num3 * 1) {
+            non_param_func();
+        } else {
+            a_v_num = a_c_num_1;
+            while (a_v_num <= a_c_num_3) {
+                a_v_num = one_param_func(a_v_num);
+                if (1 && a_v_num == a_c_num_3) {
                     break;
                 }
-                break;
+                // Cond
+                if (!0) {
+                    continue;
+                }
             }
-            break;
         }
-        break;
     }
+
+    // exp
+    m_v_num = (1) * one_param_func(a_c_num_1) / (a_c_num_2 + 2) % +-a_c_num_3 - +2 + -3;
+
+    // getint
+    m_v_num = getint();
+
+    // printf
+    printf("20373260\n");
+    printf("a_c_num_1:%d\n", a_c_num_1);
+    printf("a_c_num_2:%d, a_v_num_2:%d\n", a_c_num_2, a_v_num_2);
+
     return 0;
 }
