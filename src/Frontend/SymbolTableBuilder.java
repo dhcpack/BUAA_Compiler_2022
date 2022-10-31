@@ -685,6 +685,10 @@ public class SymbolTableBuilder {
         }
         // 检查所有Exp 得到LeftNode
         ArrayList<Exp> exps = printfStmt.getExps();
+        ArrayList<Exp> reverseExps = new ArrayList<>();  // gcc 要倒着check 真的很奇怪
+        for (Exp exp : exps) {
+            reverseExps.add(0, exp);
+        }
         // ArrayList<LeafNode> outputs = exps.stream().map(this::checkExp)
         //         .collect(Collectors.toCollection(ArrayList::new));
         String formatString = printfStmt.getFormatString().getContent();
@@ -694,7 +698,7 @@ public class SymbolTableBuilder {
         ArrayList<BlockNode> printBlocks = new ArrayList<>();
         ArrayList<Operand> printExps = new ArrayList<>();
         int index = 0, prev = 0;
-        for (Exp exp : exps) {
+        for (Exp exp : reverseExps) {
             index = formatString.indexOf(formatChar, index);  // find %d and point to %
             if (index > prev) {
                 String str = formatString.substring(prev, index);
@@ -711,12 +715,12 @@ public class SymbolTableBuilder {
             String strName = middleCode.addAsciiz(str);
             printBlocks.add(new PrintStr(strName));
         }
-        int i = 0;
+        int i = printExps.size() - 1;
         for (BlockNode print : printBlocks) {
             if (print instanceof PrintStr) {
                 currBlock.addContent(print);
             } else {
-                ((PrintInt) print).setVal(printExps.get(i++));
+                ((PrintInt) print).setVal(printExps.get(i--));
                 currBlock.addContent(print);
             }
         }
@@ -1016,15 +1020,27 @@ public class SymbolTableBuilder {
 
         // 实参表
         FuncRParams funcRParams = funcExp.getParams();
+        ArrayList<Exp> RParamExp = funcRParams.getExps();
         ArrayList<Operand> Rparams = new ArrayList<>();  // LeafNode is LVal or Number or funcExp
         if (funcRParams != null) {
-            for (Exp exp : funcRParams.getExps()) {
-                Operand res = checkExp(exp, true);  // 如果是数组则返回数组指针
+            if (Fparams.size() != RParamExp.size()) {
+                errors.add(new MismatchParamCountException(funcExp.getLine()));  // param count mismatch
+                assert false : "参数个数不匹配";
+            }
+            for (int i = 0; i < Fparams.size(); i++) {
+                Symbol fParam = Fparams.get(i);
+                Exp rParamExp = RParamExp.get(i);
+                Operand res;
+                if (fParam.getSymbolType() == SymbolType.INT) {
+                    res = checkExp(rParamExp, false);
+                } else {
+                    res = checkExp(rParamExp, true);  // 如果是数组则返回数组指针
+                }
                 if (res == null) {
                     assert false : "check";
                     return null;
                 }
-                Rparams.add(res);  // TODO: LeafNode未进行合并计算，只返回表达式的首项，用来在FuncRParams中检查类型是否正确
+                Rparams.add(res);
             }  // check Exp会给所有的LVal和FuncExp设置SymbolType
         }
 
@@ -1039,15 +1055,15 @@ public class SymbolTableBuilder {
                 if (rParam instanceof Immediate) {
                     if (fParam.getSymbolType() != SymbolType.INT) {
                         errors.add(new MismatchParamTypeException(funcRParams.getLine()));
+                        break;
+                        // TODO: do what?
                     }
-                    break;
-                    // TODO: do what?
                 } else {
                     Symbol rp = (Symbol) rParam;
                     if (fParam.getSymbolType() != rp.getSymbolType()) {
                         errors.add(new MismatchParamTypeException(funcRParams.getLine()));
+                        break;
                     }
-                    break;
                 }
 
                 // TODO: 需要检查维数和每一维的大小是否匹配
