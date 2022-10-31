@@ -116,12 +116,13 @@ public class ConstExpCalculator {
         if (primaryExpInterface instanceof BraceExp) {
             return calcExp(((BraceExp) primaryExpInterface).getExp());
         } else if (primaryExpInterface instanceof LVal) {
-            // assert false;  // TODO: 不进行这种表达式的计算
             return calcLVal((LVal) primaryExpInterface);
         } else if (primaryExpInterface instanceof Number) {
             return ((Number) primaryExpInterface).getNumber();
+        } else{
+            assert false;
+            return -20231164;
         }
-        return -20231164;
     }
 
     public int calcLVal(LVal lVal) {
@@ -129,6 +130,7 @@ public class ConstExpCalculator {
         Symbol symbol = symbolTable.getSymbol(ident.getContent(), true);
         if (symbol == null) {
             errors.add(new UndefinedTokenException(ident.getLine()));
+            assert false;
             return -20231164;  // error  TODO: WARNING!!!: NOT EXIST IN SYMBOL TABLE
         }
 
@@ -148,11 +150,12 @@ public class ConstExpCalculator {
             return symbol.queryVal(place);
         } else {
             assert false : "in ConstExpCalculator the LVal could only be INT or ARRAY";
+            return -20231164;
         }
-        return -20231164;
     }
 
     public int calcFuncExp(FuncExp funcExp) {
+        assert false;
         return -20231164;
     }
 }
