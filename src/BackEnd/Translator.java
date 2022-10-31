@@ -352,12 +352,12 @@ public class Translator {
                 } else {
                     assert false;
                 }
-            } else if (op == FourExpr.ExprOp.NEG) {
+            } else if (op == FourExpr.ExprOp.NEG) {  // 取反
                 if (left instanceof Immediate) {
                     mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, resRegister, -((Immediate) left).getNumber()));
                 } else if (left instanceof Symbol) {
                     int leftRegister = allocRegister((Symbol) left, true);
-                    mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.addu, resRegister, Registers.zero, leftRegister));
+                    mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.subu, resRegister, Registers.zero, leftRegister));
                 } else {
                     assert false;
                 }
