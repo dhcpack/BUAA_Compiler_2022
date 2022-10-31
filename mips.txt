@@ -2,505 +2,258 @@
 	
 .data
 	global:
-	1 2 3 4 5 6 0 1 2
+	3 100
 	.space 4
-	STR_1: .asciiz "20373260\n"
+	STR_1: .asciiz "20373053\n"
 	STR_3: .asciiz "\n"
-	STR_2: .asciiz "a_c_num_1:"
-	STR_5: .asciiz ", a_v_num_2:"
-	STR_4: .asciiz "a_c_num_2:"
+	STR_2: .asciiz "c is "
 .text
 	la $gp, global
 	j FUNC_main
-FUNC_two_param_func:
-	# ADD, INT(a1[sp-0x4]), INT(a2[sp-0x8]), INT(tmp_int_1[temp])
+FUNC_add:
+	# ADD, INT(a[sp-0x4]), INT(b[sp-0x8]), INT(tmp_int_0[temp])
 	lw $6, -0x4($29)
 	lw $7, -0x8($29)
 	addu $5, $6, $7
-	# RETURN INT(tmp_int_1[temp])
+	# RETURN INT(tmp_int_0[temp])
 	move $2, $5
 	sw $5, -0xc($29)
 	sw $6, -0x4($29)
 	sw $7, -0x8($29)
 	jr $ra
 	
-FUNC_non_param_func:
-	# JUMP B_0
-	j B_0
-B_0:
-	# JUMP B_1
-	j B_1
-B_1:
-	# RETURN VOID
-	jr $ra
-	
-FUNC_more_than_two_param_func:
-	# ADD, INT(a1[sp-0x4]), INT(a2[sp-0x8]), INT(tmp_int_2[temp])
-	lw $9, -0x4($29)
-	lw $10, -0x8($29)
-	addu $8, $9, $10
-	# SUB, INT(tmp_int_2[temp]), INT(a3[sp-0xc]), INT(tmp_int_3[temp])
-	lw $12, -0xc($29)
-	subu $11, $8, $12
-	# RETURN INT(tmp_int_3[temp])
-	move $2, $11
-	sw $9, -0x4($29)
-	sw $10, -0x8($29)
-	sw $11, -0x10($29)
-	sw $12, -0xc($29)
-	jr $ra
-	
-FUNC_one_param_func:
-	# DEF, 0, INT(n[sp-0x8])
-	li $13, 0
-	# DEF, 1, INT(n1[sp-0xc])
-	li $14, 1
-	# DEF, 2, INT(n2[sp-0x10])
-	li $15, 2
-	# ADD, INT(a[sp-0x4]), 1, INT(tmp_int_0[temp])
-	lw $17, -0x4($29)
-	addiu $16, $17, 1
-	# RETURN INT(tmp_int_0[temp])
-	move $2, $16
-	sw $16, -0x14($29)
-	sw $17, -0x4($29)
-	sw $13, -0x8($29)
-	sw $14, -0xc($29)
-	sw $15, -0x10($29)
-	jr $ra
-	
 FUNC_main:
-	# DEF, 1, INT(m_c_num1[sp-0x4])
-	li $18, 1
-	# DEF, 2, INT(m_c_num2[sp-0x8])
-	li $19, 2
-	# DEF, 1, INT(m_v_num1[sp-0xc])
-	li $20, 1
-	# DEF, 0, INT(m_v_num[sp-0x10])
-	li $21, 0
-	# DEF, 0, INT(m_v_num2[sp-0x14])
-	li $22, 0
-	# DEF, 3, INT(m_v_num_3[sp-0x18])
-	li $23, 3
-	# DEF, 4, INT(m_v_num_4[sp-0x1c])
-	li $24, 4
-	# DEF, 5, INT(m_v_num_5[sp-0x20])
-	li $25, 5
-	# ASS, 2, INT(m_v_num2[sp-0x14])
-	li $22, 2
-	# JUMP B_6
-	j B_6
-B_6:
-	# SUB, 1, 1, INT(tmp_int_4[temp])
-	li $26, 0
-	# Call FUNC_non_param_func; Params: 
-	sw $18, -0x4($29)
-	sw $19, -0x8($29)
-	sw $20, -0xc($29)
-	sw $21, -0x10($29)
-	sw $22, -0x14($29)
-	sw $23, -0x18($29)
-	sw $24, -0x1c($29)
-	sw $25, -0x20($29)
-	sw $26, -0x24($29)
-	sw $31, 0x0($29)
-	addiu $4, $29, -40
-	move $29, $4
-	jal FUNC_non_param_func
-	addiu $29, $29, 40
-	lw $31, 0x0($29)
-	# Call FUNC_more_than_two_param_func; Params: INT(m_v_num_3[sp-0x18]), INT(m_v_num_4[sp-0x1c]), INT(m_v_num_5[sp-0x20]); RET INT(tmp_int_5[temp])
-	sw $31, 0x0($29)
-	addiu $4, $29, -40
-	lw $3, -0x18($29)
-	sw $3, -0x4($4)
-	lw $3, -0x1c($29)
-	sw $3, -0x8($4)
-	lw $3, -0x20($29)
-	sw $3, -0xc($4)
-	move $29, $4
-	jal FUNC_more_than_two_param_func
-	addiu $29, $29, 40
-	lw $31, 0x0($29)
-	move $27, $2
-	# JUMP B_7
-	j B_7
-B_7:
-	# JUMP L_OR_EXP_8
-	j L_OR_EXP_8
-L_OR_EXP_8:
-	# JUMP L_AND_EXP_10
-	j L_AND_EXP_10
-L_AND_EXP_10:
-	# ASS, 1, INT(tmp_int_6[temp])
-	li $5, 1
-	# Branch 1 ? AND_12 : AND_END_11
-	li $3, 1
-	bne $3, $0, AND_12
-	j AND_END_11
-AND_12:
-	# JUMP AND_END_11
-	j AND_END_11
-AND_END_11:
-	# ASS, INT(tmp_int_6[temp]), INT(tmp_int_7[temp])
-	move $6, $5
-	# Branch INT(tmp_int_7[temp]) ? OR_END_9 : OR_13
-	move $3, $6
-	bne $3, $0, OR_END_9
-	j OR_13
-OR_13:
-	# JUMP OR_END_9
-	j OR_END_9
-OR_END_9:
-	# Branch INT(tmp_int_7[temp]) ? IF_BODY_14 : IF_END_15
-	move $3, $6
-	bne $3, $0, IF_BODY_14
-	j IF_END_15
-IF_BODY_14:
-	# JUMP B_16
-	j B_16
-B_16:
-	# ADD, INT(m_v_num2[sp-0x14]), 1, INT(tmp_int_8[temp])
-	lw $8, -0x14($29)
-	addiu $7, $8, 1
-	# DEF, INT(tmp_int_8[temp]), INT(if_v_num3[sp-0x24])
-	move $9, $7
-	# Call FUNC_two_param_func; Params: INT(m_c_num1[sp-0x4]), INT(if_v_num3[sp-0x24]); RET INT(tmp_int_9[temp])
-	sw $8, -0x14($29)
-	sw $9, -0x24($29)
-	sw $27, -0x28($29)
-	sw $31, 0x0($29)
-	addiu $4, $29, -44
-	lw $3, -0x4($29)
-	sw $3, -0x4($4)
-	lw $3, -0x24($29)
-	sw $3, -0x8($4)
-	move $29, $4
-	jal FUNC_two_param_func
-	addiu $29, $29, 44
-	lw $31, 0x0($29)
-	move $10, $2
-	# ASS, INT(tmp_int_9[temp]), INT(m_v_num[sp-0x10])
-	move $11, $10
-	# JUMP L_OR_EXP_17
-	j L_OR_EXP_17
-	# JUMP B_62
-	j B_62
-L_OR_EXP_17:
-	# JUMP L_AND_EXP_19
-	j L_AND_EXP_19
-L_AND_EXP_19:
-	# MUL, INT(m_v_num[sp-0x10]), INT(m_c_num1[sp-0x4]), INT(tmp_int_10[temp])
-	lw $16, -0x4($29)
-	mult $11 $16
-	mflo $12
-	# MUL, INT(if_v_num3[sp-0x24]), 1, INT(tmp_int_13[temp])
-	lw $13, -0x24($29)
-	li $3, 1
-	mult $13 $3
-	mflo $17
-	# ADD, INT(m_c_num1[sp-0x4]), INT(tmp_int_13[temp]), INT(tmp_int_12[temp])
-	addu $14, $16, $17
-	# EQ, INT(tmp_int_10[temp]), INT(tmp_int_12[temp]), INT(tmp_int_11[temp])
-	seq $15, $12, $14
-	# ASS, INT(tmp_int_11[temp]), INT(tmp_int_14[temp])
-	move $18, $15
-	# Branch INT(tmp_int_11[temp]) ? AND_21 : AND_END_20
-	move $3, $15
-	bne $3, $0, AND_21
-	j AND_END_20
-AND_21:
-	# JUMP AND_END_20
-	j AND_END_20
-AND_END_20:
-	# ASS, INT(tmp_int_14[temp]), INT(tmp_int_15[temp])
-	move $19, $18
-	# Branch INT(tmp_int_15[temp]) ? OR_END_18 : OR_22
-	move $3, $19
-	bne $3, $0, OR_END_18
-	j OR_22
-OR_22:
-	# JUMP OR_END_18
-	j OR_END_18
-OR_END_18:
-	# Branch INT(tmp_int_15[temp]) ? IF_BODY_23 : IF_ELSE_25
-	move $3, $19
-	bne $3, $0, IF_BODY_23
-	j IF_ELSE_25
-IF_BODY_23:
-	# JUMP B_26
-	j B_26
-B_26:
-	# Call FUNC_non_param_func; Params: 
-	sw $16, -0x4($29)
+	# DEF, 9, INT(a[sp-0x4])
+	li $8, 9
+	# DEF, 11, INT(b[sp-0x8])
+	li $9, 11
+	# DEF, 0, INT(c[sp-0xc])
+	li $10, 0
+	# DEF, 10, INT(now[sp-0x10])
+	li $11, 10
+	# JUMP WHILE_1
+	sw $8, -0x4($29)
+	sw $9, -0x8($29)
+	sw $10, -0xc($29)
 	sw $11, -0x10($29)
-	sw $13, -0x24($29)
-	sw $31, 0x0($29)
-	addiu $4, $29, -44
-	move $29, $4
-	jal FUNC_non_param_func
-	addiu $29, $29, 44
-	lw $31, 0x0($29)
-	# JUMP B_27
-	j B_27
-B_27:
-	# JUMP IF_END_24
-	j IF_END_24
-IF_ELSE_25:
-	# JUMP B_28
-	j B_28
-B_28:
-	# ASS, INT(a_c_num_1[data+0x0]), INT(a_v_num[data+0x18])
-	lw $21, 0x0($28)
-	move $20, $21
-	# JUMP WHILE_29
-	j WHILE_29
-	# JUMP B_61
-	j B_61
-WHILE_29:
-	# JUMP L_OR_EXP_32
-	j L_OR_EXP_32
-L_OR_EXP_32:
-	# JUMP L_AND_EXP_34
-	j L_AND_EXP_34
-L_AND_EXP_34:
-	# LE, INT(a_v_num[data+0x18]), INT(a_c_num_3[data+0x8]), INT(tmp_int_16[temp])
-	lw $23, 0x8($28)
-	sle $22, $20, $23
-	# ASS, INT(tmp_int_16[temp]), INT(tmp_int_17[temp])
-	move $24, $22
-	# Branch INT(tmp_int_16[temp]) ? AND_36 : AND_END_35
-	move $3, $22
-	bne $3, $0, AND_36
-	j AND_END_35
-AND_36:
-	# JUMP AND_END_35
-	j AND_END_35
-AND_END_35:
-	# ASS, INT(tmp_int_17[temp]), INT(tmp_int_18[temp])
-	move $25, $24
-	# Branch INT(tmp_int_18[temp]) ? OR_END_33 : OR_37
-	move $3, $25
-	bne $3, $0, OR_END_33
-	j OR_37
-OR_37:
-	# JUMP OR_END_33
-	j OR_END_33
-OR_END_33:
-	# Branch INT(tmp_int_18[temp]) ? WHILE_BODY_30 : WHILE_END_31
-	move $3, $25
-	bne $3, $0, WHILE_BODY_30
-	j WHILE_END_31
-WHILE_BODY_30:
-	# JUMP B_38
-	j B_38
-B_38:
-	# Call FUNC_one_param_func; Params: INT(a_v_num[data+0x18]); RET INT(tmp_int_19[temp])
-	sw $20, 0x18($28)
-	sw $21, 0x0($28)
-	sw $23, 0x8($28)
-	sw $31, 0x0($29)
-	addiu $4, $29, -44
-	lw $3, 0x18($28)
-	sw $3, -0x4($4)
-	move $29, $4
-	jal FUNC_one_param_func
-	addiu $29, $29, 44
-	lw $31, 0x0($29)
-	move $26, $2
-	# ASS, INT(tmp_int_19[temp]), INT(a_v_num[data+0x18])
-	move $5, $26
-	# JUMP L_OR_EXP_39
-	j L_OR_EXP_39
-	# JUMP B_60
-	j B_60
-L_OR_EXP_39:
-	# JUMP L_AND_EXP_41
-	j L_AND_EXP_41
-L_AND_EXP_41:
-	# ASS, 1, INT(tmp_int_20[temp])
-	li $6, 1
-	# Branch 1 ? AND_43 : AND_END_42
-	li $3, 1
-	bne $3, $0, AND_43
-	j AND_END_42
-AND_43:
-	# EQ, INT(a_v_num[data+0x18]), INT(a_c_num_3[data+0x8]), INT(tmp_int_21[temp])
-	lw $8, 0x8($28)
-	seq $7, $5, $8
-	# AND, INT(tmp_int_21[temp]), INT(tmp_int_20[temp]), INT(tmp_int_20[temp])
-	and $6, $7, $6
-	# Branch INT(tmp_int_20[temp]) ? AND_44 : AND_END_42
-	move $3, $6
-	bne $3, $0, AND_44
-	j AND_END_42
-AND_44:
-	# JUMP AND_END_42
-	j AND_END_42
-AND_END_42:
-	# ASS, INT(tmp_int_20[temp]), INT(tmp_int_22[temp])
-	move $9, $6
-	# Branch INT(tmp_int_22[temp]) ? OR_END_40 : OR_45
-	move $3, $9
-	bne $3, $0, OR_END_40
-	j OR_45
-OR_45:
-	# JUMP OR_END_40
-	j OR_END_40
-OR_END_40:
-	# Branch INT(tmp_int_22[temp]) ? IF_BODY_46 : IF_END_47
-	move $3, $9
-	bne $3, $0, IF_BODY_46
-	j IF_END_47
-IF_BODY_46:
-	# JUMP B_48
-	j B_48
-B_48:
-	# JUMP WHILE_END_31
-	j WHILE_END_31
-	# JUMP B_49
-	j B_49
-B_49:
-	# JUMP IF_END_47
-	j IF_END_47
-IF_END_47:
-	# JUMP L_OR_EXP_50
-	j L_OR_EXP_50
-L_OR_EXP_50:
-	# JUMP L_AND_EXP_52
-	j L_AND_EXP_52
-L_AND_EXP_52:
-	# NOT, 0, INT(tmp_int_23[temp])
-	seq $27, $0, 0
-	# ASS, INT(tmp_int_23[temp]), INT(tmp_int_24[temp])
-	move $10, $27
-	# Branch INT(tmp_int_23[temp]) ? AND_54 : AND_END_53
-	move $3, $27
-	bne $3, $0, AND_54
-	j AND_END_53
-AND_54:
-	# JUMP AND_END_53
-	j AND_END_53
-AND_END_53:
-	# ASS, INT(tmp_int_24[temp]), INT(tmp_int_25[temp])
-	move $17, $10
-	# Branch INT(tmp_int_25[temp]) ? OR_END_51 : OR_55
-	move $3, $17
-	bne $3, $0, OR_END_51
-	j OR_55
-OR_55:
-	# JUMP OR_END_51
-	j OR_END_51
-OR_END_51:
-	# Branch INT(tmp_int_25[temp]) ? IF_BODY_56 : IF_END_57
-	move $3, $17
-	bne $3, $0, IF_BODY_56
-	j IF_END_57
-IF_BODY_56:
-	# JUMP B_58
-	j B_58
-B_58:
-	# JUMP WHILE_29
-	j WHILE_29
-	# JUMP B_59
-	j B_59
-B_59:
-	# JUMP IF_END_57
-	j IF_END_57
-IF_END_57:
-	# JUMP B_60
-	j B_60
-B_60:
-	# JUMP WHILE_29
-	j WHILE_29
-WHILE_END_31:
-	# JUMP B_61
-	j B_61
-B_61:
-	# JUMP IF_END_24
-	j IF_END_24
-IF_END_24:
-	# JUMP B_62
-	j B_62
-B_62:
-	# JUMP IF_END_15
-	j IF_END_15
-IF_END_15:
-	# Call FUNC_one_param_func; Params: INT(a_c_num_1[data+0x0]); RET INT(tmp_int_27[temp])
-	sw $5, 0x18($28)
-	sw $8, 0x8($28)
-	sw $31, 0x0($29)
-	addiu $4, $29, -44
-	lw $3, 0x0($28)
-	sw $3, -0x4($4)
-	move $29, $4
-	jal FUNC_one_param_func
-	addiu $29, $29, 44
-	lw $31, 0x0($29)
-	move $12, $2
-	# MUL, 1, INT(tmp_int_27[temp]), INT(tmp_int_26[temp])
-	li $3, 1
-	mult $3 $12
-	mflo $14
-	# ADD, INT(a_c_num_2[data+0x4]), 2, INT(tmp_int_29[temp])
-	lw $18, 0x4($28)
-	addiu $15, $18, 2
-	# DIV, INT(tmp_int_26[temp]), INT(tmp_int_29[temp]), INT(tmp_int_28[temp])
-	div $14 $15
-	mflo $19
-	# NEG, INT(a_c_num_3[data+0x8]), INT(tmp_int_31[temp])
-	lw $11, 0x8($28)
-	subu $16, $0, $11
-	# MOD, INT(tmp_int_28[temp]), INT(tmp_int_31[temp]), INT(tmp_int_30[temp])
-	div $19 $16
-	mfhi $13
-	# SUB, INT(tmp_int_30[temp]), 2, INT(tmp_int_32[temp])
-	addiu $22, $13, -2
-	# NEG, 3, INT(tmp_int_34[temp])
-	li $24, -3
-	# ADD, INT(tmp_int_32[temp]), INT(tmp_int_34[temp]), INT(tmp_int_33[temp])
-	addu $25, $22, $24
-	# ASS, INT(tmp_int_33[temp]), INT(m_v_num[sp-0x10])
-	move $20, $25
-	# GETINT INT(m_v_num[sp-0x10])
-	li $2, 5
-	syscall
-	move $20, $2
+	j WHILE_1
+WHILE_1:
+	# JUMP L_OR_EXP_4
+	j L_OR_EXP_4
+L_OR_EXP_4:
+	# JUMP L_AND_EXP_6
+	j L_AND_EXP_6
+L_AND_EXP_6:
+	# GT, INT(now[sp-0x10]), 0, INT(tmp_int_1[temp])
+	lw $13, -0x10($29)
+	sgt $12, $13, 0
+	# ASS, INT(tmp_int_1[temp]), INT(tmp_int_2[temp])
+	move $14, $12
+	# Branch INT(tmp_int_1[temp]) ? AND_8 : AND_END_7
+	sw $12, -0x14($29)
+	sw $13, -0x10($29)
+	sw $14, -0x18($29)
+	lw $3, -0x14($29)
+	bne $3, $0, AND_8
+	j AND_END_7
+AND_8:
+	# JUMP AND_END_7
+	j AND_END_7
+AND_END_7:
+	# ASS, INT(tmp_int_2[sp-0x18]), INT(tmp_int_3[temp])
+	lw $16, -0x18($29)
+	move $15, $16
+	# Branch INT(tmp_int_3[temp]) ? OR_END_5 : OR_9
+	sw $16, -0x18($29)
+	sw $15, -0x1c($29)
+	lw $3, -0x1c($29)
+	bne $3, $0, OR_END_5
+	j OR_9
+OR_9:
+	# JUMP OR_END_5
+	j OR_END_5
+OR_END_5:
+	# Branch INT(tmp_int_3[sp-0x1c]) ? WHILE_BODY_2 : WHILE_END_3
+	lw $3, -0x1c($29)
+	bne $3, $0, WHILE_BODY_2
+	j WHILE_END_3
+WHILE_BODY_2:
+	# JUMP B_10
+	j B_10
+B_10:
+	# SUB, INT(now[sp-0x10]), 1, INT(tmp_int_4[temp])
+	lw $18, -0x10($29)
+	addiu $17, $18, -1
+	# ASS, INT(tmp_int_4[temp]), INT(now[sp-0x10])
+	move $18, $17
 	# PRINT_STR STR_1
 	li $2, 4
 	la $4, STR_1
 	syscall
+	# JUMP B_11
+	sw $18, -0x10($29)
+	j B_11
+B_11:
+	# JUMP WHILE_1
+	j WHILE_1
+WHILE_END_3:
+	# JUMP WHILE_12
+	j WHILE_12
+WHILE_12:
+	# JUMP L_OR_EXP_15
+	j L_OR_EXP_15
+L_OR_EXP_15:
+	# JUMP L_AND_EXP_17
+	j L_AND_EXP_17
+L_AND_EXP_17:
+	# LT, INT(c[sp-0xc]), 10000, INT(tmp_int_5[temp])
+	lw $20, -0xc($29)
+	slti $19, $20, 10000
+	# ASS, INT(tmp_int_5[temp]), INT(tmp_int_6[temp])
+	move $21, $19
+	# Branch INT(tmp_int_5[temp]) ? AND_19 : AND_END_18
+	sw $19, -0x20($29)
+	sw $20, -0xc($29)
+	sw $21, -0x24($29)
+	lw $3, -0x20($29)
+	bne $3, $0, AND_19
+	j AND_END_18
+AND_19:
+	# JUMP AND_END_18
+	j AND_END_18
+AND_END_18:
+	# ASS, INT(tmp_int_6[sp-0x24]), INT(tmp_int_7[temp])
+	lw $23, -0x24($29)
+	move $22, $23
+	# Branch INT(tmp_int_7[temp]) ? OR_END_16 : OR_20
+	sw $22, -0x28($29)
+	sw $23, -0x24($29)
+	lw $3, -0x28($29)
+	bne $3, $0, OR_END_16
+	j OR_20
+OR_20:
+	# JUMP OR_END_16
+	j OR_END_16
+OR_END_16:
+	# Branch INT(tmp_int_7[sp-0x28]) ? WHILE_BODY_13 : WHILE_END_14
+	lw $3, -0x28($29)
+	bne $3, $0, WHILE_BODY_13
+	j WHILE_END_14
+WHILE_BODY_13:
+	# JUMP B_21
+	j B_21
+B_21:
+	# JUMP L_OR_EXP_22
+	j L_OR_EXP_22
+	# JUMP B_35
+	j B_35
+L_OR_EXP_22:
+	# JUMP L_AND_EXP_24
+	j L_AND_EXP_24
+L_AND_EXP_24:
+	# LT, INT(c[sp-0xc]), 50, INT(tmp_int_8[temp])
+	lw $25, -0xc($29)
+	slti $24, $25, 50
+	# ASS, INT(tmp_int_8[temp]), INT(tmp_int_9[temp])
+	move $26, $24
+	# Branch INT(tmp_int_8[temp]) ? AND_26 : AND_END_25
+	sw $24, -0x2c($29)
+	sw $25, -0xc($29)
+	sw $26, -0x30($29)
+	lw $3, -0x2c($29)
+	bne $3, $0, AND_26
+	j AND_END_25
+AND_26:
+	# JUMP AND_END_25
+	j AND_END_25
+AND_END_25:
+	# ASS, INT(tmp_int_9[sp-0x30]), INT(tmp_int_10[temp])
+	lw $5, -0x30($29)
+	move $27, $5
+	# Branch INT(tmp_int_10[temp]) ? OR_END_23 : OR_27
+	sw $5, -0x30($29)
+	sw $27, -0x34($29)
+	lw $3, -0x34($29)
+	bne $3, $0, OR_END_23
+	j OR_27
+OR_27:
+	# JUMP OR_END_23
+	j OR_END_23
+OR_END_23:
+	# Branch INT(tmp_int_10[sp-0x34]) ? IF_BODY_28 : IF_ELSE_30
+	lw $3, -0x34($29)
+	bne $3, $0, IF_BODY_28
+	j IF_ELSE_30
+IF_BODY_28:
+	# JUMP B_31
+	j B_31
+B_31:
+	# Call FUNC_add; Params: INT(c[sp-0xc]), INT(a[sp-0x4]); RET INT(tmp_int_11[temp])
+	sw $31, 0x0($29)
+	addiu $4, $29, -56
+	lw $3, -0xc($29)
+	sw $3, -0x4($4)
+	lw $3, -0x4($29)
+	sw $3, -0x8($4)
+	move $29, $4
+	jal FUNC_add
+	addiu $29, $29, 56
+	lw $31, 0x0($29)
+	move $6, $2
+	# ASS, INT(tmp_int_11[temp]), INT(c[sp-0xc])
+	move $7, $6
+	# JUMP B_32
+	sw $7, -0xc($29)
+	j B_32
+B_32:
+	# JUMP IF_END_29
+	j IF_END_29
+IF_ELSE_30:
+	# JUMP B_33
+	j B_33
+B_33:
+	# Call FUNC_add; Params: INT(c[sp-0xc]), INT(b[sp-0x8]); RET INT(tmp_int_12[temp])
+	sw $31, 0x0($29)
+	addiu $4, $29, -56
+	lw $3, -0xc($29)
+	sw $3, -0x4($4)
+	lw $3, -0x8($29)
+	sw $3, -0x8($4)
+	move $29, $4
+	jal FUNC_add
+	addiu $29, $29, 56
+	lw $31, 0x0($29)
+	move $8, $2
+	# ASS, INT(tmp_int_12[temp]), INT(c[sp-0xc])
+	move $9, $8
+	# JUMP B_34
+	sw $9, -0xc($29)
+	j B_34
+B_34:
+	# JUMP IF_END_29
+	j IF_END_29
+IF_END_29:
 	# PRINT_STR STR_2
 	li $2, 4
 	la $4, STR_2
 	syscall
-	# PRINT_INT INT(a_c_num_1[data+0x0])
+	# PRINT_INT INT(c[sp-0xc])
 	li $2, 1
-	lw $4, 0x0($28)
+	lw $4, -0xc($29)
 	syscall
 	# PRINT_STR STR_3
 	li $2, 4
 	la $4, STR_3
 	syscall
-	# PRINT_STR STR_4
-	li $2, 4
-	la $4, STR_4
-	syscall
-	# PRINT_INT INT(a_c_num_2[data+0x4])
+	# JUMP B_35
+	j B_35
+B_35:
+	# JUMP WHILE_12
+	j WHILE_12
+WHILE_END_14:
+	# PRINT_INT INT(c[sp-0xc])
 	li $2, 1
-	move $4, $18
-	syscall
-	# PRINT_STR STR_5
-	li $2, 4
-	la $4, STR_5
-	syscall
-	# PRINT_INT INT(a_v_num_2[data+0x20])
-	li $2, 1
-	lw $4, 0x20($28)
-	syscall
-	# PRINT_STR STR_3
-	li $2, 4
-	la $4, STR_3
+	lw $4, -0xc($29)
 	syscall
 	# RETURN 0
 	li $2, 10
