@@ -1,40 +1,21 @@
+const int N = 555;
+int func() {
+  const int a = 114500;
+  int b = 10; // a = 50
+  return a + b - 4 + 8;
+}
+int func2(int a,int b,int c) {
+  return a * b + c;
+}
+void printTotal(int a,int b,int c) {
+  printf("%d\n",(a+b+c)*a);
+}
 int main() {
-    int a = 0, b = 0;
-    a = getint();
-    b = getint();
-    printf("20373276\n");
-    int c = 0;
-    int flag = 0;
-    if (a == 1) c = 1;
-    else { c = 3; }
-    printf("%d", c);
-    if (a == 2) c = 2;
-    while (c < 1000) {
-        if (a == 1) {
-            printf("break\n");
-            break;
-        }
-        if (a != 1 && flag == 0) {
-            printf("point1\n");
-            a = a - 1;
-            flag = 1;
-            continue;
-        }
-        printf("point2\n");
-        a = a - 1;
-        b = b + 1;
-        c = c + 1;
-    }
-    printf("end while\n");
-    printf("%d", a);
-    printf("%d", b);
-    printf("%d", c);
-    if (a > 5) printf("1");
-    if (a < 5) printf("2");
-    if (a >= 5) printf("3");
-    if (a <= 5) printf("4");
-    if (a == 1 && b == 4) {
-        printf("6");
-    }
-    return 0;
+  const int N = 666;
+  printf("20373057\n");
+  printf("%d\n",func());
+  printf("%d\n",func2(+1,+2,+3));
+  printTotal(+5,-2,-1);
+  printf("%d",N);
+  return 0;
 }

@@ -56,7 +56,7 @@ public class ExprParser {
 
     public boolean inFirstExp(Token token) {  // Exp的FIRST集
         return token.getType() == TokenType.LPARENT || token.getType() == TokenType.IDENFR || token.getType() == TokenType.INTCON
-                || token.getType() == TokenType.AND || token.getType() == TokenType.MINU || token.getType() == TokenType.NOT;
+                || token.getType() == TokenType.PLUS || token.getType() == TokenType.MINU || token.getType() == TokenType.NOT;
     }
 
     // LVal → Ident {'[' Exp ']'}

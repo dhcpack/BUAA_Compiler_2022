@@ -39,6 +39,7 @@ import Middle.type.Return;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
 
@@ -51,14 +52,6 @@ public class Translator {
     public Translator(MiddleCode middleCode) {
         this.middleCode = middleCode;
         this.symbolUsageMap = middleCode.getSymbolUsageMap();
-    }
-
-    public MipsCode translate() {
-        translateGlobals();
-        for (FuncBlock funcBlock : middleCode.getNameToFunc().values()) {
-            translateFunc(funcBlock);
-        }
-        return mipsCode;
     }
 
     private void translateGlobals() {
@@ -83,6 +76,13 @@ public class Translator {
         mipsCode.setGlobalStrings(middleCode.getNameToAsciiz());
     }
 
+    public MipsCode translate() {
+        translateGlobals();
+        translateFuncs();
+        return mipsCode;
+    }
+
+
     // BFS 基本块
     private final HashSet<BasicBlock> visited = new HashSet<>();
     // private final Queue<BasicBlock> queue = new LinkedList<>();
@@ -90,68 +90,62 @@ public class Translator {
     private FuncBlock currentFunc = null;
     private int currentStackSize = 0; // 当前正在翻译的函数已经用掉的栈的大小（局部变量+临时变量）
 
-    private void translateFunc(FuncBlock funcBlock) {
-        currentFunc = funcBlock;
-        currentStackSize = funcBlock.getStackSize();
-        BasicBlock body = funcBlock.getBody();
-        // mipsCode.addInstr(new Label(funcBlock.getLabel()));
-        dfsBasicBlock(body);
-        mipsCode.addInstr(new Comment(""));
-        // queue.add(body);
-        // while (!queue.isEmpty()) {
-        //     BasicBlock basicBlock = queue.poll();
-        //     if (visited.contains(basicBlock)) {
-        //         continue;
-        //     }
-        //     visited.add(basicBlock);
-        //     translateBasicBlock(basicBlock);
-        // }
+    private void translateFuncs() {
+        LinkedHashMap<FuncBlock, ArrayList<BasicBlock>> funcToSortedBlock = middleCode.getFuncToSortedBlock();
+        for (Map.Entry<FuncBlock, ArrayList<BasicBlock>> funcAndBlock : funcToSortedBlock.entrySet()) {
+            currentFunc = funcAndBlock.getKey();
+            currentStackSize = currentFunc.getStackSize();
+            for (BasicBlock block:funcAndBlock.getValue()){
+                translateBasicBlock(block);
+            }
+            mipsCode.addInstr(new Comment(""));
+        }
     }
 
-    private void dfsBasicBlock(BasicBlock basicBlock) {
-        if (visited.contains(basicBlock)) {
-            return;
-        }
-        visited.add(basicBlock);
-        // defUseMap.clear();
-        // addUsage(basicBlock.getOperandUsage());
-        mipsCode.addInstr(new Label(basicBlock.getLabel()));
-        // pay attention to label
-        for (BlockNode blockNode : basicBlock.getContent()) {
-            mipsCode.addInstr(new Comment(blockNode.toString()));
-            if (blockNode instanceof Branch) {
-                translateBranch((Branch) blockNode);
-                if (((Branch) blockNode).isThenFirst()) {
-                    dfsBasicBlock(((Branch) blockNode).getThenBlock());
-                    dfsBasicBlock(((Branch) blockNode).getElseBlock());
-                } else {
-                    dfsBasicBlock(((Branch) blockNode).getElseBlock());
-                    dfsBasicBlock(((Branch) blockNode).getThenBlock());
-                }
-            } else if (blockNode instanceof FourExpr) {
-                translateFourExpr((FourExpr) blockNode);
-            } else if (blockNode instanceof FuncCall) {
-                translateFuncCall((FuncCall) blockNode);
-            } else if (blockNode instanceof GetInt) {
-                translateGetInt((GetInt) blockNode);
-            } else if (blockNode instanceof Jump) {
-                translateJump((Jump) blockNode);
-                dfsBasicBlock(((Jump) blockNode).getTarget());
-            } else if (blockNode instanceof Memory) {
-                translateMemory((Memory) blockNode);
-            } else if (blockNode instanceof Pointer) {
-                translatePointer((Pointer) blockNode);
-            } else if (blockNode instanceof PrintInt) {
-                translatePrintInt((PrintInt) blockNode);
-            } else if (blockNode instanceof PrintStr) {
-                translatePrintStr((PrintStr) blockNode);
-            } else if (blockNode instanceof Return) {
-                translateReturn((Return) blockNode);
-            } else {
-                assert false;
-            }
-        }
-    }
+    // private void dfsBasicBlock(BasicBlock basicBlock) {
+    //     if (visited.contains(basicBlock)) {
+    //         return;
+    //     }
+    //     visited.add(basicBlock);
+    //     // defUseMap.clear();
+    //     // addUsage(basicBlock.getOperandUsage());
+    //     mipsCode.addInstr(new Label(basicBlock.getLabel()));
+    //     // pay attention to label
+    //     for (BlockNode blockNode : basicBlock.getContent()) {
+    //         mipsCode.addInstr(new Comment(blockNode.toString()));
+    //         if (blockNode instanceof Branch) {
+    //             translateBranch((Branch) blockNode);
+    //             if (((Branch) blockNode).isThenFirst()) {
+    //                 dfsBasicBlock(((Branch) blockNode).getThenBlock());
+    //                 dfsBasicBlock(((Branch) blockNode).getElseBlock());
+    //             } else {
+    //                 dfsBasicBlock(((Branch) blockNode).getElseBlock());
+    //                 dfsBasicBlock(((Branch) blockNode).getThenBlock());
+    //             }
+    //         } else if (blockNode instanceof FourExpr) {
+    //             translateFourExpr((FourExpr) blockNode);
+    //         } else if (blockNode instanceof FuncCall) {
+    //             translateFuncCall((FuncCall) blockNode);
+    //         } else if (blockNode instanceof GetInt) {
+    //             translateGetInt((GetInt) blockNode);
+    //         } else if (blockNode instanceof Jump) {
+    //             translateJump((Jump) blockNode);
+    //             dfsBasicBlock(((Jump) blockNode).getTarget());
+    //         } else if (blockNode instanceof Memory) {
+    //             translateMemory((Memory) blockNode);
+    //         } else if (blockNode instanceof Pointer) {
+    //             translatePointer((Pointer) blockNode);
+    //         } else if (blockNode instanceof PrintInt) {
+    //             translatePrintInt((PrintInt) blockNode);
+    //         } else if (blockNode instanceof PrintStr) {
+    //             translatePrintStr((PrintStr) blockNode);
+    //         } else if (blockNode instanceof Return) {
+    //             translateReturn((Return) blockNode);
+    //         } else {
+    //             assert false;
+    //         }
+    //     }
+    // }
 
     // 记录所有（包括临时和局部和全局）变量的使用次数（表达式右端）
     // private void addUsage(ArrayList<Operand> operands) {
@@ -277,38 +271,38 @@ public class Translator {
         }
     }
 
-    // private void translateBasicBlock(BasicBlock basicBlock) {
-    //     defUseMap.clear();
-    //     addUsage(basicBlock.getOperandUsage());
-    //     mipsCode.addInstr(new Label(basicBlock.getLabel()));
-    //     // pay attention to label
-    //     for (BlockNode blockNode : basicBlock.getContent()) {
-    //         mipsCode.addInstr(new Comment(blockNode.toString()));
-    //         if (blockNode instanceof Branch) {
-    //             translateBranch((Branch) blockNode);
-    //         } else if (blockNode instanceof FourExpr) {
-    //             translateFourExpr((FourExpr) blockNode);
-    //         } else if (blockNode instanceof FuncCall) {
-    //             translateFuncCall((FuncCall) blockNode);
-    //         } else if (blockNode instanceof GetInt) {
-    //             translateGetInt((GetInt) blockNode);
-    //         } else if (blockNode instanceof Jump) {
-    //             translateJump((Jump) blockNode);
-    //         } else if (blockNode instanceof Memory) {
-    //             translateMemory((Memory) blockNode);
-    //         } else if (blockNode instanceof Pointer) {
-    //             translatePointer((Pointer) blockNode);
-    //         } else if (blockNode instanceof PrintInt) {
-    //             translatePrintInt((PrintInt) blockNode);
-    //         } else if (blockNode instanceof PrintStr) {
-    //             translatePrintStr((PrintStr) blockNode);
-    //         } else if (blockNode instanceof Return) {
-    //             translateReturn((Return) blockNode);
-    //         } else {
-    //             assert false;
-    //         }
-    //     }
-    // }
+    private void translateBasicBlock(BasicBlock basicBlock) {
+        // defUseMap.clear();
+        // addUsage(basicBlock.getOperandUsage());
+        mipsCode.addInstr(new Label(basicBlock.getLabel()));
+        // pay attention to label
+        for (BlockNode blockNode : basicBlock.getContent()) {
+            mipsCode.addInstr(new Comment(blockNode.toString()));
+            if (blockNode instanceof Branch) {
+                translateBranch((Branch) blockNode);
+            } else if (blockNode instanceof FourExpr) {
+                translateFourExpr((FourExpr) blockNode);
+            } else if (blockNode instanceof FuncCall) {
+                translateFuncCall((FuncCall) blockNode);
+            } else if (blockNode instanceof GetInt) {
+                translateGetInt((GetInt) blockNode);
+            } else if (blockNode instanceof Jump) {
+                translateJump((Jump) blockNode);
+            } else if (blockNode instanceof Memory) {
+                translateMemory((Memory) blockNode);
+            } else if (blockNode instanceof Pointer) {
+                translatePointer((Pointer) blockNode);
+            } else if (blockNode instanceof PrintInt) {
+                translatePrintInt((PrintInt) blockNode);
+            } else if (blockNode instanceof PrintStr) {
+                translatePrintStr((PrintStr) blockNode);
+            } else if (blockNode instanceof Return) {
+                translateReturn((Return) blockNode);
+            } else {
+                assert false;
+            }
+        }
+    }
 
     private void translateBranch(Branch branch) {
         // freeAllRegisters(true);  // TODO: is it necessary? check
@@ -507,7 +501,7 @@ public class Translator {
                 } else if (op == FourExpr.ExprOp.OR) {   // only in cond Exp
                     mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.or, resRegister, leftRegister, rightRegister));
                 } else if (op == FourExpr.ExprOp.AND) {
-                    mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.or, resRegister, leftRegister, rightRegister));
+                    mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.and, resRegister, leftRegister, rightRegister));
                 } else {
                     assert false;
                 }
