@@ -5,15 +5,22 @@ import java.util.HashMap;
 public class SymbolTable {
     private final SymbolTable parent;  // top SymbolTable has no parent
     private final HashMap<String, Symbol> symbols = new HashMap<>();
+    private final SymbolTable funcSymbolTable;
     private int stackSize = 0;
 
-    public SymbolTable(SymbolTable parent) {
+    public SymbolTable(SymbolTable parent, SymbolTable funcSymbolTable) {
         this.parent = parent;
+        this.funcSymbolTable = funcSymbolTable;
+        assert this.parent == null || this.parent.parent == null
+                || this.funcSymbolTable != null : "要么是最顶层符号表，要么是函数符号表，要么拥有属于的函数符号表";
     }
 
     public void addSymbol(Symbol symbol) {
         this.symbols.put(symbol.getIdent().getContent(), symbol);
         this.stackSize += symbol.getSize();
+        if (this.funcSymbolTable != null) {
+            this.funcSymbolTable.addSize(symbol.getSize());  // 在函数符号表中申请空间
+        }
     }
 
     public SymbolTable getParent() {
@@ -38,16 +45,15 @@ public class SymbolTable {
         return null;
     }
 
+    public void addSize(int stackSize) {  // 在While块等符号表中添加符号时要向函数符号表+size
+        this.stackSize += stackSize;
+    }
+
     public int getStackSize() {
-        SymbolTable curr = this;
-        if (curr.parent == null) {
+        if (this.funcSymbolTable != null) {
+            return this.funcSymbolTable.getStackSize();
+        } else {
             return this.stackSize;
         }
-        int size = 0;
-        while (curr.parent != null) {
-            size += curr.stackSize;
-            curr = curr.parent;
-        }
-        return size;
     }
 }

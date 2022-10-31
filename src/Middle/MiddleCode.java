@@ -22,12 +22,12 @@ import java.util.Queue;
 import java.util.StringJoiner;
 
 public class MiddleCode implements Output {
-    private final HashMap<String, Integer> nameToAddr = new HashMap<>();
-    private final HashMap<String, Integer> nameToVal = new HashMap<>();
-    private final HashMap<String, String> nameToAsciiz = new HashMap<>();
-    private final HashMap<String, String> AsciizToName = new HashMap<>();
-    private final HashMap<String, ArrayList<Integer>> nameToArray = new HashMap<>();
-    private final HashMap<String, FuncBlock> nameToFunc = new HashMap<>();
+    private final LinkedHashMap<String, Integer> nameToAddr = new LinkedHashMap<>();
+    private final LinkedHashMap<String, Integer> nameToVal = new LinkedHashMap<>();
+    private final LinkedHashMap<String, String> nameToAsciiz = new LinkedHashMap<>();
+    private final LinkedHashMap<String, String> AsciizToName = new LinkedHashMap<>();
+    private final LinkedHashMap<String, ArrayList<Integer>> nameToArray = new LinkedHashMap<>();
+    private final LinkedHashMap<String, FuncBlock> nameToFunc = new LinkedHashMap<>();
     private int AsciizNum = 1;
 
     public void addInt(String name, int addr, int initVal) {
