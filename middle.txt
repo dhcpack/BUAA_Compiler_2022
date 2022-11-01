@@ -21,7 +21,7 @@ FUNC_print_array:
 	DEF, INT(i[sp-0xc]), 1
 	MUL, INT(tmp_int_0[temp]), 0, 4
 	ADD, INT(tmp_int_0[temp]), INT(tmp_int_0[temp]), 0
-	OFFSET (4+INT(tmp_int_0[temp]))->POINTER(tmp_pointer_0[temp])
+	OFFSET (ARRAY(r[sp-0x4])+INT(tmp_int_0[temp]))->POINTER(tmp_pointer_0[temp])
 	LOAD POINTER(tmp_pointer_0[temp]), INT(tmp_int_1[temp])
 	PRINT_INT INT(tmp_int_1[temp])
 	JUMP WHILE_0
@@ -47,7 +47,7 @@ WHILE_BODY_1:
 B_9:
 	MUL, INT(tmp_int_5[temp]), INT(i[sp-0xc]), 4
 	ADD, INT(tmp_int_5[temp]), INT(tmp_int_5[temp]), 0
-	OFFSET (4+INT(tmp_int_5[temp]))->POINTER(tmp_pointer_1[temp])
+	OFFSET (ARRAY(r[sp-0x4])+INT(tmp_int_5[temp]))->POINTER(tmp_pointer_1[temp])
 	LOAD POINTER(tmp_pointer_1[temp]), INT(tmp_int_6[temp])
 	PRINT_STR STR_1
 	PRINT_INT INT(tmp_int_6[temp])
@@ -59,17 +59,14 @@ B_10:
 WHILE_END_2:
 	PRINT_STR STR_2
 	RETURN VOID
-
-
 # func print_array_2 : stack size 0xc
 # param: ARRAY(r[sp-0x4]), INT(l[sp-0x8])
 FUNC_print_array_2:
 	DEF, INT(i[sp-0xc]), 1
 	MUL, INT(tmp_int_8[temp]), 0, 8
 	ADD, INT(tmp_int_8[temp]), INT(tmp_int_8[temp]), 0
-	OFFSET (4+INT(tmp_int_8[temp]))->POINTER(tmp_pointer_2[temp])
-	LOAD POINTER(tmp_pointer_2[temp]), POINTER(tmp_pointer_3[temp])
-	Call FUNC_print_array; Params: POINTER(tmp_pointer_3[temp]), INT(l[sp-0x8])
+	OFFSET (ARRAY(r[sp-0x4])+INT(tmp_int_8[temp]))->POINTER(tmp_pointer_2[temp])
+	Call FUNC_print_array; Params: POINTER(tmp_pointer_2[temp]), INT(l[sp-0x8])
 	JUMP WHILE_12
 WHILE_12:
 	JUMP L_OR_EXP_15
@@ -93,9 +90,8 @@ WHILE_BODY_13:
 B_21:
 	MUL, INT(tmp_int_12[temp]), INT(i[sp-0xc]), 8
 	ADD, INT(tmp_int_12[temp]), INT(tmp_int_12[temp]), 0
-	OFFSET (4+INT(tmp_int_12[temp]))->POINTER(tmp_pointer_4[temp])
-	LOAD POINTER(tmp_pointer_4[temp]), POINTER(tmp_pointer_5[temp])
-	Call FUNC_print_array; Params: POINTER(tmp_pointer_5[temp]), INT(l[sp-0x8])
+	OFFSET (ARRAY(r[sp-0x4])+INT(tmp_int_12[temp]))->POINTER(tmp_pointer_3[temp])
+	Call FUNC_print_array; Params: POINTER(tmp_pointer_3[temp]), INT(l[sp-0x8])
 	ADD, INT(tmp_int_13[temp]), INT(i[sp-0xc]), 1
 	ASS, INT(i[sp-0xc]), INT(tmp_int_13[temp])
 	JUMP B_22
@@ -103,31 +99,29 @@ B_22:
 	JUMP WHILE_12
 WHILE_END_14:
 	RETURN VOID
-
-
 # func main : stack size 0x0
 # param: 
 FUNC_main:
 	PRINT_STR STR_3
 	MUL, INT(tmp_int_14[temp]), 0, 4
 	ADD, INT(tmp_int_14[temp]), INT(tmp_int_14[temp]), 0
-	OFFSET (32+INT(tmp_int_14[temp]))->POINTER(tmp_pointer_6[temp])
-	STORE POINTER(tmp_pointer_6[temp]), 100
+	OFFSET (ARRAY(a[data+0x20])+INT(tmp_int_14[temp]))->POINTER(tmp_pointer_4[temp])
+	STORE POINTER(tmp_pointer_4[temp]), 100
 	MUL, INT(tmp_int_15[temp]), 1, 4
 	ADD, INT(tmp_int_15[temp]), INT(tmp_int_15[temp]), 0
-	OFFSET (32+INT(tmp_int_15[temp]))->POINTER(tmp_pointer_7[temp])
-	STORE POINTER(tmp_pointer_7[temp]), 0
+	OFFSET (ARRAY(a[data+0x20])+INT(tmp_int_15[temp]))->POINTER(tmp_pointer_5[temp])
+	STORE POINTER(tmp_pointer_5[temp]), 0
 	MUL, INT(tmp_int_16[temp]), 0, 4
 	ADD, INT(tmp_int_16[temp]), INT(tmp_int_16[temp]), 0
 	MUL, INT(tmp_int_17[temp]), 0, 12
 	ADD, INT(tmp_int_17[temp]), INT(tmp_int_17[temp]), INT(tmp_int_16[temp])
-	OFFSET (40+INT(tmp_int_17[temp]))->POINTER(tmp_pointer_8[temp])
-	STORE POINTER(tmp_pointer_8[temp]), 0
-	OFFSET (32+0)->POINTER(tmp_pointer_9[temp])
-	Call FUNC_print_array; Params: POINTER(tmp_pointer_9[temp]), 2
-	OFFSET (64+0)->POINTER(tmp_pointer_10[temp])
-	Call FUNC_print_array; Params: POINTER(tmp_pointer_10[temp]), 3
+	OFFSET (ARRAY(b[data+0x28])+INT(tmp_int_17[temp]))->POINTER(tmp_pointer_6[temp])
+	STORE POINTER(tmp_pointer_6[temp]), 0
+	OFFSET (ARRAY(a[data+0x20])+0)->POINTER(tmp_pointer_7[temp])
+	Call FUNC_print_array; Params: POINTER(tmp_pointer_7[temp]), 2
+	OFFSET (ARRAY(c[data+0x40])+0)->POINTER(tmp_pointer_8[temp])
+	Call FUNC_print_array; Params: POINTER(tmp_pointer_8[temp]), 3
 	PRINT_STR STR_2
-	OFFSET (76+0)->POINTER(tmp_pointer_11[temp])
-	Call FUNC_print_array_2; Params: POINTER(tmp_pointer_11[temp]), 2
+	OFFSET (ARRAY(d[data+0x4c])+0)->POINTER(tmp_pointer_9[temp])
+	Call FUNC_print_array_2; Params: POINTER(tmp_pointer_9[temp]), 2
 	RETURN 0

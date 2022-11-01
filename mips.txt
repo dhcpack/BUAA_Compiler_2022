@@ -17,7 +17,7 @@ FUNC_print_array:
 	li $6, 0
 	# ADD, INT(tmp_int_0[temp]), INT(tmp_int_0[temp]), 0
 	addiu $6, $6, 0
-	# OFFSET (4+INT(tmp_int_0[temp]))->POINTER(tmp_pointer_0[temp])
+	# OFFSET (ARRAY(r[sp-0x4])+INT(tmp_int_0[temp]))->POINTER(tmp_pointer_0[temp])
 	lw $3, -0x4($29)
 	addu $7, $3, $6
 	# LOAD POINTER(tmp_pointer_0[temp]), INT(tmp_int_1[temp])
@@ -83,7 +83,7 @@ B_9:
 	mflo $16
 	# ADD, INT(tmp_int_5[temp]), INT(tmp_int_5[temp]), 0
 	addiu $16, $16, 0
-	# OFFSET (4+INT(tmp_int_5[temp]))->POINTER(tmp_pointer_1[temp])
+	# OFFSET (ARRAY(r[sp-0x4])+INT(tmp_int_5[temp]))->POINTER(tmp_pointer_1[temp])
 	lw $3, -0x4($29)
 	addu $17, $3, $16
 	# LOAD POINTER(tmp_pointer_1[temp]), INT(tmp_int_6[temp])
@@ -122,14 +122,12 @@ FUNC_print_array_2:
 	li $21, 0
 	# ADD, INT(tmp_int_8[temp]), INT(tmp_int_8[temp]), 0
 	addiu $21, $21, 0
-	# OFFSET (4+INT(tmp_int_8[temp]))->POINTER(tmp_pointer_2[temp])
+	# OFFSET (ARRAY(r[sp-0x4])+INT(tmp_int_8[temp]))->POINTER(tmp_pointer_2[temp])
 	lw $3, -0x4($29)
 	addu $22, $3, $21
-	# LOAD POINTER(tmp_pointer_2[temp]), POINTER(tmp_pointer_3[temp])
-	lw $23, 0x0($22)
-	# Call FUNC_print_array; Params: POINTER(tmp_pointer_3[temp]), INT(l[sp-0x8])
+	# Call FUNC_print_array; Params: POINTER(tmp_pointer_2[temp]), INT(l[sp-0x8])
 	sw $20, -0xc($29)
-	sw $23, -0x10($29)
+	sw $22, -0x10($29)
 	sw $31, 0x0($29)
 	addiu $4, $29, -20
 	lw $3, -0x10($29)
@@ -150,16 +148,16 @@ L_OR_EXP_15:
 	j L_AND_EXP_17
 L_AND_EXP_17:
 	# LT, INT(tmp_int_9[temp]), INT(i[sp-0xc]), INT(l[sp-0x8])
-	lw $24, -0xc($29)
-	lw $25, -0x8($29)
-	slt $26, $24, $25
+	lw $23, -0xc($29)
+	lw $24, -0x8($29)
+	slt $25, $23, $24
 	# ASS, INT(tmp_int_10[temp]), INT(tmp_int_9[temp])
-	move $27, $26
+	move $26, $25
 	# Branch INT(tmp_int_9[temp]) ? AND_19 : AND_END_18
-	sw $24, -0xc($29)
-	sw $25, -0x8($29)
-	sw $26, -0x14($29)
-	sw $27, -0x18($29)
+	sw $23, -0xc($29)
+	sw $24, -0x8($29)
+	sw $25, -0x14($29)
+	sw $26, -0x18($29)
 	lw $3, -0x14($29)
 	bne $3, $0, AND_19
 	j AND_END_18
@@ -168,11 +166,11 @@ AND_19:
 	j AND_END_18
 AND_END_18:
 	# ASS, INT(tmp_int_11[temp]), INT(tmp_int_10[sp-0x18])
-	lw $7, -0x18($29)
-	move $6, $7
+	lw $6, -0x18($29)
+	move $27, $6
 	# Branch INT(tmp_int_11[temp]) ? OR_END_16 : OR_20
-	sw $6, -0x1c($29)
-	sw $7, -0x18($29)
+	sw $6, -0x18($29)
+	sw $27, -0x1c($29)
 	lw $3, -0x1c($29)
 	bne $3, $0, OR_END_16
 	j OR_20
@@ -189,20 +187,18 @@ WHILE_BODY_13:
 	j B_21
 B_21:
 	# MUL, INT(tmp_int_12[temp]), INT(i[sp-0xc]), 8
-	lw $5, -0xc($29)
+	lw $7, -0xc($29)
 	li $3, 8
-	mult $5 $3
-	mflo $8
+	mult $7 $3
+	mflo $5
 	# ADD, INT(tmp_int_12[temp]), INT(tmp_int_12[temp]), 0
-	addiu $8, $8, 0
-	# OFFSET (4+INT(tmp_int_12[temp]))->POINTER(tmp_pointer_4[temp])
+	addiu $5, $5, 0
+	# OFFSET (ARRAY(r[sp-0x4])+INT(tmp_int_12[temp]))->POINTER(tmp_pointer_3[temp])
 	lw $3, -0x4($29)
-	addu $9, $3, $8
-	# LOAD POINTER(tmp_pointer_4[temp]), POINTER(tmp_pointer_5[temp])
-	lw $10, 0x0($9)
-	# Call FUNC_print_array; Params: POINTER(tmp_pointer_5[temp]), INT(l[sp-0x8])
-	sw $5, -0xc($29)
-	sw $10, -0x20($29)
+	addu $8, $3, $5
+	# Call FUNC_print_array; Params: POINTER(tmp_pointer_3[temp]), INT(l[sp-0x8])
+	sw $7, -0xc($29)
+	sw $8, -0x20($29)
 	sw $31, 0x0($29)
 	addiu $4, $29, -36
 	lw $3, -0x20($29)
@@ -214,12 +210,12 @@ B_21:
 	addiu $29, $29, 36
 	lw $31, 0x0($29)
 	# ADD, INT(tmp_int_13[temp]), INT(i[sp-0xc]), 1
-	lw $11, -0xc($29)
-	addiu $12, $11, 1
+	lw $9, -0xc($29)
+	addiu $10, $9, 1
 	# ASS, INT(i[sp-0xc]), INT(tmp_int_13[temp])
-	move $11, $12
+	move $9, $10
 	# JUMP B_22
-	sw $11, -0xc($29)
+	sw $9, -0xc($29)
 	j B_22
 B_22:
 	# JUMP WHILE_12
@@ -234,43 +230,43 @@ FUNC_main:
 	la $4, STR_3
 	syscall
 	# MUL, INT(tmp_int_14[temp]), 0, 4
-	li $13, 0
+	li $11, 0
 	# ADD, INT(tmp_int_14[temp]), INT(tmp_int_14[temp]), 0
+	addiu $11, $11, 0
+	# OFFSET (ARRAY(a[data+0x20])+INT(tmp_int_14[temp]))->POINTER(tmp_pointer_4[temp])
+	addiu $3, $28, 32
+	addu $12, $3, $11
+	# STORE POINTER(tmp_pointer_4[temp]), 100
+	li $3, 100
+	sw $3, 0x0($12)
+	# MUL, INT(tmp_int_15[temp]), 1, 4
+	li $13, 4
+	# ADD, INT(tmp_int_15[temp]), INT(tmp_int_15[temp]), 0
 	addiu $13, $13, 0
-	# OFFSET (32+INT(tmp_int_14[temp]))->POINTER(tmp_pointer_6[temp])
+	# OFFSET (ARRAY(a[data+0x20])+INT(tmp_int_15[temp]))->POINTER(tmp_pointer_5[temp])
 	addiu $3, $28, 32
 	addu $14, $3, $13
-	# STORE POINTER(tmp_pointer_6[temp]), 100
-	li $3, 100
+	# STORE POINTER(tmp_pointer_5[temp]), 0
+	li $3, 0
 	sw $3, 0x0($14)
-	# MUL, INT(tmp_int_15[temp]), 1, 4
-	li $16, 4
-	# ADD, INT(tmp_int_15[temp]), INT(tmp_int_15[temp]), 0
-	addiu $16, $16, 0
-	# OFFSET (32+INT(tmp_int_15[temp]))->POINTER(tmp_pointer_7[temp])
-	addiu $3, $28, 32
-	addu $17, $3, $16
-	# STORE POINTER(tmp_pointer_7[temp]), 0
-	li $3, 0
-	sw $3, 0x0($17)
 	# MUL, INT(tmp_int_16[temp]), 0, 4
-	li $19, 0
+	li $16, 0
 	# ADD, INT(tmp_int_16[temp]), INT(tmp_int_16[temp]), 0
-	addiu $19, $19, 0
+	addiu $16, $16, 0
 	# MUL, INT(tmp_int_17[temp]), 0, 12
-	li $18, 0
+	li $17, 0
 	# ADD, INT(tmp_int_17[temp]), INT(tmp_int_17[temp]), INT(tmp_int_16[temp])
-	addu $18, $18, $19
-	# OFFSET (40+INT(tmp_int_17[temp]))->POINTER(tmp_pointer_8[temp])
+	addu $17, $17, $16
+	# OFFSET (ARRAY(b[data+0x28])+INT(tmp_int_17[temp]))->POINTER(tmp_pointer_6[temp])
 	addiu $3, $28, 40
-	addu $15, $3, $18
-	# STORE POINTER(tmp_pointer_8[temp]), 0
+	addu $19, $3, $17
+	# STORE POINTER(tmp_pointer_6[temp]), 0
 	li $3, 0
-	sw $3, 0x0($15)
-	# OFFSET (32+0)->POINTER(tmp_pointer_9[temp])
-	addiu $21, $28, 32
-	# Call FUNC_print_array; Params: POINTER(tmp_pointer_9[temp]), 2
-	sw $21, -0x4($29)
+	sw $3, 0x0($19)
+	# OFFSET (ARRAY(a[data+0x20])+0)->POINTER(tmp_pointer_7[temp])
+	addiu $18, $28, 32
+	# Call FUNC_print_array; Params: POINTER(tmp_pointer_7[temp]), 2
+	sw $18, -0x4($29)
 	sw $31, 0x0($29)
 	addiu $4, $29, -8
 	lw $3, -0x4($29)
@@ -281,10 +277,10 @@ FUNC_main:
 	jal FUNC_print_array
 	addiu $29, $29, 8
 	lw $31, 0x0($29)
-	# OFFSET (64+0)->POINTER(tmp_pointer_10[temp])
-	addiu $22, $28, 64
-	# Call FUNC_print_array; Params: POINTER(tmp_pointer_10[temp]), 3
-	sw $22, -0x8($29)
+	# OFFSET (ARRAY(c[data+0x40])+0)->POINTER(tmp_pointer_8[temp])
+	addiu $15, $28, 64
+	# Call FUNC_print_array; Params: POINTER(tmp_pointer_8[temp]), 3
+	sw $15, -0x8($29)
 	sw $31, 0x0($29)
 	addiu $4, $29, -12
 	lw $3, -0x8($29)
@@ -299,10 +295,10 @@ FUNC_main:
 	li $2, 4
 	la $4, STR_2
 	syscall
-	# OFFSET (76+0)->POINTER(tmp_pointer_11[temp])
-	addiu $20, $28, 76
-	# Call FUNC_print_array_2; Params: POINTER(tmp_pointer_11[temp]), 2
-	sw $20, -0xc($29)
+	# OFFSET (ARRAY(d[data+0x4c])+0)->POINTER(tmp_pointer_9[temp])
+	addiu $21, $28, 76
+	# Call FUNC_print_array_2; Params: POINTER(tmp_pointer_9[temp]), 2
+	sw $21, -0xc($29)
 	sw $31, 0x0($29)
 	addiu $4, $29, -16
 	lw $3, -0xc($29)

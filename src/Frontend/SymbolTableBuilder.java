@@ -852,17 +852,27 @@ public class SymbolTableBuilder {
 
             if (lVal.getSymbolType() == SymbolType.POINTER) {
                 if (returnPointer) {  // 正在解析函数调用的参数
-                    Symbol lValInitSymbol = ((LVal) primaryExpInterface).getSymbol();  // 该参数原始的symbol
-                    ArrayList<Symbol> currFuncParam = currFunc.getParams();  // 主函数的参数
-                    if (currFuncParam.contains(lValInitSymbol)) {  // 如果调用函数时的实参恰好是主函数的形参
-                        assert lValInitSymbol.getSymbolType() == SymbolType.ARRAY;  // 主函数形参需要是array类型的
-                        // 主函数的形参本身就是一个指向数组的pointer了，需要将这个pointer从内存中取出来，传递给子函数
-                        Symbol temp = Symbol.tempSymbol(SymbolType.POINTER);
-                        currBlock.addContent(new Pointer(Pointer.Op.LOAD, lVal, temp));  // 则该地址存的就是一个数组指针
-                        return temp;
-                    } else {
-                        return lVal;
-                    }
+                    // Symbol lValInitSymbol = ((LVal) primaryExpInterface).getSymbol();  // 该参数原始的symbol
+                    // ArrayList<Symbol> currFuncParam = currFunc.getParams();  // 主函数的参数
+                    // if (currFuncParam.contains(lValInitSymbol)) {  // 如果调用函数时的实参恰好是主函数的形参
+                    //     assert lValInitSymbol.getSymbolType() == SymbolType.ARRAY;  // 主函数形参需要是array类型的
+                    //     // 主函数的形参本身就是一个指向数组的pointer了，需要将这个pointer从内存中取出来，传递给子函数
+                    //     BlockNode lastBlock = currBlock.getLastContent();
+                    //     assert lastBlock != null && lastBlock instanceof Memory;
+                    //     Memory lastMemory = (Memory) lastBlock;
+                    //     if(lValInitSymbol == lastMemory.getBase()){
+                    //         Symbol temp = Symbol.tempSymbol(SymbolType.POINTER);
+                    //         currBlock.addContent(new Pointer(Pointer.Op.LOAD, lVal, temp));  // 则该地址存的就是一个数组指针
+                    //         return temp;
+                    //     } else {
+                    //         Symbol temp = Symbol.tempSymbol(SymbolType.POINTER);
+                    //         currBlock.addContent(new Pointer(Pointer.Op.LOAD, lVal, temp));  // 则该地址存的就是一个数组指针
+                    //         return temp;
+                    //     }
+                    // } else {
+                    //     return lVal;
+                    // }
+                    return lVal;
                 } else {
                     Symbol temp = Symbol.tempSymbol(SymbolType.INT);
                     currBlock.addContent(new Pointer(Pointer.Op.LOAD, lVal, temp));  // 取出数值并返回
@@ -978,9 +988,9 @@ public class SymbolTableBuilder {
             errors.add(new UndefinedTokenException(ident.getLine()));
             return null;  // error  TODO: WARNING!!!: NOT EXIST IN SYMBOL TABLE
         }
-        if (!symbol.isFunc()) {
-            return null;  // TODO: 帖子，什么错误类型？？
-        }
+        // if (!symbol.isFunc()) {
+        //     return null;  // TODO: 帖子，什么错误类型？？
+        // }
         assert symbol.isFunc();  // assert symbol is a function
         funcExp.setReturnType(symbol.getReturnType());  // 设置function的returnType  TODO: 可以在未来用来检查funcExp是否正确使用
 
