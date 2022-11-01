@@ -10,7 +10,7 @@ public class ALUDouble implements Instruction {
         sne,
         seq,
 
-        slti,
+        // slti, 可能出现立即数越界的问题，加载到寄存器后用slt代替
         sle,
         sgt,
         sge,

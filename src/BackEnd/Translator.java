@@ -430,7 +430,9 @@ public class Translator {
                 } else if (op == FourExpr.ExprOp.GE) {
                     mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.sge, resRegister, leftRegister, rightVal));
                 } else if (op == FourExpr.ExprOp.LT) {
-                    mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.slti, resRegister, leftRegister, rightVal));
+                    mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v1, rightVal));
+                    mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.slt, resRegister, leftRegister, Registers.v1));
+                    // mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.slti, resRegister, leftRegister, rightVal));
                 } else if (op == FourExpr.ExprOp.LE) {
                     mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.sle, resRegister, leftRegister, rightVal));
                 } else if (op == FourExpr.ExprOp.EQ) {
@@ -476,7 +478,9 @@ public class Translator {
                     mipsCode.addInstr(new Div(Registers.v1, rightRegister));
                     mipsCode.addInstr(new Mfhi(resRegister));
                 } else if (op == FourExpr.ExprOp.GT) {
-                    mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.slti, resRegister, rightRegister, leftVal));
+                    mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v1, leftVal));
+                    mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.slt, resRegister, rightRegister, Registers.v1));
+                    // mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.slti, resRegister, rightRegister, leftVal));
                 } else if (op == FourExpr.ExprOp.GE) {
                     mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.sle, resRegister, rightRegister, leftVal));
                 } else if (op == FourExpr.ExprOp.LT) {
