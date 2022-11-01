@@ -1,5 +1,6 @@
 package Frontend.Symbol;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 
@@ -27,6 +28,11 @@ public class Errors {
         });
         for (MyException exception : exceptions) {
             ErrorWriter.print(exception.getLine() + " " + exception.getType().getCode());
+        }
+        try {
+            ErrorWriter.flush();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

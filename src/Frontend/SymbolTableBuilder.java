@@ -1,6 +1,5 @@
 package Frontend;
 
-import BackEnd.instructions.J;
 import Exceptions.IllegalBreakContinueException;
 import Exceptions.IllegalReturnException;
 import Exceptions.IllegalSymbolException;
@@ -261,7 +260,8 @@ public class SymbolTableBuilder {
                 Symbol symbol = checkVar(def.getVar());  // 先检查initial Val，再检查Var
                 if (currFunc == null) {
                     ArrayList<Integer> initZero = new ArrayList<>();
-                    for (int i = 0; i < def.getDimCount(); i++) initZero.add(0);
+                    int totalCount = symbol.getSize() / 4;  // 数组应该初始化为多少个零
+                    for (int i = 0; i < totalCount; i++) initZero.add(0);
                     symbol.setAddress(currSymbolTable.getStackSize() - symbol.getSize());
                     middleCode.addArray(symbol.getIdent().getContent(), symbol.getAddress(), initZero);
                     symbol.setScope(Symbol.Scope.GLOBAL);
@@ -372,6 +372,7 @@ public class SymbolTableBuilder {
         // int addr = 4;  // 函数栈基地址处放ra，从4开始放参数（也从4开始取参数）
         for (FuncFParam funcFParam : funcFParams) {
             Symbol symbol = checkFuncFParam(funcFParam); // checkFuncFParam could return null
+            // System.out.println(symbol);
             if (symbol != null) {
                 params.add(symbol);
                 symbol.setAddress(currSymbolTable.getStackSize());
@@ -379,6 +380,7 @@ public class SymbolTableBuilder {
                 // addr += symbol.getSize();
             }
         }
+        // System.out.println();
 
         FuncBlock funcBlock = new FuncBlock(funcDef.getReturnType()
                 .getType() == TokenType.INTTK ? FuncBlock.ReturnType.INT : FuncBlock.ReturnType.VOID,
@@ -480,6 +482,8 @@ public class SymbolTableBuilder {
             checkDecl((Decl) blockItem);
         } else if (blockItem instanceof Stmt) {
             checkStmt((Stmt) blockItem);
+        } else {
+            assert false;
         }
     }
 
@@ -528,40 +532,9 @@ public class SymbolTableBuilder {
             assert false;
         }
         return;
-
-
-        // Symbol symbol = getInt.getTarget();
-        // if (symbol.getSymbolType() == SymbolType.INT) {
-        //     int register = allocRegister(symbol);
-        //     mipsCode.addInstr(new MoveInstr(Registers.v0, register));
-        // } else if (symbol.getSymbolType() == SymbolType.POINTER) {
-        //     int pointer = registers.getSymbolRegister(symbol);
-        //     mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, pointer, 0, Registers.v0));
-        //     consumeUsage(symbol);
-        // } else {
-        //     assert false;
-        // }
-
     }
 
     // Block → '{' { BlockItem } '}'
-    // public BasicBlock checkBlockStmt(BlockStmt blockStmt, String funcLabel) {
-    //     BasicBlock basicBlock = new BasicBlock(funcLabel);
-    //     if (currBlock != null) {
-    //         currBlock.addContent(new Jump(basicBlock));
-    //     }
-    //     currBlock = basicBlock;
-    //     blockDepth++;
-    //     // traverse all blockItems and check
-    //     ArrayList<BlockItem> blockItems = blockStmt.getBlockItems();
-    //     for (BlockItem blockItem : blockItems) {
-    //         checkBlockItem(blockItem);
-    //     }
-    //     blockDepth--;
-    //     currBlock = null;
-    //     return basicBlock;
-    // }
-
     public BasicBlock checkBlockStmt(BlockStmt blockStmt, boolean isFunc, String funcLabel) {
         if (!isFunc) {
             currSymbolTable = new SymbolTable(currSymbolTable, currFunc.getFuncSymbolTable());  // 下降一层
@@ -836,7 +809,7 @@ public class SymbolTableBuilder {
         return left;
     }
 
-    // 优化UnaryOp合并
+    // TODO: 优化UnaryOp合并
     // private ArrayList<UnaryOp> getUnaryOp(UnaryExp unaryExp) {
     //
     // }
@@ -865,32 +838,31 @@ public class SymbolTableBuilder {
         }
     }
 
-    // public Operand checkUnaryExpInterFace(UnaryExpInterface unaryExpInterface) {
-    //     if (unaryExpInterface instanceof PrimaryExp) {
-    //         return checkPrimaryExp((PrimaryExp) unaryExpInterface);
-    //     } else if (unaryExpInterface instanceof FuncExp) {  // TODO: 检查FuncExp的returnType是否匹配
-    //         return checkFuncExp((FuncExp) unaryExpInterface);
-    //     } else if (unaryExpInterface instanceof UnaryExp) {
-    //         return checkUnaryExp((UnaryExp) unaryExpInterface);
-    //     }
-    //     // not output
-    //     assert false;
-    //     return null;
-    // }
-
     public Operand checkPrimaryExp(PrimaryExp primaryExp, boolean returnPointer) {
         return checkPrimaryExpInterFace(primaryExp.getPrimaryExpInterface(), returnPointer);
     }
 
+    // TODO: WARNING!!! 只有在解析函数调用的参数时，returnPointer才是true！！！！returnPointer可以作为解析函数参数的表征
     public Operand checkPrimaryExpInterFace(PrimaryExpInterface primaryExpInterface, boolean returnPointer) {
         if (primaryExpInterface instanceof BraceExp) {
-            return checkBraceExp((BraceExp) primaryExpInterface);
+            return checkBraceExp((BraceExp) primaryExpInterface, returnPointer);
         } else if (primaryExpInterface instanceof LVal) {
             // TODO: check LVal using right or not（LVal是否正确使用，和Exp是否匹配，int）
-            Symbol lVal = checkLVal((LVal) primaryExpInterface, false);
+            Symbol lVal = checkLVal((LVal) primaryExpInterface, false);  // 计算后的symbol
+
             if (lVal.getSymbolType() == SymbolType.POINTER) {
-                if (returnPointer) {
-                    return lVal;
+                if (returnPointer) {  // 正在解析函数调用的参数
+                    Symbol lValInitSymbol = ((LVal) primaryExpInterface).getSymbol();  // 该参数原始的symbol
+                    ArrayList<Symbol> currFuncParam = currFunc.getParams();  // 主函数的参数
+                    if (currFuncParam.contains(lValInitSymbol)) {  // 如果调用函数时的实参恰好是主函数的形参
+                        assert lValInitSymbol.getSymbolType() == SymbolType.ARRAY;  // 主函数形参需要是array类型的
+                        // 主函数的形参本身就是一个指向数组的pointer了，需要将这个pointer从内存中取出来，传递给子函数
+                        Symbol temp = Symbol.tempSymbol(SymbolType.POINTER);
+                        currBlock.addContent(new Pointer(Pointer.Op.LOAD, lVal, temp));  // 则该地址存的就是一个数组指针
+                        return temp;
+                    } else {
+                        return lVal;
+                    }
                 } else {
                     Symbol temp = Symbol.tempSymbol(SymbolType.INT);
                     currBlock.addContent(new Pointer(Pointer.Op.LOAD, lVal, temp));  // 取出数值并返回
@@ -910,12 +882,12 @@ public class SymbolTableBuilder {
     }
 
     // BraceExp = '(' Exp ')'
-    public Operand checkBraceExp(BraceExp braceExp) {
+    public Operand checkBraceExp(BraceExp braceExp, boolean returnPointer) {
         // check missing Right Parenthesis
         if (braceExp.missRightParenthesis()) {
             errors.add(new MissRparentException(braceExp.getLine()));
         }
-        return checkExp(braceExp.getExp(), false);
+        return checkExp(braceExp.getExp(), returnPointer);
     }
 
     // LVal → Ident {'[' Exp ']'}
@@ -974,13 +946,10 @@ public class SymbolTableBuilder {
                 currBlock.addContent(new FourExpr(mid, offset, mid, FourExpr.ExprOp.ADD));
                 offset = mid;
             }
-            // Symbol addr = Symbol.tempSymbol(SymbolType.INT);
-            // currBlock.addContent(new FourExpr(new Immediate(symbol.getAddress()), offset, addr, FourExpr.ExprOp
-            // .ADD));
+
             Symbol ptr = Symbol.tempSymbol(SymbolType.POINTER);  // 数组变量
+            // WARNING: 返回数组指针，在后续做处理
             currBlock.addContent(new Memory(symbol, offset, ptr));  // return the pointer to array
-            // Symbol res = Symbol.tempSymbol(SymbolType.INT);
-            // currBlock.addContent(new Pointer(Pointer.Op.LOAD, ptr, res));
             return ptr;
         }
         assert false;
@@ -1029,9 +998,10 @@ public class SymbolTableBuilder {
                 assert false : "参数个数不匹配";
             }
             for (int i = 0; i < Fparams.size(); i++) {
-                Symbol fParam = Fparams.get(i);
-                Exp rParamExp = RParamExp.get(i);
+                Symbol fParam = Fparams.get(i);  // 形参
+                Exp rParamExp = RParamExp.get(i);  // 实参
                 Operand res;
+                // TODO: 调用的函数的实参和主函数的形参做一个对比 在PrimaryExp中做了check!!!
                 if (fParam.getSymbolType() == SymbolType.INT) {
                     res = checkExp(rParamExp, false);
                 } else {
@@ -1061,9 +1031,18 @@ public class SymbolTableBuilder {
                     }
                 } else {
                     Symbol rp = (Symbol) rParam;
-                    if (fParam.getSymbolType() != rp.getSymbolType()) {
-                        errors.add(new MismatchParamTypeException(funcRParams.getLine()));
-                        break;
+                    if (fParam.getSymbolType() == SymbolType.ARRAY) {  // 形参是数组，对应实参应该是指针
+                        if (rp.getSymbolType() != SymbolType.POINTER) {
+                            errors.add(new MismatchParamTypeException(funcRParams.getLine()));
+                            break;
+                        }
+                    } else if (fParam.getSymbolType() == SymbolType.INT) {  // 形参是int，对应实参应该也是int
+                        if (rp.getSymbolType() != SymbolType.INT) {
+                            errors.add(new MismatchParamTypeException(funcRParams.getLine()));
+                            break;
+                        }
+                    } else {
+                        assert false : "形参只能是数组或int";
                     }
                 }
 
