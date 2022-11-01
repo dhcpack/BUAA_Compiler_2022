@@ -374,7 +374,7 @@ public class Translator {
                 int leftVal = ((Immediate) left).getNumber();
                 int rightVal = ((Immediate) right).getNumber();
                 int resRegister = allocRegister(res, false);
-                if (op == FourExpr.ExprOp.ADD) {
+                if (op == FourExpr.ExprOp.ADD) {  //  零个寄存器，两个立即数
                     mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, resRegister, leftVal + rightVal));
                 } else if (op == FourExpr.ExprOp.SUB) {
                     mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, resRegister, leftVal - rightVal));
@@ -396,10 +396,12 @@ public class Translator {
                     mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, resRegister, leftVal == rightVal ? 1 : 0));
                 } else if (op == FourExpr.ExprOp.NEQ) {
                     mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, resRegister, leftVal != rightVal ? 1 : 0));
-                } else if (op == FourExpr.ExprOp.OR) {   // only in cond Exp
-                    mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, resRegister, leftVal | rightVal));
+                } else if (op == FourExpr.ExprOp.OR) {   // only in cond Exp  or直接算and转换成逻辑值再算
+                    mipsCode.addInstr(
+                            new ALUSingle(ALUSingle.ALUSingleType.li, resRegister, leftVal | rightVal));
                 } else if (op == FourExpr.ExprOp.AND) {
-                    mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, resRegister, leftVal & rightVal));
+                    mipsCode.addInstr(
+                            new ALUSingle(ALUSingle.ALUSingleType.li, resRegister, leftVal == 0 || rightVal == 0 ? 0 : 1));
                 } else {
                     assert false;
                 }
@@ -407,7 +409,7 @@ public class Translator {
                 int leftRegister = allocRegister((Symbol) left, true);
                 int rightVal = ((Immediate) right).getNumber();
                 int resRegister = allocRegister(res, false);
-                if (op == FourExpr.ExprOp.ADD) {
+                if (op == FourExpr.ExprOp.ADD) {  // 左值寄存器，右值立即数
                     mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.addiu, resRegister, leftRegister, rightVal));
                 } else if (op == FourExpr.ExprOp.SUB) {
                     mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.addiu, resRegister, leftRegister, -rightVal));
@@ -436,9 +438,19 @@ public class Translator {
                 } else if (op == FourExpr.ExprOp.NEQ) {
                     mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.sne, resRegister, leftRegister, rightVal));
                 } else if (op == FourExpr.ExprOp.OR) {   // only in cond Exp
-                    mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.ori, resRegister, leftRegister, rightVal));
+                    if (rightVal == 0) {
+                        mipsCode.addInstr(new MoveInstr(leftRegister, resRegister));
+                    } else {
+                        mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, resRegister, 1));
+                    }
+                    // mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.ori, resRegister, leftRegister, rightVal));
                 } else if (op == FourExpr.ExprOp.AND) {
-                    mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.andi, resRegister, leftRegister, rightVal));
+                    if (rightVal == 0) {
+                        mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, resRegister, 0));
+                    } else {
+                        mipsCode.addInstr(new MoveInstr(leftRegister, resRegister));
+                    }
+                    // mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.andi, resRegister, leftRegister, rightVal));
                 } else {
                     assert false;
                 }
@@ -476,9 +488,19 @@ public class Translator {
                 } else if (op == FourExpr.ExprOp.NEQ) {
                     mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.sne, resRegister, rightRegister, leftVal));
                 } else if (op == FourExpr.ExprOp.OR) {   // only in cond Exp
-                    mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.ori, resRegister, rightRegister, leftVal));
+                    if (leftVal == 0) {
+                        mipsCode.addInstr(new MoveInstr(rightRegister, resRegister));
+                    } else {
+                        mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, resRegister, 1));
+                    }
+                    // mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.ori, resRegister, rightRegister, leftVal));
                 } else if (op == FourExpr.ExprOp.AND) {
-                    mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.andi, resRegister, rightRegister, leftVal));
+                    if (leftVal == 0) {
+                        mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, resRegister, 0));
+                    } else {
+                        mipsCode.addInstr(new MoveInstr(rightRegister, resRegister));
+                    }
+                    // mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.andi, resRegister, rightRegister, leftVal));
                 } else {
                     assert false;
                 }
@@ -514,7 +536,10 @@ public class Translator {
                 } else if (op == FourExpr.ExprOp.OR) {   // only in cond Exp
                     mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.or, resRegister, leftRegister, rightRegister));
                 } else if (op == FourExpr.ExprOp.AND) {
-                    mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.and, resRegister, leftRegister, rightRegister));
+                    mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.sne, Registers.v0, leftRegister, 0));
+                    mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.sne, Registers.v1, rightRegister, 0));
+                    mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.and, resRegister, Registers.v0, Registers.v1));
+                    // mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.and, resRegister, leftRegister, rightRegister));
                 } else {
                     assert false;
                 }
