@@ -1,12 +1,8 @@
-	addiu $29, $29, 16
-	lw $31, 0x0($29)
-	# MUL, INT(tmp_int_10[temp]), 1, 12
-	li $23, 12
-	# ADD, INT(tmp_int_10[temp]), INT(tmp_int_10[temp]), 0
-	addiu $23, $23, 0
-	# OFFSET (4+INT(tmp_int_10[temp]))->POINTER(tmp_pointer_8[temp])
-	lw $3, -0x4($29)
-	addu $24, $3, $23
-	# LOAD POINTER(tmp_pointer_8[temp]), POINTER(tmp_pointer_9[temp])
-	lw $25, 0x0($24)
-	# Call FUNC_f; Params: POINTER(tmp_pointer_9[temp])
+19231133
+@0 @-1 @3 @2 @1 @0 @3 @2 @1 @0 -16
+-16
+-2
+*3 *2 *1 *0 *-1 @0 @1 @0 @2 @1 @0 @3 @2 @1 @0 *-25 *0 *-1 @0 -2
+before: 3, 0, 3
+after: 3, -1, 2
+Congratulation!
