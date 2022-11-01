@@ -544,8 +544,19 @@ public class Translator {
                 mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v1, ((Immediate) param).getNumber()));
                 mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.a0, offset, Registers.v1));
             } else if (param instanceof Symbol) {
-                loadSymbol((Symbol) param, Registers.v1);
-                mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.a0, offset, Registers.v1));
+                // TODO: 当函数向子函数传递接收到的数组参数时候会出错
+                Symbol paramSymbol = (Symbol) param;
+                // System.err.println(paramSymbol.getSymbolType());
+                // System.err.println(paramSymbol.getScope());
+                // System.err.println(paramSymbol.isPointerParam());
+                // System.err.println();
+                if(paramSymbol.getScope() == Symbol.Scope.PARAM){  // 当前函数的参数就是数组，取出其地址传给子函数
+                    loadSymbol((Symbol) param, Registers.v1);
+                    mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.a0, offset, Registers.v1));
+                } else {
+                    loadSymbol((Symbol) param, Registers.v1);
+                    mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.a0, offset, Registers.v1));
+                }
             } else {
                 assert false;
             }

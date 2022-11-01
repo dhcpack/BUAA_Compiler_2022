@@ -38,8 +38,6 @@ public class Symbol implements LeafNode, Operand {
     private final ArrayList<Symbol> params;
     private final SymbolType returnType;
 
-    // boolean  // TODO:
-
     // int
     public Symbol(SymbolType symbolType, Token ident, Boolean isConst, Scope scope) {
         this.symbolType = symbolType;
