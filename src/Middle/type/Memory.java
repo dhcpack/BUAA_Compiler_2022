@@ -27,6 +27,6 @@ public class Memory extends BlockNode {
 
     @Override
     public String toString() {
-        return "OFFSET (" + base.getAddress() + "+" + offset + ")->" + res;
+        return "OFFSET (" + base + "+" + offset + ")->" + res;
     }
 }

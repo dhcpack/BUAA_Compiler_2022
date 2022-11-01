@@ -483,9 +483,6 @@ public class Translator {
                     assert false;
                 }
             } else if (left instanceof Symbol && right instanceof Symbol) {
-                // if (op == FourExpr.ExprOp.AND) {
-                //     System.out.println(1);
-                // }
                 int leftRegister = allocRegister((Symbol) left, true);
                 int rightRegister = allocRegister((Symbol) right, true);
                 int resRegister = allocRegister(res, false);  // 要保证左、右、res的顺序
@@ -550,13 +547,8 @@ public class Translator {
                 // System.err.println(paramSymbol.getScope());
                 // System.err.println(paramSymbol.isPointerParam());
                 // System.err.println();
-                if(paramSymbol.getScope() == Symbol.Scope.PARAM){  // 当前函数的参数就是数组，取出其地址传给子函数
-                    loadSymbol((Symbol) param, Registers.v1);
-                    mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.a0, offset, Registers.v1));
-                } else {
-                    loadSymbol((Symbol) param, Registers.v1);
-                    mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.a0, offset, Registers.v1));
-                }
+                loadSymbol((Symbol) param, Registers.v1);
+                mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.a0, offset, Registers.v1));
             } else {
                 assert false;
             }
@@ -609,6 +601,14 @@ public class Translator {
             if (base.getScope() == Symbol.Scope.GLOBAL) {
                 mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.addiu, resRegister, Registers.gp,
                         base.getAddress() + ((Immediate) offset).getNumber()));
+            } else if (base.getScope() == Symbol.Scope.PARAM) {  // base是param，先把base在内存中的地址取出来，再和offset相加
+                if (((Immediate) offset).getNumber() == 0) {
+                    mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.lw, Registers.sp, -base.getAddress(), resRegister));
+                } else {
+                    mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.lw, Registers.sp, -base.getAddress(), Registers.v1));
+                    mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.addiu, resRegister, Registers.v1,
+                            ((Immediate) offset).getNumber()));
+                }
             } else {
                 mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.addiu, resRegister, Registers.sp,
                         -base.getAddress() + ((Immediate) offset).getNumber()));
