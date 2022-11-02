@@ -332,11 +332,12 @@ public class Translator {
         // int resRegister = allocRegister(res, false);
         if (fourExpr.isSingle()) {
             if (op == FourExpr.ExprOp.DEF || op == FourExpr.ExprOp.ASS) {
-                int resRegister = allocRegister(res, false);
                 if (left instanceof Immediate) {
+                    int resRegister = allocRegister(res, false);
                     mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, resRegister, ((Immediate) left).getNumber()));
                 } else if (left instanceof Symbol) {
                     int leftRegister = allocRegister((Symbol) left, true);
+                    int resRegister = allocRegister(res, false);  // 要注意先找leftRegister，再找resRegister
                     mipsCode.addInstr(new MoveInstr(leftRegister, resRegister));
                 } else {
                     assert false;
@@ -348,7 +349,7 @@ public class Translator {
                             ((Immediate) left).getNumber()));
                 } else if (left instanceof Symbol) {
                     int leftRegister = allocRegister((Symbol) left, true);
-                    int resRegister = allocRegister(res, false);
+                    int resRegister = allocRegister(res, false);  // 要注意先找leftRegister，再找resRegister
                     mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.seq, resRegister, Registers.zero, leftRegister));
                 } else {
                     assert false;
@@ -359,7 +360,7 @@ public class Translator {
                     mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, resRegister, -((Immediate) left).getNumber()));
                 } else if (left instanceof Symbol) {
                     int leftRegister = allocRegister((Symbol) left, true);
-                    int resRegister = allocRegister(res, false);
+                    int resRegister = allocRegister(res, false);  // 要注意先找leftRegister，再找resRegister
                     mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.subu, resRegister, Registers.zero, leftRegister));
                 } else {
                     assert false;
@@ -406,9 +407,9 @@ public class Translator {
                     assert false;
                 }
             } else if (left instanceof Symbol && right instanceof Immediate) {
-                int leftRegister = allocRegister((Symbol) left, true);
+                int leftRegister = allocRegister((Symbol) left, true);  // 先找leftRegister
                 int rightVal = ((Immediate) right).getNumber();
-                int resRegister = allocRegister(res, false);
+                int resRegister = allocRegister(res, false);  // 再找resRegister
                 if (op == FourExpr.ExprOp.ADD) {  // 左值寄存器，右值立即数
                     mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.addiu, resRegister, leftRegister, rightVal));
                 } else if (op == FourExpr.ExprOp.SUB) {
@@ -459,7 +460,7 @@ public class Translator {
             } else if (left instanceof Immediate && right instanceof Symbol) {
                 int rightRegister = allocRegister((Symbol) right, true);
                 int leftVal = ((Immediate) left).getNumber();
-                int resRegister = allocRegister(res, false);
+                int resRegister = allocRegister(res, false);  // 先找rightRegister，再找resRegister
                 if (op == FourExpr.ExprOp.ADD) {
                     mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.addiu, resRegister, rightRegister, leftVal));
                 } else if (op == FourExpr.ExprOp.SUB) {
@@ -511,7 +512,7 @@ public class Translator {
             } else if (left instanceof Symbol && right instanceof Symbol) {
                 int leftRegister = allocRegister((Symbol) left, true);
                 int rightRegister = allocRegister((Symbol) right, true);
-                int resRegister = allocRegister(res, false);  // 要保证左、右、res的顺序
+                int resRegister = allocRegister(res, false);  // 要注意寻找左、右、res寄存器的顺序
                 if (op == FourExpr.ExprOp.ADD) {
                     mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.addu, resRegister, leftRegister, rightRegister));
                 } else if (op == FourExpr.ExprOp.SUB) {
