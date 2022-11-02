@@ -1,10 +1,6 @@
 package Frontend.Parser.expr.types;
 
-import Config.Reader;
-import Config.Output;
-import Config.SyntaxWriter;
-
-public class Exp implements Output {
+public class Exp {
     // Exp -> AddExp
     private final AddExp addExp;
 
@@ -22,8 +18,7 @@ public class Exp implements Output {
 
 
     @Override
-    public void output() {
-        addExp.output();
-        SyntaxWriter.print("<Exp>");
+    public String toString() {
+        return addExp + "<Exp>\n";
     }
 }

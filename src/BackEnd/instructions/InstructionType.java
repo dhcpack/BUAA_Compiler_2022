@@ -16,4 +16,8 @@ public enum InstructionType {
     InstructionType(double cost) {
         this.cost = cost;
     }
+
+    public double getCost() {
+        return cost;
+    }
 }

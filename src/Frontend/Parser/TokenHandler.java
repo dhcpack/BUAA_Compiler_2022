@@ -12,9 +12,21 @@ public class TokenHandler {
         this.pointer = 0;
     }
 
+    public TokenList getTokenList() {
+        return tokenList;
+    }
+
     public Token getForwardToken() {
         assert !reachEnd();
         return tokenList.get(pointer);
+    }
+
+    public int getPointer() {
+        return pointer;
+    }
+
+    public void setPointer(int pointer) {
+        this.pointer = pointer;
     }
 
     public boolean moveForward(int step) {

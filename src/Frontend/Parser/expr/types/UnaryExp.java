@@ -1,8 +1,5 @@
 package Frontend.Parser.expr.types;
 
-import Config.Reader;
-import Config.SyntaxWriter;
-
 public class UnaryExp implements UnaryExpInterface {
     private final UnaryOp op;
     // UnaryExp --> PrimaryExp | FuncExp | UnaryOp UnaryExp
@@ -31,11 +28,11 @@ public class UnaryExp implements UnaryExpInterface {
     }
 
     @Override
-    public void output() {
-        if (op != null) {
-            op.output();
+    public String toString() {
+        if(op != null) {
+            return op.toString() + unaryExpInterface + "<UnaryExp>\n";
+        } else {
+            return unaryExpInterface + "<UnaryExp>\n";
         }
-        unaryExpInterface.output();
-        SyntaxWriter.print("<UnaryExp>");
     }
 }

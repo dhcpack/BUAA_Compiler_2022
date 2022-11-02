@@ -1,14 +1,11 @@
 package Frontend.Parser.decl.types;
 
-import Config.Reader;
-import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
-import Config.Output;
 import Frontend.Parser.stmt.types.BlockItem;
 
 import java.util.ArrayList;
 
-public class Decl implements BlockItem, Output {
+public class Decl implements BlockItem{
     // 常量声明 ConstDecl → 'const' BType ConstDef { ',' ConstDef } ';'
     // 变量声明 VarDecl → BType VarDef { ',' VarDef } ';'
     private final Token constToken;
@@ -26,6 +23,22 @@ public class Decl implements BlockItem, Output {
         this.separators = separators;
         this.defs = defs;
         this.semicolon = semicolon;
+    }
+
+    public Token getConstToken() {
+        return constToken;
+    }
+
+    public Token getBType() {
+        return BType;
+    }
+
+    public ArrayList<Token> getSeparators() {
+        return separators;
+    }
+
+    public Token getSemicolon() {
+        return semicolon;
     }
 
     public int getLine() {
@@ -49,21 +62,24 @@ public class Decl implements BlockItem, Output {
     }
 
     @Override
-    public void output() {
-        if (isConst()) SyntaxWriter.print(constToken.toString());  // print const
-        SyntaxWriter.print(BType.toString());  // print BType
-        def.output();  // print def
+    public String toString() {
+        StringBuilder res = new StringBuilder();
+        if (isConst()){  // print const
+            res.append(constToken.toString());
+        }
+        res.append(BType.toString());  // print BType
+        res.append(def);  // print def
         for (int i = 0; i < separators.size(); i++) {  // print sep and def
-            SyntaxWriter.print(separators.get(i).toString());
-            defs.get(i).output();
+            res.append(separators.get(i).toString()).append(defs.get(i));
         }
         if (this.semicolon != null) {
-            SyntaxWriter.print(semicolon.toString());  // print ;
+            res.append(semicolon); // print ;
         }
         if (isConst()) {
-            SyntaxWriter.print("<ConstDecl>");
+            res.append("<ConstDecl>\n");
         } else {
-            SyntaxWriter.print("<VarDecl>");
+            res.append("<VarDecl>\n");
         }
+        return res.toString();
     }
 }

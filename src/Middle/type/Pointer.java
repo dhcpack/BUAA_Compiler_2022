@@ -1,9 +1,8 @@
 package Middle.type;
 
-import Frontend.Parser.expr.types.LeafNode;
 import Frontend.Symbol.Symbol;
 
-public class Pointer extends BlockNode {
+public class Pointer implements BlockNode {
     public enum Op {
         LOAD,
         STORE,

@@ -1,13 +1,10 @@
 package Frontend.Parser.expr.types;
 
-import Config.Reader;
-import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
-import Config.Output;
 
 import java.util.ArrayList;
 
-public class EqExp implements Output {
+public class EqExp {
     // EqExp → RelExp {('==' | '!=') RelExp}
     private final RelExp firstExp;
     private final ArrayList<RelExp> exps;
@@ -40,13 +37,13 @@ public class EqExp implements Output {
     }
 
     @Override
-    public void output() {
-        firstExp.output();
-        SyntaxWriter.print("<EqExp>");
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(firstExp);
+        stringBuilder.append("<EqExp>\n");
         for (int i=0;i<exps.size();i++){
-            SyntaxWriter.print(seps.get(i).toString());
-            exps.get(i).output();
-            SyntaxWriter.print("<EqExp>");
+            stringBuilder.append(seps.get(i)).append(exps.get(i)).append("<EqExp>\n");
         }
+        return stringBuilder.toString();
     }
 }

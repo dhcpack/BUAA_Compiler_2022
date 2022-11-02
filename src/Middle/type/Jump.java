@@ -1,6 +1,6 @@
 package Middle.type;
 
-public class Jump extends BlockNode {
+public class Jump implements BlockNode {
     private final BasicBlock target;
 
     public Jump(BasicBlock target) {

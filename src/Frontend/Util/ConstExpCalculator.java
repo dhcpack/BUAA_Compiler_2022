@@ -36,7 +36,6 @@ public class ConstExpCalculator {
         this.errors = errors;
     }
 
-
     public int calcConstExp(ConstExp constExp) {
         return calcAddExp(constExp.getAddExp());
     }

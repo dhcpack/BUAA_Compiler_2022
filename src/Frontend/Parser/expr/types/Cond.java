@@ -1,10 +1,6 @@
 package Frontend.Parser.expr.types;
 
-import Config.Reader;
-import Config.Output;
-import Config.SyntaxWriter;
-
-public class Cond implements Output {
+public class Cond {
     // Cond -> LOrExp
     private final LOrExp lOrExp;
 
@@ -21,8 +17,7 @@ public class Cond implements Output {
     }
 
     @Override
-    public void output() {
-        lOrExp.output();
-        SyntaxWriter.print("<Cond>");
+    public String toString() {
+        return lOrExp + "<Cond>\n";
     }
 }

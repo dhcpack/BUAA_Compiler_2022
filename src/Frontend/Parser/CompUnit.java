@@ -1,12 +1,12 @@
 package Frontend.Parser;
 
 import Config.Output;
-import Config.Reader;
 import Config.SyntaxWriter;
 import Frontend.Parser.decl.types.Decl;
 import Frontend.Parser.func.types.FuncDef;
 import Frontend.Parser.func.types.MainFuncDef;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class CompUnit implements Output {
@@ -34,10 +34,19 @@ public class CompUnit implements Output {
     }
 
     @Override
-    public void output(){
-        globalVariables.forEach(Decl::output);
-        functions.forEach(FuncDef::output);
-        mainFunction.output();
-        SyntaxWriter.print("<CompUnit>");
+    public void output() {
+        for (Decl decl : globalVariables) {
+            SyntaxWriter.print(decl.toString());
+        }
+        for (FuncDef funcDef : functions) {
+            SyntaxWriter.print(funcDef.toString());
+        }
+        SyntaxWriter.print(mainFunction.toString());
+        SyntaxWriter.print("<CompUnit>\n");
+        try {
+            SyntaxWriter.flush();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

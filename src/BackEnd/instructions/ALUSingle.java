@@ -31,8 +31,10 @@ public class ALUSingle implements Instruction {
     @Override
     public String toString() {
         if (this.aluSingleType == ALUSingleType.la) {
+            assert this.label != null;
             return String.format("%s $%d, %s\n", aluSingleType.name(), rResult, label);
         } else if (this.aluSingleType == ALUSingleType.li) {
+            assert this.label == null;
             return String.format("%s $%d, %d\n", aluSingleType.name(), rResult, immediate);
         } else {
             assert false;

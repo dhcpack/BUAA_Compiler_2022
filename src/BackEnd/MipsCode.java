@@ -7,20 +7,20 @@ import Config.Output;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.StringJoiner;
 
 public class MipsCode implements Output {
     private ArrayList<Integer> globalWords = new ArrayList<>();
-    private HashMap<String, String> globalStrings = new HashMap<>();  // label, string
+    private LinkedHashMap<String, String> globalStrings = new LinkedHashMap<>();  // label, string
     private final ArrayList<Instruction> instructions = new ArrayList<>();
 
     public void setGlobalWords(ArrayList<Integer> globalWords) {
         this.globalWords = globalWords;
     }
 
-    public void setGlobalStrings(HashMap<String, String> globalStrings) {
+    public void setGlobalStrings(LinkedHashMap<String, String> globalStrings) {
         this.globalStrings = globalStrings;
     }
 

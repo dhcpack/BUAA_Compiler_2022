@@ -1,10 +1,6 @@
 package Frontend.Parser.func.types;
 
-import Config.Reader;
-import Config.Output;
-import Config.SyntaxWriter;
-
-public class MainFuncDef implements Output {
+public class MainFuncDef  {
     private final FuncDef funcDef;
 
     public MainFuncDef(FuncDef funcDef) {
@@ -20,8 +16,7 @@ public class MainFuncDef implements Output {
     }
 
     @Override
-    public void output() {
-        funcDef.printNormal(true);  // not print tag and not print <FuncType>
-        SyntaxWriter.print("<MainFuncDef>");
+    public String toString() {
+        return funcDef.printNormal(true) + "<MainFuncDef>";  // not print tag and not print <FuncType>
     }
 }

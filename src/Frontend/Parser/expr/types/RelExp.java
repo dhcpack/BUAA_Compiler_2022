@@ -1,13 +1,10 @@
 package Frontend.Parser.expr.types;
 
-import Config.Reader;
-import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
-import Config.Output;
 
 import java.util.ArrayList;
 
-public class RelExp implements Output {
+public class RelExp {
     // RelExp → AddExp {('<' | '>' | '<=' | '>=') AddExp}
     private final AddExp firstExp;
     private final ArrayList<AddExp> exps;
@@ -40,13 +37,12 @@ public class RelExp implements Output {
     }
 
     @Override
-    public void output() {
-        firstExp.output();
-        SyntaxWriter.print("<RelExp>");
-        for (int i=0;i<exps.size();i++){
-            SyntaxWriter.print(seps.get(i).toString());
-            exps.get(i).output();
-            SyntaxWriter.print("<RelExp>");
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(firstExp).append("<RelExp>\n");  // correctly print BNF
+        for (int i = 0; i < exps.size(); i++) {
+            stringBuilder.append(seps.get(i)).append(exps.get(i)).append("<RelExp>\n");  // correctly print BNF
         }
+        return stringBuilder.toString();
     }
 }

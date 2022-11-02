@@ -1,13 +1,10 @@
 package Frontend.Parser.expr.types;
 
-import Config.Reader;
-import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
-import Config.Output;
 
 import java.util.ArrayList;
 
-public class LAndExp implements Output {
+public class LAndExp {
     // LAndExp → EqExp {'&&' EqExp}
     private final EqExp firstExp;
     private final ArrayList<EqExp> exps;
@@ -40,13 +37,13 @@ public class LAndExp implements Output {
     }
 
     @Override
-    public void output() {
-        firstExp.output();
-        SyntaxWriter.print("<LAndExp>");
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(firstExp).append("<LAndExp>\n");
+
         for (int i = 0; i < exps.size(); i++) {
-            SyntaxWriter.print(seps.get(i).toString());
-            exps.get(i).output();
-            SyntaxWriter.print("<LAndExp>");
+            stringBuilder.append(seps.get(i)).append(exps.get(i)).append("<LAndExp>\n");
         }
+        return stringBuilder.toString();
     }
 }

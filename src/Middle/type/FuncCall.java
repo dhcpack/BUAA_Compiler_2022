@@ -1,12 +1,11 @@
 package Middle.type;
 
-import Frontend.Parser.expr.types.LeafNode;
 import Frontend.Symbol.Symbol;
 
 import java.util.ArrayList;
 import java.util.StringJoiner;
 
-public class FuncCall extends BlockNode {
+public class FuncCall implements BlockNode {
     private final FuncBlock funcBlock;
     private final ArrayList<Operand> rParams;
     private final Symbol ret;

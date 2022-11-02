@@ -1,7 +1,5 @@
 package Frontend.Parser.stmt.types;
 
-import Config.Reader;
-import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
 import Frontend.Parser.expr.types.Cond;
 
@@ -38,12 +36,8 @@ public class WhileStmt implements StmtInterface {
     }
 
     @Override
-    public void output() {
-        SyntaxWriter.print(whileToken.toString());
-        SyntaxWriter.print(left.toString());
-        cond.output();
-        SyntaxWriter.print(right.toString());
-        stmt.output();
+    public String toString() {
+        return whileToken.toString() + left + cond + right + stmt;
     }
 
     @Override

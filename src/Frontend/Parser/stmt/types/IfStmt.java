@@ -1,14 +1,11 @@
 package Frontend.Parser.stmt.types;
 
-import Config.Reader;
-import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
-import Config.Output;
 import Frontend.Parser.expr.types.Cond;
 
 import java.util.ArrayList;
 
-public class IfStmt implements StmtInterface, Output {
+public class IfStmt implements StmtInterface {
     // 'if' '(' Cond ')' Stmt [ 'else' Stmt ]
     private final Token ifToken;
     private final Token left;
@@ -51,17 +48,14 @@ public class IfStmt implements StmtInterface, Output {
     }
 
     @Override
-    public void output() {
-        SyntaxWriter.print(ifToken.toString());
-        SyntaxWriter.print(left.toString());
-        cond.output();
-        SyntaxWriter.print(right.toString());
-        stmts.get(0).output();
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(ifToken).append(left).append(cond).append(right).append(stmts.get(0));
         int index = 1;
         for (Token els : elses) {
-            SyntaxWriter.print(els.toString());
-            stmts.get(index++).output();
+            stringBuilder.append(els).append(stmts.get(index++));
         }
+        return stringBuilder.toString();
     }
 
     @Override

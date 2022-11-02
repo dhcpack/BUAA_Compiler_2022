@@ -1,19 +1,21 @@
 package Frontend.Parser.stmt.types;
 
-import Config.Reader;
-import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
 
 public class ContinueStatement implements StmtInterface {
     private final Token continueToken;
+
+    public Token getContinueToken() {
+        return continueToken;
+    }
 
     public ContinueStatement(Token continueToken) {
         this.continueToken = continueToken;
     }
 
     @Override
-    public void output() {
-        SyntaxWriter.print(continueToken.toString());
+    public String toString() {
+        return this.continueToken.toString();
     }
 
     @Override

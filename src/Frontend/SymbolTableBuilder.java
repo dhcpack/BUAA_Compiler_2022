@@ -84,6 +84,7 @@ import java.util.stream.Collectors;
 
 /*
  *
+ * 错误处理+生成符号表+生成中间代码
  * 符号表需要下降一层: 定义的新函数，blockStmt，whileStmt，ifStmt
  *
  */
@@ -91,24 +92,20 @@ public class SymbolTableBuilder {
     private SymbolTable currSymbolTable = new SymbolTable(null, null);
     private final Errors errors = new Errors();
     private final CompUnit compUnit;
-    // private FuncDef currFunc;  // not using
+    private final MiddleCode middleCode = new MiddleCode();
 
     // about block
     private BasicBlock currBlock;
     private int blockCount = 0;  // 根据这个来命名
-    private int blockDepth = 0;
     private int blockId = 0;  // 根据这个来排序
 
     // about function
-    private FuncBlock currFunc;
+    private FuncBlock currFunc = null;  // curentFunc = null代表在全局
     private TokenType currFuncType = null;
 
-    private final MiddleCode middleCode = new MiddleCode();
-
+    // about loop
     private final Stack<BasicBlock> inLoop = new Stack<>();  // for continue
     private final Stack<BasicBlock> followLoop = new Stack<>();  // for break
-
-    // about loop
     private int loopDepth = 0;
 
     public SymbolTableBuilder(CompUnit compUnit) {
@@ -128,7 +125,7 @@ public class SymbolTableBuilder {
     }
 
     // CompUnit → {Decl} {FuncDef} MainFuncDef
-    public void checkCompUnit() {
+    public MiddleCode checkCompUnit() {
         ArrayList<Decl> decls = compUnit.getGlobalVariables();
         ArrayList<FuncDef> funcDefs = compUnit.getFunctions();
         MainFuncDef mainFunction = compUnit.getMainFunction();
@@ -144,6 +141,8 @@ public class SymbolTableBuilder {
 
         // check main func
         checkMainFunc(mainFunction);
+
+        return middleCode;
     }
 
     // Decl → ConstDecl | VarDecl
@@ -549,14 +548,14 @@ public class SymbolTableBuilder {
             currBlock.addContent(new Jump(basicBlock));
         }
         currBlock = basicBlock;
-        blockDepth++;
+        // blockDepth++;
         // traverse all blockItems and check
         ArrayList<BlockItem> blockItems = blockStmt.getBlockItems();
         for (BlockItem blockItem : blockItems) {
             checkBlockItem(blockItem);
         }
         BasicBlock nextBlock = new BasicBlock("B_" + blockCount++, blockId++);
-        blockDepth--;
+        // blockDepth--;
         if (!isFunc) {
             basicBlock.addContent(new Jump(nextBlock));
         }

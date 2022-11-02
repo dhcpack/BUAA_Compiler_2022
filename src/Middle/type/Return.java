@@ -1,8 +1,6 @@
 package Middle.type;
 
-import Frontend.Parser.expr.types.LeafNode;
-
-public class Return extends BlockNode {
+public class Return implements BlockNode {
     public final Operand returnVal;
 
     // return int
