@@ -1,7 +1,5 @@
 package Frontend.Parser.expr.types;
 
-import Config.Reader;
-import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
 import Frontend.Symbol.SymbolType;
 
@@ -51,18 +49,25 @@ public class FuncExp implements UnaryExpInterface, LeafNode {
         return returnType;
     }
 
+    public Token getLeft() {
+        return left;
+    }
+
+    public Token getRight() {
+        return right;
+    }
+
     public void setReturnType(SymbolType returnType) {
         this.returnType = returnType;
     }
 
     @Override
-    public void output() {
-        SyntaxWriter.print(ident.toString());
-        SyntaxWriter.print(left.toString());
+    public String toString() {
         if (params != null) {  // params could be null
-            params.output();
+            return ident.toString() + left.toString() + params + right.toString();
+        } else {
+            return ident.toString() + left.toString()  + right.toString();
         }
-        SyntaxWriter.print(right.toString());
     }
 
     @Override
@@ -81,6 +86,4 @@ public class FuncExp implements UnaryExpInterface, LeafNode {
     public ArrayList<Integer> getDimSize() {
         return new ArrayList<>();
     }
-
-
 }

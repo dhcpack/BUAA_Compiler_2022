@@ -1,7 +1,5 @@
 package Frontend.Parser.stmt.types;
 
-import Config.Reader;
-import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
 import Frontend.Lexer.TokenType;
 import Frontend.Parser.TokenHandler;
@@ -43,13 +41,15 @@ public class Stmt implements BlockItem {
     }
 
     @Override
-    public void output() {
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
         if (stmt != null) {  // if stmt not null then print stmt
-            stmt.output();
+            stringBuilder.append(stmt);
         }
         if (semicolon != null) {  // if has semicn then print semicn
-            SyntaxWriter.print(semicolon.toString());
+            stringBuilder.append(semicolon);
         }
-        SyntaxWriter.print("<Stmt>");
+        stringBuilder.append("<Stmt>\n");
+        return stringBuilder.toString();
     }
 }

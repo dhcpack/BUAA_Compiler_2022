@@ -1,12 +1,7 @@
 package Middle.type;
 
-import Frontend.Parser.expr.types.LeafNode;
-import Frontend.Symbol.SymbolType;
-
-import java.util.ArrayList;
-
 public class Immediate implements Operand {
-    private int num;
+    private final int num;
 
     public Immediate(int num) {
         this.num = num;

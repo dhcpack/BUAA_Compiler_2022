@@ -97,7 +97,7 @@ public class BasicBlock implements Comparable<BasicBlock> {
 
     @Override
     public String toString() {
-        return this.label.toString();
+        return this.label;
     }
 
     @Override

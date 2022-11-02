@@ -1,8 +1,6 @@
 package Middle.type;
 
-import Frontend.Parser.expr.types.LeafNode;
-
-public class PrintInt extends BlockNode {
+public class PrintInt implements BlockNode {
     public enum PrintType {
         PRINT_INT,
         PRINT_STR,

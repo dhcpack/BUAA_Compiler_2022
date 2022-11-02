@@ -11,6 +11,10 @@ public class InputHandler {
         lines.add(line);
     }
 
+    public ArrayList<String> getLines() {
+        return lines;
+    }
+
     private int currentLength() {
         return lines.get(line).length();
     }
@@ -31,6 +35,14 @@ public class InputHandler {
         return reachEnd();
     }
 
+    public int getLine() {
+        return line;
+    }
+
+    public void setLine(int line) {
+        this.line = line;
+    }
+
     public String getForwardWord(int step) {
         return lines.get(line).substring(pointer, Math.min(currentLength(), pointer + step));
     }
@@ -49,6 +61,14 @@ public class InputHandler {
         if (reachEnd()) return false;
         moveForward(0);  // 跳过接下来的空行
         return !reachEnd();
+    }
+
+    public int getPointer() {
+        return pointer;
+    }
+
+    public void setPointer(int pointer) {
+        this.pointer = pointer;
     }
 
     public int getLineNumber() {

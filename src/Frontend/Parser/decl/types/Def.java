@@ -1,11 +1,8 @@
 package Frontend.Parser.decl.types;
 
-import Config.Reader;
-import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
-import Config.Output;
 
-public class Def implements Output {
+public class Def{
     // 常数定义 ConstDef → Var '=' ConstInitVal // 包含普通变量、一维数组、二维数组共三种情况
     // 变量定义 VarDef → Var | Var '=' InitVal
     private final Var var;
@@ -27,6 +24,14 @@ public class Def implements Output {
         this.isConst = isConst;
     }
 
+    public Token getAssign() {
+        return assign;
+    }
+
+    public boolean isConst() {
+        return isConst;
+    }
+
     public Var getVar() {
         return this.var;
     }
@@ -44,16 +49,19 @@ public class Def implements Output {
     }
 
     @Override
-    public void output() {
-        var.output();
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(var);
         if (hasInitVal()) {  // check have initial value or not
-            SyntaxWriter.print(assign.toString());
-            initVal.output();
+            assert assign != null;
+            stringBuilder.append(assign);
+            stringBuilder.append(initVal);
         }
         if (isConst) {
-            SyntaxWriter.print("<ConstDef>");
+            stringBuilder.append("<ConstDef>\n");
         } else {
-            SyntaxWriter.print("<VarDef>");
+            stringBuilder.append("<VarDef>\n");
         }
+        return stringBuilder.toString();
     }
 }

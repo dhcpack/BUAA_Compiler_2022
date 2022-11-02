@@ -1,10 +1,9 @@
 package Frontend.Lexer;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class TokenList {
-    private final List<Token> tokenList = new ArrayList<>();
+    private final ArrayList<Token> tokenList = new ArrayList<>();
 
     public void add(Token token) {
         this.tokenList.add(token);

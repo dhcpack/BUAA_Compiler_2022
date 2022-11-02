@@ -1,13 +1,10 @@
 package Frontend.Parser.expr.types;
 
-import Config.Reader;
-import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
-import Config.Output;
 
 import java.util.ArrayList;
 
-public class AddExp implements Output {
+public class AddExp {
     // AddExp → MulExp {('+' | '−') MulExp}
     private final MulExp firstExp;
     private final ArrayList<MulExp> exps;
@@ -40,13 +37,12 @@ public class AddExp implements Output {
     }
 
     @Override
-    public void output() {
-        firstExp.output();
-        SyntaxWriter.print("<AddExp>");  // correctly print BNF
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(firstExp).append("<AddExp>\n");  // correctly print BNF
         for (int i = 0; i < exps.size(); i++) {
-            SyntaxWriter.print(seps.get(i).toString());
-            exps.get(i).output();
-            SyntaxWriter.print("<AddExp>");
+            stringBuilder.append(seps.get(i)).append(exps.get(i)).append("<AddExp>\n");  // correctly print BNF
         }
+        return stringBuilder.toString();
     }
 }

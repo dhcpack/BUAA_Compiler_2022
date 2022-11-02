@@ -2,6 +2,7 @@ import BackEnd.MipsCode;
 import BackEnd.Translator;
 import Config.Reader;
 import Frontend.Lexer.Lexer;
+import Frontend.Parser.CompUnit;
 import Frontend.Parser.Parser;
 import Frontend.Parser.TokenHandler;
 import Frontend.Symbol.Errors;
@@ -21,9 +22,12 @@ public class Compiler {
                 return x[];
             }
         * */
-        SymbolTableBuilder symbolTableBuilder = new SymbolTableBuilder(
-                Parser.parseCompUnit(new TokenHandler(Lexer.lex(Reader.input()))));
+        CompUnit compUnit = Parser.parseCompUnit(new TokenHandler(Lexer.lex(Reader.input())));
+        SymbolTableBuilder symbolTableBuilder = new SymbolTableBuilder(compUnit);
         symbolTableBuilder.checkCompUnit();
+
+        compUnit.output();  // through SyntaxWriter
+
         MiddleCode middleCode = symbolTableBuilder.getMiddleCode();
         middleCode.output();  // through MiddleWriter
 

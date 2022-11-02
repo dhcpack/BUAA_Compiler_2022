@@ -5,7 +5,7 @@ import java.util.HashMap;
 public class SymbolTable {
     private final SymbolTable parent;  // top SymbolTable has no parent
     private final HashMap<String, Symbol> symbols = new HashMap<>();
-    private final SymbolTable funcSymbolTable;
+    private final SymbolTable funcSymbolTable;  // 当前符号表所属的funcSymbolTable
     private int stackSize = 0;
 
     public SymbolTable(SymbolTable parent, SymbolTable funcSymbolTable) {
@@ -50,8 +50,8 @@ public class SymbolTable {
     }
 
     public int getStackSize() {
-        if (this.funcSymbolTable != null) {
-            return this.funcSymbolTable.getStackSize();
+        if (this.funcSymbolTable != null) {  // 如果当前符号表属于某一个函数符号表，则返回函数符号表的StackSize
+            return this.funcSymbolTable.getStackSize();  // 如while，if，block等块生成的新符号表
         } else {
             return this.stackSize;
         }

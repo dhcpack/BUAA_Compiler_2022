@@ -1,12 +1,10 @@
 package Middle.type;
 
-import Frontend.Symbol.Symbol;
-
-public class Branch extends BlockNode {
-    private Operand cond;
-    private BasicBlock thenBlock;
-    private BasicBlock elseBlock;
-    private boolean thenFirst;
+public class Branch implements BlockNode {
+    private final Operand cond;
+    private final BasicBlock thenBlock;
+    private final BasicBlock elseBlock;
+    private final boolean thenFirst;
 
     public Branch(Operand cond, BasicBlock thenBlock, BasicBlock elseBlock, boolean thenFirst) {
         this.cond = cond;

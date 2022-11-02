@@ -1,13 +1,10 @@
 package Frontend.Parser.stmt.types;
 
-import Config.Reader;
-import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
-import Config.Output;
 
 import java.util.ArrayList;
 
-public class BlockStmt implements StmtInterface, Output {
+public class BlockStmt implements StmtInterface{
     // Block → '{' { BlockItem } '}'
     private final Token left;
     private final Token right;
@@ -60,17 +57,26 @@ public class BlockStmt implements StmtInterface, Output {
     }
 
     @Override
-    public void output() {
-        SyntaxWriter.print(left.toString());
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(left);
         for (BlockItem blockItem : blockItems) {
-            blockItem.output();
+            stringBuilder.append(blockItem);
         }
-        SyntaxWriter.print(right.toString());
-        SyntaxWriter.print("<Block>");
+        stringBuilder.append(right).append("<Block>\n");
+        return stringBuilder.toString();
     }
 
     @Override
     public int getSemicolonLine() {
         return right.getLine();
+    }
+
+    public Token getLeft() {
+        return left;
+    }
+
+    public Token getRight() {
+        return right;
     }
 }

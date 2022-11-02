@@ -1,14 +1,11 @@
 package Frontend.Parser.decl.types;
 
-import Config.Reader;
-import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
-import Config.Output;
 import Frontend.Parser.expr.types.ConstExp;
 
 import java.util.ArrayList;
 
-public class Var implements Output {
+public class Var {
     // Var -> Ident { '[' ConstExp ']' }
     private final Token ident;
     private final ArrayList<ConstExp> constExps;
@@ -24,6 +21,10 @@ public class Var implements Output {
         // for (ConstExp constExp : constExps) {
         //     dimSize.add(CalcUtil.calcConstExp(constExp));
         // }
+    }
+
+    public ArrayList<ConstExp> getConstExps() {
+        return constExps;
     }
 
     public boolean missRBrack() {
@@ -66,13 +67,13 @@ public class Var implements Output {
     }
 
     @Override
-    public void output() {
-        SyntaxWriter.print(ident.toString());
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(ident);
         int index = 0;
         for (ConstExp constExp : constExps) {  // print arrays
-            SyntaxWriter.print(bracks.get(index++).toString());
-            constExp.output();
-            SyntaxWriter.print(bracks.get(index++).toString());
+            stringBuilder.append(bracks.get(index++)).append(constExp).append(bracks.get(index++));
         }
+        return stringBuilder.toString();
     }
 }

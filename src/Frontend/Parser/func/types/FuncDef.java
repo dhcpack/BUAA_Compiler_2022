@@ -1,14 +1,11 @@
 package Frontend.Parser.func.types;
 
-import Config.Reader;
-import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
-import Config.Output;
 import Frontend.Parser.stmt.types.BlockStmt;
 
 import java.util.ArrayList;
 
-public class FuncDef implements Output {
+public class FuncDef {
     // FuncDef → FuncType Ident '(' [FuncFParams] ')' Block
     private final Token returnType;
     private final Token ident;
@@ -65,29 +62,39 @@ public class FuncDef implements Output {
         return blockStmt;
     }
 
-    public void printNormal(boolean isMain) {
-        SyntaxWriter.print(returnType.toString());
+    public Token getLeft() {
+        return left;
+    }
+
+    public Token getRight() {
+        return right;
+    }
+
+    public ArrayList<Token> getSeps() {
+        return seps;
+    }
+
+    public String printNormal(boolean isMain) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(returnType);
         if (!isMain) {  // if not main, print <FuncType>
-            SyntaxWriter.print("<FuncType>");
+            stringBuilder.append("<FuncType>\n");
         }
-        SyntaxWriter.print(ident.toString());
-        SyntaxWriter.print(left.toString());
+        stringBuilder.append(ident).append(left);
         if (funcFParams.size() != 0) {  // if has formal Params
-            funcFParams.get(0).output();
+            stringBuilder.append(funcFParams.get(0));
             int index = 1;
             for (Token sep : seps) {
-                SyntaxWriter.print(sep.toString());
-                funcFParams.get(index++).output();
+                stringBuilder.append(sep).append(funcFParams.get(index++));
             }
-            SyntaxWriter.print("<FuncFParams>");
+            stringBuilder.append("<FuncFParams>\n");
         }
-        SyntaxWriter.print(right.toString());
-        blockStmt.output();
+        stringBuilder.append(right).append(blockStmt);
+        return stringBuilder.toString();
     }
 
     @Override
-    public void output() {
-        printNormal(false);
-        SyntaxWriter.print("<FuncDef>");
+    public String toString() {
+        return printNormal(false) + "<FuncDef>\n";
     }
 }

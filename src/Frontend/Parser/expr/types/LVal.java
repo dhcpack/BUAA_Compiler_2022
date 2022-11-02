@@ -1,15 +1,12 @@
 package Frontend.Parser.expr.types;
 
-import Config.Reader;
-import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
-import Config.Output;
 import Frontend.Symbol.Symbol;
 import Frontend.Symbol.SymbolType;
 
 import java.util.ArrayList;
 
-public class LVal implements PrimaryExpInterface, Output, LeafNode {
+public class LVal implements PrimaryExpInterface, LeafNode {
     // LVal → Ident {'[' Exp ']'}
     private final Token ident;
     private final ArrayList<Exp> exps;
@@ -52,15 +49,15 @@ public class LVal implements PrimaryExpInterface, Output, LeafNode {
     }
 
     @Override
-    public void output() {
-        SyntaxWriter.print(ident.toString());
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(ident);
         int index = 0;
         for (Exp exp : exps) {
-            SyntaxWriter.print(bracks.get(index++).toString());
-            exp.output();
-            SyntaxWriter.print(bracks.get(index++).toString());
+            stringBuilder.append(bracks.get(index++)).append(exp).append(bracks.get(index++));
         }
-        SyntaxWriter.print("<LVal>");
+        stringBuilder.append("<LVal>\n");
+        return stringBuilder.toString();
     }
 
     // WARNING: 对类型根据使用方法进行了修改
@@ -94,5 +91,9 @@ public class LVal implements PrimaryExpInterface, Output, LeafNode {
     public ArrayList<Integer> getDimSize() {
         assert symbol != null;
         return symbol.getDimSize();
+    }
+
+    public ArrayList<Token> getBracks() {
+        return bracks;
     }
 }

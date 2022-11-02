@@ -15,8 +15,8 @@ public class ExpStmt implements StmtInterface {
     }
 
     @Override
-    public void output() {
-        exp.output();
+    public String toString() {
+        return this.exp.toString();
     }
 
     @Override

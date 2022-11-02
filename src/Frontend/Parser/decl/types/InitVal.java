@@ -1,15 +1,12 @@
 package Frontend.Parser.decl.types;
 
-import Config.Reader;
-import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
-import Config.Output;
 import Frontend.Parser.expr.types.ConstExp;
 import Frontend.Parser.expr.types.Exp;
 
 import java.util.ArrayList;
 
-public class InitVal implements Output {
+public class InitVal{
     //  常量初值 ConstInitVal → ConstExp | '{' [ ConstInitVal { ',' ConstInitVal } ] '}'
     //  变量初值 InitVal → Exp | '{' [ InitVal { ',' InitVal } ] '}'   // const or not
     private final Token left;
@@ -51,6 +48,18 @@ public class InitVal implements Output {
         this.right = null;
     }
 
+    public Token getLeft() {
+        return left;
+    }
+
+    public ArrayList<Token> getSeps() {
+        return seps;
+    }
+
+    public Token getRight() {
+        return right;
+    }
+
     public boolean isLeaf() {
         return this.exp != null || this.constExp != null;
     }
@@ -72,27 +81,31 @@ public class InitVal implements Output {
     }
 
     @Override
-    public void output() {
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
         if (this.left != null) {
-            SyntaxWriter.print(this.left.toString());
+            stringBuilder.append(this.left);
             int index = 0;
+            assert initVals != null;
             if (initVals.size() != 0) {
-                initVals.get(index++).output();
+                stringBuilder.append(initVals.get(index++));
             }
+            assert seps != null;
             for (Token sep : seps) {
-                SyntaxWriter.print(sep.toString());
-                initVals.get(index++).output();
+                stringBuilder.append(sep);
+                stringBuilder.append(initVals.get(index++));
             }
-            SyntaxWriter.print(this.right.toString());
+            stringBuilder.append(this.right);
         } else if (this.exp != null) {
-            this.exp.output();
+            stringBuilder.append(this.exp);
         } else if (this.constExp != null) {
-            this.constExp.output();
+            stringBuilder.append(this.constExp);
         }
         if (isConst) {
-            SyntaxWriter.print("<ConstInitVal>");
+            stringBuilder.append("<ConstInitVal>\n");
         } else {
-            SyntaxWriter.print("<InitVal>");
+            stringBuilder.append("<InitVal>\n");
         }
+        return stringBuilder.toString();
     }
 }

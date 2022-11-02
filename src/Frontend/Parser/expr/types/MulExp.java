@@ -1,13 +1,10 @@
 package Frontend.Parser.expr.types;
 
-import Config.Reader;
-import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
-import Config.Output;
 
 import java.util.ArrayList;
 
-public class MulExp implements Output {
+public class MulExp {
     // MulExp → UnaryExp {('*' | '/' | '%') UnaryExp}
     private final UnaryExp firstExp;
     private final ArrayList<UnaryExp> exps;
@@ -40,13 +37,12 @@ public class MulExp implements Output {
     }
 
     @Override
-    public void output() {
-        firstExp.output();
-        SyntaxWriter.print("<MulExp>");
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(firstExp).append("<MulExp>\n");  // correctly print BNF
         for (int i = 0; i < exps.size(); i++) {
-            SyntaxWriter.print(seps.get(i).toString());
-            exps.get(i).output();
-            SyntaxWriter.print("<MulExp>");
+            stringBuilder.append(seps.get(i)).append(exps.get(i)).append("<MulExp>\n");  // correctly print BNF
         }
+        return stringBuilder.toString();
     }
 }

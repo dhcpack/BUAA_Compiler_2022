@@ -14,7 +14,8 @@ public class Reader {
         InputHandler inputHandler = new InputHandler();
         File file = new File(Config.inputFile);
         if (!file.exists()) {
-            System.out.println("input file not exists");
+            System.err.println("input file not exists");
+            System.exit(-20231164);
             return inputHandler;
         }
         BufferedReader reader = new BufferedReader(new FileReader(file));

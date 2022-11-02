@@ -1,6 +1,5 @@
 package Middle;
 
-import BackEnd.instructions.J;
 import Config.MiddleWriter;
 import Config.Output;
 import Frontend.Symbol.Symbol;
@@ -16,9 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.Map;
-import java.util.Queue;
 import java.util.StringJoiner;
 
 public class MiddleCode implements Output {
@@ -46,27 +43,27 @@ public class MiddleCode implements Output {
         }
     }
 
-    public HashMap<String, Integer> getNameToAddr() {
+    public LinkedHashMap<String, Integer> getNameToAddr() {
         return nameToAddr;
     }
 
-    public HashMap<String, Integer> getNameToVal() {
+    public LinkedHashMap<String, Integer> getNameToVal() {
         return nameToVal;
     }
 
-    public HashMap<String, String> getNameToAsciiz() {
+    public LinkedHashMap<String, String> getNameToAsciiz() {
         return nameToAsciiz;
     }
 
-    public HashMap<String, String> getAsciizToName() {
+    public LinkedHashMap<String, String> getAsciizToName() {
         return AsciizToName;
     }
 
-    public HashMap<String, ArrayList<Integer>> getNameToArray() {
+    public LinkedHashMap<String, ArrayList<Integer>> getNameToArray() {
         return nameToArray;
     }
 
-    public HashMap<String, FuncBlock> getNameToFunc() {
+    public LinkedHashMap<String, FuncBlock> getNameToFunc() {
         return nameToFunc;
     }
 
@@ -143,8 +140,8 @@ public class MiddleCode implements Output {
     }
 
 
-    private HashSet<BasicBlock> visited = new HashSet<>();
-    private LinkedHashMap<FuncBlock, ArrayList<BasicBlock>> funcToSortedBlock = new LinkedHashMap<>();
+    private final HashSet<BasicBlock> visited = new HashSet<>();
+    private final LinkedHashMap<FuncBlock, ArrayList<BasicBlock>> funcToSortedBlock = new LinkedHashMap<>();
 
     // 通过dfs得到每个函数包含的基本块并排序
     public void getBlocks() {
@@ -187,7 +184,6 @@ public class MiddleCode implements Output {
                     dfsBlock(elseBlock, sortedBlock);
                     dfsBlock(thenBlock, sortedBlock);
                 }
-
             }
         }
     }

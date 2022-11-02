@@ -49,6 +49,10 @@ public class Translator {
     private final Registers registers = new Registers();
     private final HashMap<Symbol, Integer> symbolUsageMap;
 
+    // 当前函数和当前函数栈空间
+    private FuncBlock currentFunc = null;
+    private int currentStackSize = 0;
+
     public Translator(MiddleCode middleCode) {
         this.middleCode = middleCode;
         this.symbolUsageMap = middleCode.getSymbolUsageMap();
@@ -59,8 +63,8 @@ public class Translator {
         for (Map.Entry<String, Integer> na : middleCode.getNameToAddr().entrySet()) {
             nameAddr.add(new SIPair(na.getKey(), na.getValue()));
         }
-        HashMap<String, Integer> nameToVal = middleCode.getNameToVal();
-        HashMap<String, ArrayList<Integer>> nameToArray = middleCode.getNameToArray();
+        LinkedHashMap<String, Integer> nameToVal = middleCode.getNameToVal();
+        LinkedHashMap<String, ArrayList<Integer>> nameToArray = middleCode.getNameToArray();
         ArrayList<Integer> globalWords = new ArrayList<>();
         while (!nameAddr.isEmpty()) {
             SIPair pair = nameAddr.poll();
@@ -81,14 +85,6 @@ public class Translator {
         translateFuncs();
         return mipsCode;
     }
-
-
-    // BFS 基本块
-    private final HashSet<BasicBlock> visited = new HashSet<>();
-    // private final Queue<BasicBlock> queue = new LinkedList<>();
-    // 记录当前正在翻译的函数
-    private FuncBlock currentFunc = null;
-    private int currentStackSize = 0; // 当前正在翻译的函数已经用掉的栈的大小（局部变量+临时变量）
 
     private void translateFuncs() {
         LinkedHashMap<FuncBlock, ArrayList<BasicBlock>> funcToSortedBlock = middleCode.getFuncToSortedBlock();
@@ -571,7 +567,7 @@ public class Translator {
                 mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v1, ((Immediate) param).getNumber()));
                 mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.a0, offset, Registers.v1));
             } else if (param instanceof Symbol) {
-                // TODO: 当函数向子函数传递接收到的数组参数时候会出错
+                // TODO: 当函数向子函数传递接收到的数组参数时候会出错 FIXED20221103
                 Symbol paramSymbol = (Symbol) param;
                 // System.err.println(paramSymbol.getSymbolType());
                 // System.err.println(paramSymbol.getScope());

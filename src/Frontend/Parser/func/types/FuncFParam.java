@@ -1,14 +1,11 @@
 package Frontend.Parser.func.types;
 
-import Config.Reader;
-import Config.SyntaxWriter;
 import Frontend.Lexer.Token;
-import Config.Output;
 import Frontend.Parser.expr.types.ConstExp;
 
 import java.util.ArrayList;
 
-public class FuncFParam implements Output {
+public class FuncFParam {
     // 函数形参 FuncFParam → BType Ident ['[' ']' { '[' ConstExp ']' }] // 1.普通变量 2.一维数组变量 3.二维数组变量
     // BType -> int
     private final Token BType;
@@ -76,20 +73,26 @@ public class FuncFParam implements Output {
         return isArray;
     }
 
+    public ArrayList<ConstExp> getConstExps() {
+        return constExps;
+    }
+
+    public ArrayList<Integer> getDimSize() {
+        return dimSize;
+    }
+
     @Override
-    public void output() {
-        SyntaxWriter.print(BType.toString());
-        SyntaxWriter.print(ident.toString());
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(BType).append(ident);
         if (isArray) {
             int index = 0;
-            SyntaxWriter.print(bracks.get(index++).toString());
-            SyntaxWriter.print(bracks.get(index++).toString());
+            stringBuilder.append(bracks.get(index++)).append(bracks.get(index++));
             for (ConstExp constExp : constExps) {
-                SyntaxWriter.print(bracks.get(index++).toString());
-                constExp.output();
-                SyntaxWriter.print(bracks.get(index++).toString());
+                stringBuilder.append(bracks.get(index++)).append(constExp).append(bracks.get(index++));
             }
         }
-        SyntaxWriter.print("<FuncFParam>");
+        stringBuilder.append("<FuncFParam>\n");
+        return stringBuilder.toString();
     }
 }
