@@ -602,7 +602,7 @@ public class Translator {
         if (symbol.getSymbolType() == SymbolType.INT) {
             int register = allocRegister(symbol, false);
             mipsCode.addInstr(new MoveInstr(Registers.v0, register));
-        } else if (symbol.getSymbolType() == SymbolType.POINTER) {
+        } else if (symbol.getSymbolType() == SymbolType.POINTER) {  // 如果是pointer，直接存在内存里
             int pointer = registers.getSymbolRegister(symbol);
             mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, pointer, 0, Registers.v0));
             consumeUsage(symbol);
@@ -640,10 +640,10 @@ public class Translator {
                         -base.getAddress() + ((Immediate) offset).getNumber()));
             }
         } else if (offset instanceof Symbol) {
-            // base是global或local时，可以直接计算出它在内存中的地址(sp, gp)，但是base是param时，需要先把base在内存中的地址取出来，再和offset相加
+            // TODO: WARNING!!! base是global或local时，可以直接计算出它在内存中的地址(sp, gp)，但是base是param时，需要先把base在内存中的地址取出来，再和offset相加
             if (base.getScope() == Symbol.Scope.GLOBAL) {
                 mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.addiu, Registers.v1, Registers.gp, base.getAddress()));
-            } else if (base.getScope() == Symbol.Scope.PARAM) {  // base是param，先把base在内存中的地址取出来，再和offset相加
+            } else if (base.getScope() == Symbol.Scope.PARAM) {  // TODO: WARNING!!! base是param，先把base在内存中的地址取出来，再和offset相加
                 mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.lw, Registers.sp, -base.getAddress(), Registers.v1));
             } else {
                 mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.addiu, Registers.v1, Registers.sp, -base.getAddress()));
