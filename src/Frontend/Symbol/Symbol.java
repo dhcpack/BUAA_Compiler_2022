@@ -14,7 +14,8 @@ public class Symbol implements LeafNode, Operand {
         PARAM,  // 只记录函数实参中的array类型变量
     }
 
-    private String name;
+    // for all
+    private final String name;
     private final SymbolType symbolType;
     private Token ident;
     private final boolean isConst;
@@ -22,9 +23,10 @@ public class Symbol implements LeafNode, Operand {
     private int size;
     private int address;
     private boolean hasAddress = false;
+
     // int
     private int constInitInt;
-    private boolean hasConstInitint = false;
+    private boolean hasConstInitInt = false;
 
     // 数组
     // 指针(省略第一维的数组) ???
@@ -32,7 +34,6 @@ public class Symbol implements LeafNode, Operand {
     private ArrayList<Integer> initArray;
     private boolean hasInitArray = false;
     private final int dimCount;
-    // private final ArrayList<Token> bracks;  // 数组维数（定义时的Const Exp，未经过化简计算）
 
     // 函数
     private final ArrayList<Symbol> params;
@@ -92,7 +93,6 @@ public class Symbol implements LeafNode, Operand {
         this.scope = scope;
     }
 
-
     // function
     public Symbol(SymbolType symbolType, SymbolType returnType, ArrayList<Symbol> params, Token ident) {
         this.symbolType = symbolType;
@@ -140,11 +140,11 @@ public class Symbol implements LeafNode, Operand {
     // int
     public void setConstInitInt(int constInitInt) {
         this.constInitInt = constInitInt;
-        this.hasConstInitint = true;
+        this.hasConstInitInt = true;
     }
 
     public int getInitInt() {
-        assert this.hasConstInitint;
+        assert this.hasConstInitInt;
         return constInitInt;
     }
 

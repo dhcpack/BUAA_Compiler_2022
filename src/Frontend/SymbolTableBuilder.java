@@ -100,12 +100,12 @@ public class SymbolTableBuilder {
     private int blockId = 0;  // 根据这个来排序
 
     // about function
-    private FuncBlock currFunc = null;  // curentFunc = null代表在全局
+    private FuncBlock currFunc = null;  // currentFunc = null代表在全局
     private TokenType currFuncType = null;
 
     // about loop
-    private final Stack<BasicBlock> inLoop = new Stack<>();  // for continue
-    private final Stack<BasicBlock> followLoop = new Stack<>();  // for break
+    private final Stack<BasicBlock> whileHead = new Stack<>();  // for continue
+    private final Stack<BasicBlock> whileNext = new Stack<>();  // for break
     private int loopDepth = 0;
 
     public SymbolTableBuilder(CompUnit compUnit) {
@@ -125,7 +125,7 @@ public class SymbolTableBuilder {
     }
 
     // CompUnit → {Decl} {FuncDef} MainFuncDef
-    public MiddleCode checkCompUnit() {
+    public void checkCompUnit() {
         ArrayList<Decl> decls = compUnit.getGlobalVariables();
         ArrayList<FuncDef> funcDefs = compUnit.getFunctions();
         MainFuncDef mainFunction = compUnit.getMainFunction();
@@ -142,7 +142,6 @@ public class SymbolTableBuilder {
         // check main func
         checkMainFunc(mainFunction);
 
-        return middleCode;
     }
 
     // Decl → ConstDecl | VarDecl
@@ -167,10 +166,10 @@ public class SymbolTableBuilder {
          *  int a = a * a;
          * */
         if (def.getDimCount() == 0) {  // not an array; int or pointer
-            if (def.hasInitVal()) {
+            if (def.hasInitVal()) {  // 已经初始化
                 InitVal initVal = def.getInitVal();
                 Symbol symbol = checkVar(def.getVar());  // 先检查initial Val，再检查Var
-                if (initVal.isConst() || currFunc == null) {
+                if (initVal.isConst() || currFunc == null) {  // 初始化数值可以直接计算出结果
                     int val;
                     if (!initVal.isConst()) {
                         val = new ConstExpCalculator(currSymbolTable, errors).calcExp(initVal.getExp());
@@ -178,7 +177,7 @@ public class SymbolTableBuilder {
                         val = new ConstExpCalculator(currSymbolTable, errors).calcConstExp(initVal.getConstExp());
                     }
                     symbol.setConstInitInt(val);
-                    if (currFunc == null) {  // pre decl, not in a function  全局
+                    if (currFunc == null) {  // pre decl, not in a function  // 全局
                         symbol.setAddress(currSymbolTable.getStackSize() - symbol.getSize());
                         middleCode.addInt(def.getVar().getIdent().getContent(), symbol.getAddress(), val);
                         symbol.setScope(Symbol.Scope.GLOBAL);
@@ -187,7 +186,7 @@ public class SymbolTableBuilder {
                         currBlock.addContent(new Middle.type.FourExpr(new Immediate(val), symbol, FourExpr.ExprOp.DEF));
                         symbol.setScope(Symbol.Scope.LOCAL);
                     }
-                } else {
+                } else {  // 初始化数值不可以直接计算出结果，用FourExpr表示
                     Operand val;
                     if (initVal.isConst()) {
                         val = checkConstExp(initVal.getConstExp(), false);
@@ -214,16 +213,16 @@ public class SymbolTableBuilder {
                 }
             }
         } else {  // 数组
-            if (def.hasInitVal()) {
+            if (def.hasInitVal()) {  // 已经初始化
                 InitVal initVal = def.getInitVal();
                 Symbol symbol = checkVar(def.getVar());  // 先检查initial Val，再检查Var
-                ArrayList<AddExp> initExp = arrayInitFlatter(initVal);
+                ArrayList<AddExp> initExp = flatArrayInitVal(initVal);
                 // int stackSize = 1;
                 // ArrayList<Integer> dimSize = symbol.getDimSize();
                 // for (Integer s : dimSize) {
                 //     stackSize *= s;
                 // }
-                if (initVal.isConst() || currFunc == null) {
+                if (initVal.isConst() || currFunc == null) {  // 初始化数值可以直接计算出结果
                     ConstExpCalculator constExpCalculator = new ConstExpCalculator(currSymbolTable, errors);
                     ArrayList<Integer> initNum = initExp.stream().map(constExpCalculator::calcAddExp)
                             .collect(Collectors.toCollection(ArrayList::new));
@@ -243,7 +242,7 @@ public class SymbolTableBuilder {
                         symbol.setAddress(currSymbolTable.getStackSize());
                         symbol.setScope(Symbol.Scope.LOCAL);
                     }
-                } else {
+                } else {  // 初始化数值不可以直接计算出结果，用FourExpr表示
                     int offset = 0;
                     for (AddExp addExp : initExp) {
                         Operand exp = checkAddExp(addExp, false);
@@ -255,7 +254,7 @@ public class SymbolTableBuilder {
                     symbol.setAddress(currSymbolTable.getStackSize());
                     symbol.setScope(Symbol.Scope.LOCAL);
                 }
-            } else {
+            } else {  // 没有初始化
                 Symbol symbol = checkVar(def.getVar());  // 先检查initial Val，再检查Var
                 if (currFunc == null) {
                     ArrayList<Integer> initZero = new ArrayList<>();
@@ -277,7 +276,7 @@ public class SymbolTableBuilder {
         }
     }
 
-    private ArrayList<AddExp> arrayInitFlatter(InitVal initVal) {
+    private ArrayList<AddExp> flatArrayInitVal(InitVal initVal) {
         ArrayList<AddExp> res = new ArrayList<>();
         if (initVal.isLeaf()) {
             if (initVal.getExp() != null) {
@@ -287,7 +286,7 @@ public class SymbolTableBuilder {
             }
         } else {
             for (InitVal init : initVal.getInitVals()) {
-                res.addAll(arrayInitFlatter(init));
+                res.addAll(flatArrayInitVal(init));
             }
         }
         return res;
@@ -355,7 +354,8 @@ public class SymbolTableBuilder {
         if (currSymbolTable.contains(ident.getContent(), false)) {  // check redefine
             errors.add(new RedefinedTokenException(ident.getLine()));
             redefine = true;
-            // return;  // stop here or not?
+            assert false;
+            // return;  //  TODO: stop here or not?
         }
 
         currSymbolTable = new SymbolTable(currSymbolTable, null);  // 下降一层(函数符号表)
@@ -371,7 +371,6 @@ public class SymbolTableBuilder {
         // int addr = 4;  // 函数栈基地址处放ra，从4开始放参数（也从4开始取参数）
         for (FuncFParam funcFParam : funcFParams) {
             Symbol symbol = checkFuncFParam(funcFParam); // checkFuncFParam could return null
-            // System.out.println(symbol);
             if (symbol != null) {
                 params.add(symbol);
                 symbol.setAddress(currSymbolTable.getStackSize());
@@ -423,19 +422,15 @@ public class SymbolTableBuilder {
         // currBlock = null;
     }
 
-    // public void checkFuncBlock(FuncBlock funcBlock, BlockStmt blockStmt) {
-    //     BasicBlock body = new BasicBlock(funcBlock.getFuncName());
-    //
-    // }
-
-
     // MainFuncDef → 'int' 'main' '(' ')' Block
     public void checkMainFunc(MainFuncDef mainFuncDef) {
         checkFunc(mainFuncDef.getFuncDef(), true);
     }
 
     // FuncFParam → BType Ident ['[' ']' { '[' ConstExp ']' }]
-    // Warning: this func could return null
+    // TODO: WARNING!!! this func could return null
+    // TODO: WARNING!!! 函数参数每一个的大小都是4，数组参数会传入指针
+    // TODO: WARNING!!! 这个函数会将函数形参放在符号表中，但不会给Symbol设置地址
     public Symbol checkFuncFParam(FuncFParam funcFParam) {
         // check redefine
         boolean redefine = false;
@@ -459,6 +454,7 @@ public class SymbolTableBuilder {
                 ArrayList<Integer> dimSize = dimExp.stream().map(constExpCalculator::calcConstExp)
                         .collect(Collectors.toCollection(ArrayList::new));
                 dimSize.add(0, -20231164);  // 第一维省略
+                // TODO: WARNING!!! 这里会给数组类型的函数参数符号的Scope设置为PARAM，在translateMemory中会被用到
                 Symbol array = new Symbol(SymbolType.ARRAY, ident, dimSize, dimSize.size(), false, Symbol.Scope.PARAM);
                 currSymbolTable.addSymbol(array);
                 // array.setAddress(currSymbolTable.getStackSize());  // 在checkFunc中设置地址
@@ -523,7 +519,7 @@ public class SymbolTableBuilder {
         Symbol lVal = checkLVal(assignStmt.getLVal(), true);
         // check right Val
         Operand operand = checkExp(assignStmt.getExp(), false);
-        if (lVal.getSymbolType() == SymbolType.POINTER) {
+        if (lVal.getSymbolType() == SymbolType.POINTER) {  // 如果返回的是指针，直接存在内存里
             currBlock.addContent(new Pointer(Pointer.Op.STORE, lVal, operand));  // 数组存内存
         } else if (lVal.getSymbolType() == SymbolType.INT) {
             currBlock.addContent(new FourExpr(operand, lVal, FourExpr.ExprOp.ASS));
@@ -574,8 +570,8 @@ public class SymbolTableBuilder {
         if (loopDepth == 0) {
             errors.add(new IllegalBreakContinueException(breakStmt.getSemicolonLine()));
         }
-        BasicBlock followBlock = followLoop.peek();
-        currBlock.addContent(new Jump(followBlock));
+        BasicBlock nextBlock = whileNext.peek();
+        currBlock.addContent(new Jump(nextBlock));
     }
 
     // continue;
@@ -583,8 +579,8 @@ public class SymbolTableBuilder {
         if (loopDepth == 0) {
             errors.add(new IllegalBreakContinueException(continueStatement.getSemicolonLine()));
         }
-        BasicBlock inLoopBlock = inLoop.peek();
-        currBlock.addContent(new Jump(inLoopBlock));
+        BasicBlock headBlock = whileHead.peek();
+        currBlock.addContent(new Jump(headBlock));
     }
 
     // Exp ';'
@@ -601,7 +597,7 @@ public class SymbolTableBuilder {
         }
         // check LVal, and LVal could not be const
         Symbol symbol = checkLVal(getIntStmt.getLVal(), true);
-        currBlock.addContent(new GetInt(symbol));  // 根据global local temp来设计sw, lw指令
+        currBlock.addContent(new GetInt(symbol));  // TODO: WARNING!!! GetInt会根据global local temp来设计sw, lw指令，在translateGetInt
     }
 
     // 'if' '(' Cond ')' Stmt [ 'else' Stmt ]
@@ -700,7 +696,7 @@ public class SymbolTableBuilder {
     }
 
     public void checkReturnStmt(ReturnStmt returnStmt) {
-        assert currFuncType != null;  // 不在Decl区
+        assert currFunc != null;  // 不在Decl区
         if (currFuncType == TokenType.VOIDTK && returnStmt.getReturnExp() != null) {
             errors.add(new IllegalReturnException(returnStmt.getReturnToken().getLine()));
         }
@@ -725,8 +721,8 @@ public class SymbolTableBuilder {
         BasicBlock whileBlock = new BasicBlock("WHILE_" + blockCount++);
         BasicBlock whileBody = new BasicBlock("WHILE_BODY_" + blockCount++);
         BasicBlock whileEnd = new BasicBlock("WHILE_END_" + blockCount++);
-        inLoop.push(whileBlock);
-        followLoop.push(whileEnd);
+        whileHead.push(whileBlock);
+        whileNext.push(whileEnd);
 
         // step into while
         currBlock.addContent(new Jump(whileBlock));
@@ -746,8 +742,8 @@ public class SymbolTableBuilder {
         checkStmt(whileStmt.getStmt());
         currSymbolTable = currSymbolTable.getParent();  // 上升一层
         loopDepth--;
-        followLoop.pop();
-        inLoop.pop();
+        whileNext.pop();
+        whileHead.pop();
         currBlock.addContent(new Jump(whileBlock));
         currBlock = whileEnd;
         whileEnd.setIndex(blockId++);
@@ -900,8 +896,8 @@ public class SymbolTableBuilder {
     }
 
     // LVal → Ident {'[' Exp ']'}
-    // 会给LVal Symbol赋值
-    // 当不在符号表中存在时会返回null
+    // TODO: 会给LVal Symbol赋值
+    // TODO: WARNING!!! 当不在符号表中存在时会返回null
     public Symbol checkLVal(LVal lVal, boolean checkConst) {  // checkConst represents check const or not
         // 查符号表!!!
         Token ident = lVal.getIdent();
@@ -957,7 +953,7 @@ public class SymbolTableBuilder {
             }
 
             Symbol ptr = Symbol.tempSymbol(SymbolType.POINTER);  // 数组变量
-            // WARNING: 返回数组指针，在后续做处理
+            // TODO: WARNING!!! 返回数组指针，在后续需要根据用途做处理
             currBlock.addContent(new Memory(symbol, offset, ptr));  // return the pointer to array
             return ptr;
         }
