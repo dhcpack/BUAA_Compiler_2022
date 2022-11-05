@@ -29,6 +29,11 @@ public class ALUSingle implements Instruction {
     }
 
     @Override
+    public double getCost() {
+        return this.type.getCost();
+    }
+
+    @Override
     public String toString() {
         if (this.aluSingleType == ALUSingleType.la) {
             assert this.label != null;

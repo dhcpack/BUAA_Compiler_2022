@@ -169,14 +169,16 @@ public class SymbolTableBuilder {
             if (def.hasInitVal()) {  // 已经初始化
                 InitVal initVal = def.getInitVal();
                 Symbol symbol = checkVar(def.getVar());  // 先检查initial Val，再检查Var
-                if (initVal.isConst() || currFunc == null) {  // 初始化数值可以直接计算出结果
+                try {  // 全部扔到ConstExpCalculator里面去算，能算就算，得到AssertionError就在运行中计算
                     int val;
                     if (!initVal.isConst()) {
                         val = new ConstExpCalculator(currSymbolTable, errors).calcExp(initVal.getExp());
                     } else {
                         val = new ConstExpCalculator(currSymbolTable, errors).calcConstExp(initVal.getConstExp());
                     }
-                    symbol.setConstInitInt(val);
+                    if (symbol.isConst()) {  // 为常量赋初始值
+                        symbol.setConstInitInt(val);
+                    }
                     if (currFunc == null) {  // pre decl, not in a function  // 全局
                         symbol.setAddress(currSymbolTable.getStackSize() - symbol.getSize());
                         middleCode.addInt(def.getVar().getIdent().getContent(), symbol.getAddress(), val);
@@ -186,7 +188,8 @@ public class SymbolTableBuilder {
                         currBlock.addContent(new Middle.type.FourExpr(new Immediate(val), symbol, FourExpr.ExprOp.DEF));
                         symbol.setScope(Symbol.Scope.LOCAL);
                     }
-                } else {  // 初始化数值不可以直接计算出结果，用FourExpr表示
+                } catch (AssertionError error) {
+                    // System.err.println("cannot calculate, calc in the process");
                     Operand val;
                     if (initVal.isConst()) {
                         val = checkConstExp(initVal.getConstExp(), false);
@@ -198,6 +201,55 @@ public class SymbolTableBuilder {
                     currBlock.addContent(new Middle.type.FourExpr(val, symbol, FourExpr.ExprOp.DEF));
                     symbol.setScope(Symbol.Scope.LOCAL);
                 }
+                // if (initVal.isConst() || currFunc == null) {  // 初始化数值可以直接计算出结果
+                //     int val;
+                //     if (!initVal.isConst()) {
+                //         val = new ConstExpCalculator(currSymbolTable, errors).calcExp(initVal.getExp());
+                //     } else {
+                //         val = new ConstExpCalculator(currSymbolTable, errors).calcConstExp(initVal.getConstExp());
+                //     }
+                //     symbol.setConstInitInt(val);
+                //     if (currFunc == null) {  // pre decl, not in a function  // 全局
+                //         symbol.setAddress(currSymbolTable.getStackSize() - symbol.getSize());
+                //         middleCode.addInt(def.getVar().getIdent().getContent(), symbol.getAddress(), val);
+                //         symbol.setScope(Symbol.Scope.GLOBAL);
+                //     } else {  // decl in a function  // 局部
+                //         symbol.setAddress(currSymbolTable.getStackSize());
+                //         currBlock.addContent(new Middle.type.FourExpr(new Immediate(val), symbol, FourExpr.ExprOp.DEF));
+                //         symbol.setScope(Symbol.Scope.LOCAL);
+                //     }
+                // } else {  // 初始化数值不可以直接计算出结果，用FourExpr表示
+                //     try{
+                //         int val;
+                //         if (!initVal.isConst()) {
+                //             val = new ConstExpCalculator(currSymbolTable, errors).calcExp(initVal.getExp());
+                //         } else {
+                //             val = new ConstExpCalculator(currSymbolTable, errors).calcConstExp(initVal.getConstExp());
+                //         }
+                //         symbol.setConstInitInt(val);
+                //         if (currFunc == null) {  // pre decl, not in a function  // 全局
+                //             symbol.setAddress(currSymbolTable.getStackSize() - symbol.getSize());
+                //             middleCode.addInt(def.getVar().getIdent().getContent(), symbol.getAddress(), val);
+                //             symbol.setScope(Symbol.Scope.GLOBAL);
+                //         } else {  // decl in a function  // 局部
+                //             symbol.setAddress(currSymbolTable.getStackSize());
+                //             currBlock.addContent(new Middle.type.FourExpr(new Immediate(val), symbol, FourExpr.ExprOp.DEF));
+                //             symbol.setScope(Symbol.Scope.LOCAL);
+                //         }
+                //     } catch (AssertionError error){
+                //         System.err.println("cannot calculate, calc in the process");
+                //         Operand val;
+                //         if (initVal.isConst()) {
+                //             val = checkConstExp(initVal.getConstExp(), false);
+                //         } else {
+                //             val = checkExp(initVal.getExp(), false);
+                //         }
+                //
+                //         symbol.setAddress(currSymbolTable.getStackSize());
+                //         currBlock.addContent(new Middle.type.FourExpr(val, symbol, FourExpr.ExprOp.DEF));
+                //         symbol.setScope(Symbol.Scope.LOCAL);
+                //     }
+                // }
             } else {  // 没有初始化
                 Symbol symbol = checkVar(def.getVar());  // 先检查initial Val，再检查Var
                 if (currFunc == null) {  // pre decl, not in a function
@@ -211,22 +263,21 @@ public class SymbolTableBuilder {
                     symbol.setScope(Symbol.Scope.LOCAL);
                     // 未初始化的局部变量
                 }
+                assert !symbol.isConst():"没有初始化的符号应该不是常量吧";
             }
         } else {  // 数组
             if (def.hasInitVal()) {  // 已经初始化
                 InitVal initVal = def.getInitVal();
                 Symbol symbol = checkVar(def.getVar());  // 先检查initial Val，再检查Var
                 ArrayList<AddExp> initExp = flatArrayInitVal(initVal);
-                // int stackSize = 1;
-                // ArrayList<Integer> dimSize = symbol.getDimSize();
-                // for (Integer s : dimSize) {
-                //     stackSize *= s;
-                // }
-                if (initVal.isConst() || currFunc == null) {  // 初始化数值可以直接计算出结果
+
+                try {  // 全部扔到ConstExpCalculator里面去算，能算就算，得到AssertionError就在运行中计算
                     ConstExpCalculator constExpCalculator = new ConstExpCalculator(currSymbolTable, errors);
                     ArrayList<Integer> initNum = initExp.stream().map(constExpCalculator::calcAddExp)
                             .collect(Collectors.toCollection(ArrayList::new));
-                    symbol.setInitArray(initNum);
+                    if(symbol.isConst()){
+                        symbol.setConstInitArray(initNum);
+                    }
                     if (currFunc == null) {  // 全局变量
                         symbol.setAddress(currSymbolTable.getStackSize() - symbol.getSize());
                         middleCode.addArray(symbol.getIdent().getContent(), symbol.getAddress(), initNum);
@@ -242,7 +293,8 @@ public class SymbolTableBuilder {
                         symbol.setAddress(currSymbolTable.getStackSize());
                         symbol.setScope(Symbol.Scope.LOCAL);
                     }
-                } else {  // 初始化数值不可以直接计算出结果，用FourExpr表示
+                } catch (AssertionError error) {
+                    // System.err.println("cannot calculate array, calc in the process");
                     int offset = 0;
                     for (AddExp addExp : initExp) {
                         Operand exp = checkAddExp(addExp, false);
@@ -254,6 +306,66 @@ public class SymbolTableBuilder {
                     symbol.setAddress(currSymbolTable.getStackSize());
                     symbol.setScope(Symbol.Scope.LOCAL);
                 }
+                // // int stackSize = 1;
+                // // ArrayList<Integer> dimSize = symbol.getDimSize();
+                // // for (Integer s : dimSize) {
+                // //     stackSize *= s;
+                // // }
+                // if (initVal.isConst() || currFunc == null) {  // 初始化数值可以直接计算出结果
+                //     ConstExpCalculator constExpCalculator = new ConstExpCalculator(currSymbolTable, errors);
+                //     ArrayList<Integer> initNum = initExp.stream().map(constExpCalculator::calcAddExp)
+                //             .collect(Collectors.toCollection(ArrayList::new));
+                //     symbol.setConstInitArray(initNum);
+                //     if (currFunc == null) {  // 全局变量
+                //         symbol.setAddress(currSymbolTable.getStackSize() - symbol.getSize());
+                //         middleCode.addArray(symbol.getIdent().getContent(), symbol.getAddress(), initNum);
+                //         symbol.setScope(Symbol.Scope.GLOBAL);
+                //     } else {  // 局部变量
+                //         int offset = 0;
+                //         for (Integer num : initNum) {
+                //             Symbol ptr = Symbol.tempSymbol(SymbolType.POINTER);
+                //             currBlock.addContent(new Memory(symbol, new Immediate(offset * 4), ptr));  // 局部数组
+                //             currBlock.addContent(new Pointer(Pointer.Op.STORE, ptr, new Immediate(num)));
+                //             offset++;
+                //         }
+                //         symbol.setAddress(currSymbolTable.getStackSize());
+                //         symbol.setScope(Symbol.Scope.LOCAL);
+                //     }
+                // } else {  // 初始化数值不可以直接计算出结果，用FourExpr表示
+                //     try{
+                //         ConstExpCalculator constExpCalculator = new ConstExpCalculator(currSymbolTable, errors);
+                //         ArrayList<Integer> initNum = initExp.stream().map(constExpCalculator::calcAddExp)
+                //                 .collect(Collectors.toCollection(ArrayList::new));
+                //         symbol.setConstInitArray(initNum);
+                //         if (currFunc == null) {  // 全局变量
+                //             symbol.setAddress(currSymbolTable.getStackSize() - symbol.getSize());
+                //             middleCode.addArray(symbol.getIdent().getContent(), symbol.getAddress(), initNum);
+                //             symbol.setScope(Symbol.Scope.GLOBAL);
+                //         } else {  // 局部变量
+                //             int offset = 0;
+                //             for (Integer num : initNum) {
+                //                 Symbol ptr = Symbol.tempSymbol(SymbolType.POINTER);
+                //                 currBlock.addContent(new Memory(symbol, new Immediate(offset * 4), ptr));  // 局部数组
+                //                 currBlock.addContent(new Pointer(Pointer.Op.STORE, ptr, new Immediate(num)));
+                //                 offset++;
+                //             }
+                //             symbol.setAddress(currSymbolTable.getStackSize());
+                //             symbol.setScope(Symbol.Scope.LOCAL);
+                //         }
+                //     } catch (AssertionError error){
+                //         System.err.println("cannot calculate array, calc in the process");
+                //         int offset = 0;
+                //         for (AddExp addExp : initExp) {
+                //             Operand exp = checkAddExp(addExp, false);
+                //             Symbol ptr = Symbol.tempSymbol(SymbolType.POINTER);
+                //             currBlock.addContent(new Memory(symbol, new Immediate(offset * 4), ptr));  // 局部数组
+                //             currBlock.addContent(new Pointer(Pointer.Op.STORE, ptr, exp));
+                //             offset++;
+                //         }
+                //         symbol.setAddress(currSymbolTable.getStackSize());
+                //         symbol.setScope(Symbol.Scope.LOCAL);
+                //     }
+                // }
             } else {  // 没有初始化
                 Symbol symbol = checkVar(def.getVar());  // 先检查initial Val，再检查Var
                 if (currFunc == null) {
@@ -263,16 +375,15 @@ public class SymbolTableBuilder {
                     symbol.setAddress(currSymbolTable.getStackSize() - symbol.getSize());
                     middleCode.addArray(symbol.getIdent().getContent(), symbol.getAddress(), initZero);
                     symbol.setScope(Symbol.Scope.GLOBAL);
-                    symbol.setInitArray(initZero);
+                    // symbol.setConstInitArray(initZero);
                 } else {
                     symbol.setAddress(currSymbolTable.getStackSize());
                     symbol.setScope(Symbol.Scope.LOCAL);
                     // nothing to do
                     // 函数中的局部变量，没有初始化
                 }
+                assert !symbol.isConst();
             }
-
-
         }
     }
 

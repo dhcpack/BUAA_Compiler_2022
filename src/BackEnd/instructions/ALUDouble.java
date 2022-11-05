@@ -14,6 +14,9 @@ public class ALUDouble implements Instruction {
         sle,
         sgt,
         sge,
+
+        // 位运算
+        sll,
     }
 
     private final InstructionType type = InstructionType.ALU;
@@ -28,6 +31,11 @@ public class ALUDouble implements Instruction {
         this.rResult = rResult;
         this.rOperand = rOperand;
         this.immediate = immediate;
+    }
+
+    @Override
+    public double getCost() {
+        return this.type.getCost();
     }
 
     @Override

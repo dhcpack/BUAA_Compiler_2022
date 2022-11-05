@@ -1,7 +1,5 @@
 package Frontend.Lexer;
 
-import Config.Config;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -11,7 +9,7 @@ public class Lexer {
         while (!inputHandler.reachEnd()) {
             // skip blanks
             if (inputHandler.skipBlanks()) break;
-            if (Config.debugMode) System.out.println(inputHandler.getCurrentLine());
+            // if (Config.debugMode) System.out.println(inputHandler.getCurrentLine());
 
             // skip comments
             if (inputHandler.skipComments()) continue;

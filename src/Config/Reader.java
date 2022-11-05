@@ -10,9 +10,9 @@ import java.io.IOException;
 public class Reader {
     public static String string = "";
 
-    public static InputHandler input() throws IOException {
+    public static InputHandler input(String fileName) throws IOException {
         InputHandler inputHandler = new InputHandler();
-        File file = new File(Config.inputFile);
+        File file = new File(fileName);
         if (!file.exists()) {
             System.err.println("input file not exists");
             System.exit(-20231164);

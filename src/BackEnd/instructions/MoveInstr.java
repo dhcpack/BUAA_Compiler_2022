@@ -11,6 +11,11 @@ public class MoveInstr implements Instruction {
     }
 
     @Override
+    public double getCost() {
+        return this.type.getCost();
+    }
+
+    @Override
     public String toString() {
         return String.format("move $%d, $%d\n", target, source);
     }

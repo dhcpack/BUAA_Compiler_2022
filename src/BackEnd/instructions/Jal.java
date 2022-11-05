@@ -10,6 +10,11 @@ public class Jal implements Instruction{
     }
 
     @Override
+    public double getCost() {
+        return this.type.getCost();
+    }
+
+    @Override
     public String toString() {
         return "jal " + label + "\n";
     }

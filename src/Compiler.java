@@ -1,6 +1,8 @@
 import BackEnd.MipsCode;
 import BackEnd.Translator;
+import Config.Config;
 import Config.Reader;
+import Config.TestWriter;
 import Frontend.Lexer.Lexer;
 import Frontend.Parser.CompUnit;
 import Frontend.Parser.Parser;
@@ -8,12 +10,18 @@ import Frontend.Parser.TokenHandler;
 import Frontend.Symbol.Errors;
 import Frontend.SymbolTableBuilder;
 import Middle.MiddleCode;
+import Middle.optimizer.DeleteUselessJump;
+import Middle.type.BasicBlock;
+import Middle.type.FuncBlock;
+import Test.TestAll;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 
 public class Compiler {
     public static void main(String[] args) throws IOException {
-        // CompUnit compUnit = frontend.Parser.parseCompUnit(new TokenHandler(frontend.Lexer.lex(IO.input())));
+        // command: java -jar ./src/Test/Mars2022.jar nc mips.txt
         /*
         * Unfixed error type
         *
@@ -22,19 +30,35 @@ public class Compiler {
                 return x[];
             }
         * */
-        CompUnit compUnit = Parser.parseCompUnit(new TokenHandler(Lexer.lex(Reader.input())));
-        SymbolTableBuilder symbolTableBuilder = new SymbolTableBuilder(compUnit);
-        symbolTableBuilder.checkCompUnit();
+        if (Config.debugMode) {
+            TestAll.run();
+            TestWriter.flush();
+        } else {
+            CompUnit compUnit = Parser.parseCompUnit(new TokenHandler(Lexer.lex(Reader.input(Config.inputFile))));
+            SymbolTableBuilder symbolTableBuilder = new SymbolTableBuilder(compUnit);
+            symbolTableBuilder.checkCompUnit();
 
-        compUnit.output();  // through SyntaxWriter
+            // compUnit.output();  // through SyntaxWriter
 
-        MiddleCode middleCode = symbolTableBuilder.getMiddleCode();
-        middleCode.output();  // through MiddleWriter
+            Errors errors = symbolTableBuilder.getErrors();
+            errors.output();  // through ErrorWriter
 
-        MipsCode mipsCode = new Translator(middleCode).translate();
-        mipsCode.output();  // through MipsWriter
+            MiddleCode middleCode = symbolTableBuilder.getMiddleCode();
+            LinkedHashMap<FuncBlock, ArrayList<BasicBlock>> funcToSortedBlock = middleCode.getFuncToSortedBlock();
 
-        Errors errors = symbolTableBuilder.getErrors();
-        errors.output();  // through ErrorWriter
+            // Middle Optimize
+            DeleteUselessJump.optimize(funcToSortedBlock);
+
+            // output middle code
+            middleCode.output();  // through MiddleWriter
+
+            // Mips Optimize
+
+            // output mips code
+            MipsCode mipsCode = new Translator(middleCode).translate();
+            mipsCode.output();  // through MipsWriter
+
+        }
+
     }
 }

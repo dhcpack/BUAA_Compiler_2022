@@ -6,6 +6,7 @@ import BackEnd.instructions.ALUTriple;
 import BackEnd.instructions.BranchInstr;
 import BackEnd.instructions.Comment;
 import BackEnd.instructions.Div;
+import BackEnd.instructions.Instruction;
 import BackEnd.instructions.J;
 import BackEnd.instructions.Jal;
 import BackEnd.instructions.Jr;
@@ -411,9 +412,10 @@ public class Translator {
                 } else if (op == FourExpr.ExprOp.SUB) {
                     mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.addiu, resRegister, leftRegister, -rightVal));
                 } else if (op == FourExpr.ExprOp.MUL) {
-                    mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v1, rightVal));
-                    mipsCode.addInstr(new Mult(leftRegister, Registers.v1));
-                    mipsCode.addInstr(new Mflo(resRegister));
+                    translateMult(rightVal, leftRegister, resRegister);
+                    // mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v1, rightVal));
+                    // mipsCode.addInstr(new Mult(leftRegister, Registers.v1));
+                    // mipsCode.addInstr(new Mflo(resRegister));
                 } else if (op == FourExpr.ExprOp.DIV) {
                     mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v1, rightVal));
                     mipsCode.addInstr(new Div(leftRegister, Registers.v1));
@@ -463,9 +465,10 @@ public class Translator {
                     mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.subu, Registers.v1, Registers.zero, rightRegister));
                     mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.addiu, resRegister, Registers.v1, leftVal));
                 } else if (op == FourExpr.ExprOp.MUL) {
-                    mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v1, leftVal));
-                    mipsCode.addInstr(new Mult(Registers.v1, rightRegister));
-                    mipsCode.addInstr(new Mflo(resRegister));
+                    translateMult(leftVal, rightRegister, resRegister);
+                    // mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v1, leftVal));
+                    // mipsCode.addInstr(new Mult(Registers.v1, rightRegister));
+                    // mipsCode.addInstr(new Mflo(resRegister));
                 } else if (op == FourExpr.ExprOp.DIV) {
                     mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v1, leftVal));
                     mipsCode.addInstr(new Div(Registers.v1, rightRegister));
@@ -550,6 +553,53 @@ public class Translator {
             consumeUsage(left);
             consumeUsage(right);
         }
+    }
+
+    // 优化mult
+    private void translateMult(int immediate, int operandRegister, int resRegister) {
+        if (immediate == 0) {
+            mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, resRegister, 0));
+            return;
+        }
+        long num = 1;
+        int shiftTime = 0, newImm = immediate;
+        ArrayList<Integer> shiftTimes = new ArrayList<>();
+        while ((num << 1) <= immediate) {
+            num <<= 1;
+            shiftTime++;
+        }
+        while (immediate != 0) {
+            while (immediate < num) {
+                num >>= 1;
+                shiftTime--;
+            }
+            immediate -= num;
+            shiftTimes.add(shiftTime);
+        }
+
+        if (shiftTimes.size() <= 3) {
+            mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.sll, resRegister, operandRegister, shiftTimes.get(0)));
+            if (shiftTimes.size() == 1) return;
+            for (int i = 1; i < shiftTimes.size() - 1; i++) {
+                mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.sll, Registers.v1, operandRegister, shiftTimes.get(i)));
+                mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.addu, resRegister, resRegister, Registers.v1));
+            }
+            int last = shiftTimes.get(shiftTimes.size() - 1);
+            if (last == 0) {
+                mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.addu, resRegister, resRegister, operandRegister));
+            } else {
+                mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.sll, Registers.v1, operandRegister, last));
+                mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.addu, resRegister, resRegister, Registers.v1));
+            }
+        } else {
+            mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v1, newImm));
+            mipsCode.addInstr(new Mult(operandRegister, Registers.v1));
+            mipsCode.addInstr(new Mflo(resRegister));
+        }
+    }
+
+    private double calcCost(ArrayList<Instruction> instructions) {
+        return instructions.stream().mapToDouble(Instruction::getCost).sum();
     }
 
     private void translateFuncCall(FuncCall funcCall) {

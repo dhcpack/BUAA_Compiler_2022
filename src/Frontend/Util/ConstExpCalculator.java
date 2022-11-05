@@ -88,8 +88,8 @@ public class ConstExpCalculator {
         UnaryExpInterface unaryExpInterface = unaryExp.getUnaryExpInterface();
         UnaryOp unaryOp = unaryExp.getOp();
         if (unaryExpInterface instanceof FuncExp) {
-            assert false : "funcExp is not const";  // TODO: 不进行这种表达式的计算
-            return calcFuncExp((FuncExp) unaryExpInterface);
+            assert false : "函数表达式不能在编译阶段计算";  // TODO: 不进行这种表达式的计算, assert false
+            return -20231164;
         } else if (unaryExpInterface instanceof PrimaryExp) {
             return calcPrimaryExp((PrimaryExp) unaryExpInterface);
         } else {
@@ -103,9 +103,11 @@ public class ConstExpCalculator {
                 } else {
                     return 0;
                 }
-            } else {
-                assert unaryOp.getToken().getType() == TokenType.PLUS;
+            } else if(unaryOp.getToken().getType() == TokenType.PLUS){
                 return res;
+            } else {
+                assert false;
+                return -2022;
             }
         }
     }
@@ -132,8 +134,9 @@ public class ConstExpCalculator {
             assert false;
             return -20231164;  // error  TODO: WARNING!!!: NOT EXIST IN SYMBOL TABLE
         }
-
-        assert symbol.isConst() : "ConstExpCalculator只进行常量表达式的计算";
+        // TODO: check(if the symbol should be const or not)
+        // TODO: 文法：全局变量声明中指定的初值表达式必须是常量表达式。
+        assert symbol.isConst(): "ConstExpCalculator只进行常量表达式的计算";
         if (lVal.missRBrack()) {
             errors.add(new MissRbrackException(ident.getLine()));
         }
@@ -148,13 +151,8 @@ public class ConstExpCalculator {
             }
             return symbol.queryVal(place);
         } else {
-            assert false : "in ConstExpCalculator the LVal could only be INT or ARRAY";
+            assert false : "ConstExpCalculator只能计算LVal中的INT或ARRAY类型";
             return -20231164;
         }
-    }
-
-    public int calcFuncExp(FuncExp funcExp) {
-        assert false;
-        return -20231164;
     }
 }

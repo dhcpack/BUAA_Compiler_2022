@@ -12,6 +12,11 @@ public class Div implements Instruction{
     }
 
     @Override
+    public double getCost() {
+        return this.type.getCost();
+    }
+
+    @Override
     public String toString() {
         return String.format("div $%d $%d\n", rOperand1, rOperand2);
     }

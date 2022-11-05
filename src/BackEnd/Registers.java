@@ -2,13 +2,10 @@ package BackEnd;
 
 import Frontend.Symbol.Symbol;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.Queue;
 
 public class Registers {
@@ -24,6 +21,15 @@ public class Registers {
 
     private Integer[] availRegisters = {
             5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27
+    };
+
+    // TODO: 全局寄存器和临时寄存器
+    private Integer[] globalRegisters = {
+            5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16
+    };
+
+    private Integer[] localRegisters = {
+            17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27
     };
 
     // free registers
@@ -45,7 +51,8 @@ public class Registers {
         return registerCache.remove();
     }
 
-    public int getFirstFreeRegister(){
+    public int getFirstFreeRegister() {
+        assert !this.freeRegisters.isEmpty();
         return this.freeRegisters.peek();
     }
 
