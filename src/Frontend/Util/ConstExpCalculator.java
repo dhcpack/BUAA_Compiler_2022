@@ -1,6 +1,7 @@
 package Frontend.Util;
 
 import Exceptions.MissRbrackException;
+import Exceptions.MyAssert;
 import Exceptions.UndefinedTokenException;
 import Frontend.Lexer.Token;
 import Frontend.Lexer.TokenType;
@@ -88,12 +89,12 @@ public class ConstExpCalculator {
         UnaryExpInterface unaryExpInterface = unaryExp.getUnaryExpInterface();
         UnaryOp unaryOp = unaryExp.getOp();
         if (unaryExpInterface instanceof FuncExp) {
-            assert false : "函数表达式不能在编译阶段计算";  // TODO: 不进行这种表达式的计算, assert false
+            MyAssert.ass(false, "函数表达式不能在编译阶段计算");  // TODO: 不进行这种表达式的计算, assert false
             return -20231164;
         } else if (unaryExpInterface instanceof PrimaryExp) {
             return calcPrimaryExp((PrimaryExp) unaryExpInterface);
         } else {
-            assert unaryOp != null;
+            MyAssert.ass(unaryOp != null);
             int res = calcUnaryExp((UnaryExp) unaryExpInterface);
             if (unaryOp.getToken().getType() == TokenType.MINU) {
                 return -res;
@@ -106,7 +107,7 @@ public class ConstExpCalculator {
             } else if(unaryOp.getToken().getType() == TokenType.PLUS){
                 return res;
             } else {
-                assert false;
+                MyAssert.ass(false);
                 return -2022;
             }
         }
@@ -121,7 +122,7 @@ public class ConstExpCalculator {
         } else if (primaryExpInterface instanceof Number) {
             return ((Number) primaryExpInterface).getNumber();
         } else{
-            assert false;
+            MyAssert.ass(false);
             return -20231164;
         }
     }
@@ -131,12 +132,12 @@ public class ConstExpCalculator {
         Symbol symbol = symbolTable.getSymbol(ident.getContent(), true);
         if (symbol == null) {
             errors.add(new UndefinedTokenException(ident.getLine()));
-            assert false;
+            MyAssert.ass(false);
             return -20231164;  // error  TODO: WARNING!!!: NOT EXIST IN SYMBOL TABLE
         }
         // TODO: check(if the symbol should be const or not)
         // TODO: 文法：全局变量声明中指定的初值表达式必须是常量表达式。
-        assert symbol.isConst(): "ConstExpCalculator只进行常量表达式的计算";
+        MyAssert.ass(symbol.isConst(), "ConstExpCalculator只进行常量表达式的计算");
         if (lVal.missRBrack()) {
             errors.add(new MissRbrackException(ident.getLine()));
         }
@@ -151,7 +152,7 @@ public class ConstExpCalculator {
             }
             return symbol.queryVal(place);
         } else {
-            assert false : "ConstExpCalculator只能计算LVal中的INT或ARRAY类型";
+            MyAssert.ass(false, "ConstExpCalculator只能计算LVal中的INT或ARRAY类型");
             return -20231164;
         }
     }
