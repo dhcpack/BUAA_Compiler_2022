@@ -10,7 +10,6 @@ import Frontend.Parser.TokenHandler;
 import Frontend.Symbol.Errors;
 import Frontend.SymbolTableBuilder;
 import Middle.MiddleCode;
-import Middle.optimizer.DeleteUselessJump;
 import Middle.type.BasicBlock;
 import Middle.type.FuncBlock;
 import Test.TestAll;
@@ -47,7 +46,7 @@ public class Compiler {
             LinkedHashMap<FuncBlock, ArrayList<BasicBlock>> funcToSortedBlock = middleCode.getFuncToSortedBlock();
 
             // Middle Optimize
-            DeleteUselessJump.optimize(funcToSortedBlock);
+            // DeleteUselessJump.optimize(funcToSortedBlock);
 
             // output middle code
             middleCode.output();  // through MiddleWriter

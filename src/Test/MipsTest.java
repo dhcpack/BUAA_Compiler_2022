@@ -9,6 +9,7 @@ import Frontend.Lexer.Lexer;
 import Frontend.Parser.Parser;
 import Frontend.Parser.TokenHandler;
 import Frontend.SymbolTableBuilder;
+import Middle.MiddleCode;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -53,7 +54,11 @@ public class MipsTest {
         SymbolTableBuilder symbolTableBuilder = new SymbolTableBuilder(
                 Parser.parseCompUnit(new TokenHandler(Lexer.lex(Reader.input(this.testfile)))));
         symbolTableBuilder.checkCompUnit();
-        MipsCode mipsCode = new Translator(symbolTableBuilder.getMiddleCode()).translate();
+        MiddleCode middleCode = symbolTableBuilder.getMiddleCode();
+
+        // DeleteUselessJump.optimize(middleCode.getFuncToSortedBlock());
+
+        MipsCode mipsCode = new Translator(middleCode).translate();
         mipsCode.output();  // through MipsWriter
         Process mars = Runtime.getRuntime().exec("java -jar " + marsPath + " nc " + "mips.txt");
         System.out.println("java -jar " + marsPath + " nc " + "mips.txt");
@@ -114,6 +119,8 @@ public class MipsTest {
             return false;
         }
         for (int i = 0; i < expected.size(); i++) {
+            System.out.println(expected.get(i));
+            System.out.println(output.get(i));
             if (!expected.get(i).equals(output.get(i))) {
                 TestWriter.print("Line " + (i + 1) + ": ");
                 TestWriter.print("We get: " + output.get(i));

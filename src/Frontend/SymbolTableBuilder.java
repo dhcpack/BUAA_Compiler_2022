@@ -11,6 +11,7 @@ import Exceptions.MissReturnException;
 import Exceptions.MissRparentException;
 import Exceptions.MissSemicnException;
 import Exceptions.ModifyConstException;
+import Exceptions.MyAssert;
 import Exceptions.RedefinedTokenException;
 import Exceptions.UndefinedTokenException;
 import Frontend.Lexer.Token;
@@ -188,7 +189,7 @@ public class SymbolTableBuilder {
                         currBlock.addContent(new Middle.type.FourExpr(new Immediate(val), symbol, FourExpr.ExprOp.DEF));
                         symbol.setScope(Symbol.Scope.LOCAL);
                     }
-                } catch (AssertionError error) {
+                } catch (MyAssert error) {
                     // System.err.println("cannot calculate, calc in the process");
                     Operand val;
                     if (initVal.isConst()) {
@@ -293,7 +294,7 @@ public class SymbolTableBuilder {
                         symbol.setAddress(currSymbolTable.getStackSize());
                         symbol.setScope(Symbol.Scope.LOCAL);
                     }
-                } catch (AssertionError error) {
+                } catch (MyAssert error) {
                     // System.err.println("cannot calculate array, calc in the process");
                     int offset = 0;
                     for (AddExp addExp : initExp) {
