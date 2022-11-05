@@ -28,17 +28,17 @@ public class MipsTest {
     private final String testfile;
     private final String input;
     private final String expect;
-    private final String marsPath = "./src/Test/Mars2022.jar";
+    private final String marsPath = "./Mars2022.jar";
 
     public MipsTest(int year, String level, int point) {
-        this.testPath = "./src/Test/" + year + "/" + level + "/";
+        this.testPath = "./" + year + "/" + level + "/";
         this.testfile = testPath + "testfile" + point + ".txt";
         this.input = testPath + "input" + point + ".txt";
         this.expect = testPath + "output" + point + ".txt";
     }
 
     public MipsTest(String path, int point) {
-        this.testPath = "./src/Test/" + path + "/";
+        this.testPath = "./" + path + "/";
         this.testfile = testPath + "testfile" + point + ".txt";
         this.input = testPath + "input" + point + ".txt";
         this.expect = testPath + "output" + point + ".txt";

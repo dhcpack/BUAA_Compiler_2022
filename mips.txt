@@ -4,82 +4,254 @@
 	global:
 	
 	.space 4
-	STR_1: .asciiz ", "
+	STR_1: .asciiz "the param is "
 	STR_2: .asciiz "\n"
+	STR_3: .asciiz "20231235\n"
+	STR_4: .asciiz "local first: "
 .text
 	la $gp, global
 	j FUNC_main
-FUNC_main:
-	# DEF, INT(a[sp-0x4]), 1
-	li $5, 1
-	# DEF, INT(b[sp-0x8]), 44
-	li $6, 44
-	# DEF, INT(d[sp-0xc]), 132
-	li $7, 132
-	# DEF, INT(f[sp-0x10]), 9
-	li $8, 9
-	# DEF, INT(h[sp-0x14]), 8991
-	li $9, 8991
-	# MUL, INT(tmp_int_0[temp]), INT(a[sp-0x4]), INT(f[sp-0x10])
-	mult $5 $8
-	mflo $10
-	# MUL, INT(tmp_int_1[temp]), INT(tmp_int_0[temp]), 9
-	sll $11, $10, 3
-	addu $11, $11, $10
-	# ADD, INT(tmp_int_2[temp]), INT(tmp_int_1[temp]), 9
-	addiu $12, $11, 9
-	# ADD, INT(tmp_int_3[temp]), INT(tmp_int_2[temp]), INT(b[sp-0x8])
-	addu $13, $12, $6
-	# DEF, INT(j[sp-0x18]), INT(tmp_int_3[temp])
-	move $14, $13
-	# PRINT_INT INT(a[sp-0x4])
-	li $2, 1
-	move $4, $5
-	syscall
+FUNC_print:
 	# PRINT_STR STR_1
 	li $2, 4
 	la $4, STR_1
 	syscall
-	# PRINT_INT INT(b[sp-0x8])
+	# PRINT_INT INT(num[sp-0x4])
 	li $2, 1
-	move $4, $6
-	syscall
-	# PRINT_STR STR_1
-	li $2, 4
-	la $4, STR_1
-	syscall
-	# PRINT_INT INT(d[sp-0xc])
-	li $2, 1
-	move $4, $7
-	syscall
-	# PRINT_STR STR_1
-	li $2, 4
-	la $4, STR_1
-	syscall
-	# PRINT_INT INT(f[sp-0x10])
-	li $2, 1
-	move $4, $8
-	syscall
-	# PRINT_STR STR_1
-	li $2, 4
-	la $4, STR_1
-	syscall
-	# PRINT_INT INT(h[sp-0x14])
-	li $2, 1
-	move $4, $9
-	syscall
-	# PRINT_STR STR_1
-	li $2, 4
-	la $4, STR_1
-	syscall
-	# PRINT_INT INT(j[sp-0x18])
-	li $2, 1
-	move $4, $14
+	lw $4, -0x4($29)
 	syscall
 	# PRINT_STR STR_2
 	li $2, 4
 	la $4, STR_2
 	syscall
+	# RETURN VOID
+	jr $ra
+	
+FUNC_return10:
+	# RETURN 10
+	li $2, 10
+	jr $ra
+	
+FUNC_main:
+	# PRINT_STR STR_3
+	li $2, 4
+	la $4, STR_3
+	syscall
+	# DEF, INT(first[sp-0x4]), 0
+	li $5, 0
+	# ASS, INT(first[sp-0x4]), 3
+	li $5, 3
+	# JUMP B_2
+	sw $5, -0x4($29)
+	j B_2
+B_2:
+	# DEF, INT(first[sp-0x8]), 4
+	li $6, 4
+	# PRINT_STR STR_4
+	li $2, 4
+	la $4, STR_4
+	syscall
+	# PRINT_INT INT(first[sp-0x8])
+	li $2, 1
+	move $4, $6
+	syscall
+	# PRINT_STR STR_2
+	li $2, 4
+	la $4, STR_2
+	syscall
+	# JUMP B_3
+	sw $6, -0x8($29)
+	j B_3
+B_3:
+	# Call FUNC_return10; Params: ; RET INT(tmp_int_60[temp])
+	sw $31, 0x0($29)
+	addiu $4, $29, -16
+	move $29, $4
+	jal FUNC_return10
+	addiu $29, $29, 16
+	lw $31, 0x0($29)
+	move $7, $2
+	# DEF, INT(second[sp-0xc]), INT(tmp_int_60[temp])
+	move $8, $7
+	# JUMP WHILE_4
+	sw $8, -0xc($29)
+	j WHILE_4
+WHILE_4:
+	# JUMP L_OR_EXP_7
+	j L_OR_EXP_7
+L_OR_EXP_7:
+	# JUMP L_AND_EXP_9
+	j L_AND_EXP_9
+L_AND_EXP_9:
+	# LT, INT(tmp_int_61[temp]), INT(first[sp-0x4]), 100
+	lw $9, -0x4($29)
+	li $3, 100
+	slt $10, $9, $3
+	# ASS, INT(tmp_int_62[temp]), INT(tmp_int_61[temp])
+	move $11, $10
+	# Branch INT(tmp_int_61[temp]) ? AND_11 : AND_END_10
+	sw $9, -0x4($29)
+	sw $10, -0x10($29)
+	sw $11, -0x14($29)
+	lw $3, -0x10($29)
+	bne $3, $0, AND_11
+	j AND_END_10
+AND_11:
+	# JUMP AND_END_10
+	j AND_END_10
+AND_END_10:
+	# ASS, INT(tmp_int_63[temp]), INT(tmp_int_62[sp-0x14])
+	lw $12, -0x14($29)
+	move $13, $12
+	# Branch INT(tmp_int_63[temp]) ? OR_END_8 : OR_12
+	sw $12, -0x14($29)
+	sw $13, -0x18($29)
+	lw $3, -0x18($29)
+	bne $3, $0, OR_END_8
+	j OR_12
+OR_12:
+	# JUMP OR_END_8
+	j OR_END_8
+OR_END_8:
+	# Branch INT(tmp_int_63[sp-0x18]) ? WHILE_BODY_5 : WHILE_END_6
+	lw $3, -0x18($29)
+	bne $3, $0, WHILE_BODY_5
+	j WHILE_END_6
+WHILE_BODY_5:
+	# JUMP B_13
+	j B_13
+B_13:
+	# JUMP L_OR_EXP_14
+	j L_OR_EXP_14
+	# JUMP B_34
+	j B_34
+L_OR_EXP_14:
+	# JUMP L_AND_EXP_16
+	j L_AND_EXP_16
+L_AND_EXP_16:
+	# GT, INT(tmp_int_64[temp]), INT(first[sp-0x4]), INT(second[sp-0xc])
+	lw $14, -0x4($29)
+	lw $15, -0xc($29)
+	sgt $16, $14, $15
+	# ASS, INT(tmp_int_65[temp]), INT(tmp_int_64[temp])
+	move $17, $16
+	# Branch INT(tmp_int_64[temp]) ? AND_18 : AND_END_17
+	sw $16, -0x1c($29)
+	sw $17, -0x20($29)
+	sw $14, -0x4($29)
+	sw $15, -0xc($29)
+	lw $3, -0x1c($29)
+	bne $3, $0, AND_18
+	j AND_END_17
+AND_18:
+	# JUMP AND_END_17
+	j AND_END_17
+AND_END_17:
+	# ASS, INT(tmp_int_66[temp]), INT(tmp_int_65[sp-0x20])
+	lw $18, -0x20($29)
+	move $19, $18
+	# Branch INT(tmp_int_66[temp]) ? OR_END_15 : OR_19
+	sw $18, -0x20($29)
+	sw $19, -0x24($29)
+	lw $3, -0x24($29)
+	bne $3, $0, OR_END_15
+	j OR_19
+OR_19:
+	# JUMP OR_END_15
+	j OR_END_15
+OR_END_15:
+	# Branch INT(tmp_int_66[sp-0x24]) ? IF_BODY_20 : IF_END_21
+	lw $3, -0x24($29)
+	bne $3, $0, IF_BODY_20
+	j IF_END_21
+IF_BODY_20:
+	# JUMP B_22
+	j B_22
+B_22:
+	# JUMP WHILE_END_6
+	j WHILE_END_6
+	# JUMP B_23
+	j B_23
+B_23:
+	# JUMP IF_END_21
+	j IF_END_21
+IF_END_21:
+	# ADD, INT(tmp_int_67[temp]), INT(first[sp-0x4]), 1
+	lw $20, -0x4($29)
+	addiu $21, $20, 1
+	# ASS, INT(first[sp-0x4]), INT(tmp_int_67[temp])
+	move $20, $21
+	# Call FUNC_print; Params: INT(first[sp-0x4])
+	sw $20, -0x4($29)
+	sw $31, 0x0($29)
+	addiu $4, $29, -40
+	lw $3, -0x4($29)
+	sw $3, -0x4($4)
+	move $29, $4
+	jal FUNC_print
+	addiu $29, $29, 40
+	lw $31, 0x0($29)
+	# JUMP L_OR_EXP_24
+	j L_OR_EXP_24
+L_OR_EXP_24:
+	# JUMP L_AND_EXP_26
+	j L_AND_EXP_26
+L_AND_EXP_26:
+	# MOD, INT(tmp_int_68[temp]), INT(first[sp-0x4]), 2
+	lw $22, -0x4($29)
+	li $3, 2
+	div $22 $3
+	mfhi $23
+	# EQ, INT(tmp_int_69[temp]), INT(tmp_int_68[temp]), 0
+	seq $24, $23, 0
+	# ASS, INT(tmp_int_70[temp]), INT(tmp_int_69[temp])
+	move $25, $24
+	# Branch INT(tmp_int_69[temp]) ? AND_28 : AND_END_27
+	sw $22, -0x4($29)
+	sw $24, -0x28($29)
+	sw $25, -0x2c($29)
+	lw $3, -0x28($29)
+	bne $3, $0, AND_28
+	j AND_END_27
+AND_28:
+	# JUMP AND_END_27
+	j AND_END_27
+AND_END_27:
+	# ASS, INT(tmp_int_71[temp]), INT(tmp_int_70[sp-0x2c])
+	lw $26, -0x2c($29)
+	move $27, $26
+	# Branch INT(tmp_int_71[temp]) ? OR_END_25 : OR_29
+	sw $26, -0x2c($29)
+	sw $27, -0x30($29)
+	lw $3, -0x30($29)
+	bne $3, $0, OR_END_25
+	j OR_29
+OR_29:
+	# JUMP OR_END_25
+	j OR_END_25
+OR_END_25:
+	# Branch INT(tmp_int_71[sp-0x30]) ? IF_BODY_30 : IF_END_31
+	lw $3, -0x30($29)
+	bne $3, $0, IF_BODY_30
+	j IF_END_31
+IF_BODY_30:
+	# JUMP B_32
+	j B_32
+B_32:
+	# JUMP WHILE_4
+	j WHILE_4
+	# JUMP B_33
+	j B_33
+B_33:
+	# JUMP IF_END_31
+	j IF_END_31
+IF_END_31:
+	# JUMP B_34
+	j B_34
+B_34:
+	# JUMP WHILE_4
+	j WHILE_4
+WHILE_END_6:
 	# RETURN 0
 	li $2, 10
 	syscall
