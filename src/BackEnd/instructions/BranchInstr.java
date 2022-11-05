@@ -27,6 +27,11 @@ public class BranchInstr implements Instruction{
     }
 
     @Override
+    public double getCost() {
+        return this.type.getCost();
+    }
+
+    @Override
     public String toString() {
         return String.format("%s $%d, $%d, %s\n", branchType.name(), rOperand1, rOperand2, label);
     }

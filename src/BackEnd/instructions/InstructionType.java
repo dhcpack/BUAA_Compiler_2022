@@ -4,6 +4,7 @@ public enum InstructionType {
     DIV(50),
     MULT(4),
     ALU(1),
+    SYSCALL(1),
     JUMP(1.2),
     BRANCH(1.2),
     MEM(2),

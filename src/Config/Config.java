@@ -3,7 +3,6 @@ package Config;
 public class Config {
     public static final boolean debugMode = false;
 
-    private static final int testpoint = 1;
     public static final String inputFile = "testfile.txt";
     public static final String syntaxFile = "syntax.txt";
     public static final String middleFile = "middle.txt";

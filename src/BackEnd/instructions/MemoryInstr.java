@@ -6,6 +6,8 @@ public class MemoryInstr implements Instruction{
         sw,
     }
 
+    private final InstructionType type = InstructionType.MEM;
+
     private final MemoryType memoryType;
     private final int rBase;
     private final int offset;
@@ -16,6 +18,11 @@ public class MemoryInstr implements Instruction{
         this.rBase = rBase;
         this.offset = offset;
         this.reg = reg;
+    }
+
+    @Override
+    public double getCost() {
+        return this.type.getCost();
     }
 
     @Override

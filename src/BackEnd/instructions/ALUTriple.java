@@ -32,6 +32,11 @@ public class ALUTriple implements Instruction{
     }
 
     @Override
+    public double getCost() {
+        return this.type.getCost();
+    }
+
+    @Override
     public String toString() {
         return String.format("%s $%d, $%d, $%d\n", aluTripleType.name(), rResult, rOperand1, rOperand2);
     }

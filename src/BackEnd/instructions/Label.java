@@ -10,6 +10,11 @@ public class Label implements Instruction {
     }
 
     @Override
+    public double getCost() {
+        return this.type.getCost();
+    }
+
+    @Override
     public String toString() {
         return label + ":";
     }

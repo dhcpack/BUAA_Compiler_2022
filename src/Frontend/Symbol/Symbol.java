@@ -31,8 +31,8 @@ public class Symbol implements LeafNode, Operand {
     // 数组
     // 指针(省略第一维的数组) ???
     private final ArrayList<Integer> dimSize;
-    private ArrayList<Integer> initArray;
-    private boolean hasInitArray = false;
+    private ArrayList<Integer> constInitArray;
+    private boolean hasConstInitArray = false;
     private final int dimCount;
 
     // 函数
@@ -46,7 +46,7 @@ public class Symbol implements LeafNode, Operand {
         this.ident = ident;
         this.isConst = isConst;
         this.dimSize = null;
-        this.initArray = null;
+        this.constInitArray = null;
         this.dimCount = 0;
         this.params = null;
         this.returnType = symbolType;
@@ -58,7 +58,7 @@ public class Symbol implements LeafNode, Operand {
         this.name = name;
         this.isConst = isConst;
         this.dimSize = null;
-        this.initArray = null;
+        this.constInitArray = null;
         this.dimCount = 0;
         this.params = null;
         this.returnType = symbolType;
@@ -101,7 +101,7 @@ public class Symbol implements LeafNode, Operand {
         this.isConst = true;
         this.constInitInt = -20231164;
         this.dimSize = null;
-        this.initArray = null;
+        this.constInitArray = null;
         this.dimCount = 0;
         this.params = params;
         this.returnType = returnType;
@@ -114,7 +114,7 @@ public class Symbol implements LeafNode, Operand {
         this.isConst = true;
         this.constInitInt = -20231164;
         this.dimSize = null;
-        this.initArray = null;
+        this.constInitArray = null;
         this.dimCount = 0;
         this.params = params;
         this.returnType = returnType;
@@ -148,7 +148,6 @@ public class Symbol implements LeafNode, Operand {
         return constInitInt;
     }
 
-
     // array and pointer
     // 维数
     public int getDimCount() {
@@ -161,28 +160,28 @@ public class Symbol implements LeafNode, Operand {
     }
 
     // 数组初始值
-    public void setInitArray(ArrayList<Integer> initArray) {
-        this.initArray = initArray;
-        this.hasInitArray = true;
+    public void setConstInitArray(ArrayList<Integer> constInitArray) {
+        this.constInitArray = constInitArray;
+        this.hasConstInitArray = true;
     }
 
     // 数组初始值
-    public ArrayList<Integer> getInitArray() {
-        assert this.hasInitArray;
-        return initArray;
+    public ArrayList<Integer> getConstInitArray() {
+        assert this.hasConstInitArray;
+        return constInitArray;
     }
 
     // 得到数组指定位置的初始值
     public int queryVal(ArrayList<Integer> place) {
         assert dimSize != null;
         assert place.size() == dimCount;
-        assert this.hasInitArray;
+        assert this.hasConstInitArray;
         int cw = 1, res = 0;
         for (int i = dimCount - 1; i >= 0; i--) {
             res += (cw * place.get(i));
             cw *= dimSize.get(i);
         }
-        return initArray.get(res);
+        return constInitArray.get(res);
     }
 
     // function

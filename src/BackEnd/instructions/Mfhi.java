@@ -10,6 +10,11 @@ public class Mfhi implements Instruction{
     }
 
     @Override
+    public double getCost() {
+        return this.type.getCost();
+    }
+
+    @Override
     public String toString() {
         return "mfhi $" + rRes + "\n";
     }

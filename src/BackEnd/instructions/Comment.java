@@ -10,6 +10,11 @@ public class Comment implements Instruction {
     }
 
     @Override
+    public double getCost() {
+        return this.type.getCost();
+    }
+
+    @Override
     public String toString() {
         if (comment.equals("")) {
             return "\n";
