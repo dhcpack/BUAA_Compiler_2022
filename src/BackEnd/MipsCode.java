@@ -28,6 +28,10 @@ public class MipsCode implements Output {
         this.instructions.add(instruction);
     }
 
+    public void addInstrs(ArrayList<Instruction> instructions){
+        this.instructions.addAll(instructions);
+    }
+
     public ArrayList<Instruction> getInstructions() {
         return this.instructions;
     }
