@@ -9,6 +9,10 @@ public class J implements Instruction{
         this.label = label;
     }
 
+    public String getLabel(){
+        return this.label;
+    }
+
     @Override
     public double getCost() {
         return this.type.getCost();

@@ -28,6 +28,10 @@ public class MipsCode implements Output {
         this.instructions.add(instruction);
     }
 
+    public ArrayList<Instruction> getInstructions() {
+        return this.instructions;
+    }
+
     @Override
     public void output() {
         MipsWriter.print("# Yuelin's Compiler", "title");
