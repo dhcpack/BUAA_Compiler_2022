@@ -45,19 +45,16 @@ public class Compiler {
             MiddleCode middleCode = symbolTableBuilder.getMiddleCode();
             LinkedHashMap<FuncBlock, ArrayList<BasicBlock>> funcToSortedBlock = middleCode.getFuncToSortedBlock();
 
-            // Middle Optimize
-            // DeleteUselessJump.optimize(funcToSortedBlock);
-
             // output middle code
             middleCode.output();  // through MiddleWriter
 
+            MipsCode mipsCode = new Translator(middleCode).translate();
+
             // Mips Optimize
+            // DeleteUselessJump.optimize(mipsCode);
 
             // output mips code
-            MipsCode mipsCode = new Translator(middleCode).translate();
             mipsCode.output();  // through MipsWriter
-
         }
-
     }
 }

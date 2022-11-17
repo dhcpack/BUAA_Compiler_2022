@@ -2,6 +2,7 @@ package Test;
 
 import BackEnd.MipsCode;
 import BackEnd.Translator;
+import BackEnd.optimizer.DeleteUselessJump;
 import Config.MipsWriter;
 import Config.Reader;
 import Config.TestWriter;
@@ -55,10 +56,11 @@ public class MipsTest {
                 Parser.parseCompUnit(new TokenHandler(Lexer.lex(Reader.input(this.testfile)))));
         symbolTableBuilder.checkCompUnit();
         MiddleCode middleCode = symbolTableBuilder.getMiddleCode();
-
-        // DeleteUselessJump.optimize(middleCode.getFuncToSortedBlock());
-
         MipsCode mipsCode = new Translator(middleCode).translate();
+
+        // mips optimizer
+        DeleteUselessJump.optimize(mipsCode);
+
         mipsCode.output();  // through MipsWriter
         Process mars = Runtime.getRuntime().exec("java -jar " + marsPath + " nc " + "mips.txt");
         System.out.println("java -jar " + marsPath + " nc " + "mips.txt");

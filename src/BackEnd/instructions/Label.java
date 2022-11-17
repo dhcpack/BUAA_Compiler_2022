@@ -9,6 +9,10 @@ public class Label implements Instruction {
         this.label = label;
     }
 
+    public String getLabel() {
+        return label;
+    }
+
     @Override
     public double getCost() {
         return this.type.getCost();
