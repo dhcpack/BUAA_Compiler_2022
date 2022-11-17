@@ -121,8 +121,8 @@ public class MipsTest {
             return false;
         }
         for (int i = 0; i < expected.size(); i++) {
-            System.out.println(expected.get(i));
-            System.out.println(output.get(i));
+            System.out.println("EXPECT: " + expected.get(i));
+            System.out.println("OUTPUT: " + output.get(i));
             if (!expected.get(i).equals(output.get(i))) {
                 TestWriter.print("Line " + (i + 1) + ": ");
                 TestWriter.print("We get: " + output.get(i));

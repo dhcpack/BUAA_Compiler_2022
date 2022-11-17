@@ -17,6 +17,7 @@ public class ALUDouble implements Instruction {
 
         // 位运算
         sll,
+        srl,
     }
 
     private final InstructionType type = InstructionType.ALU;
