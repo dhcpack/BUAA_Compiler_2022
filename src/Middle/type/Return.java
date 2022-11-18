@@ -1,7 +1,7 @@
 package Middle.type;
 
 public class Return implements BlockNode {
-    public final Operand returnVal;
+    private final Operand returnVal;
 
     // return int
     public Return(Operand returnVal) {

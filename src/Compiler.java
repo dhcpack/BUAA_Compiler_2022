@@ -1,5 +1,6 @@
 import BackEnd.MipsCode;
 import BackEnd.Translator;
+import BackEnd.optimizer.DeleteUselessJump;
 import Config.Config;
 import Config.Reader;
 import Config.TestWriter;
@@ -51,7 +52,7 @@ public class Compiler {
             MipsCode mipsCode = new Translator(middleCode).translate();
 
             // Mips Optimize
-            // DeleteUselessJump.optimize(mipsCode);
+            DeleteUselessJump.optimize(mipsCode);
 
             // output mips code
             mipsCode.output();  // through MipsWriter

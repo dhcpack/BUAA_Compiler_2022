@@ -132,7 +132,7 @@ public class SymbolTableBuilder {
         MainFuncDef mainFunction = compUnit.getMainFunction();
         // check decl
         for (Decl decl : decls) {
-            checkDecl(decl);
+            checkDecl(decl, Symbol.Scope.GLOBAL);
         }
 
         // check func def
@@ -148,21 +148,21 @@ public class SymbolTableBuilder {
     // Decl → ConstDecl | VarDecl
     // 变量声明 VarDecl → 'int' VarDef { ',' VarDef } ';'
     // 常量声明 ConstDecl → 'const' BType ConstDef { ',' ConstDef } ';'
-    public void checkDecl(Decl decl) {
+    public void checkDecl(Decl decl, Symbol.Scope scope) {
         if (decl.missSemicolon()) {
             errors.add(new MissSemicnException(decl.getLine()));
         }
         Def def = decl.getDef();
-        checkDef(def);
+        checkDef(def, scope);
         ArrayList<Def> defs = decl.getDefs();
         for (Def ndef : defs) {
-            checkDef(ndef);
+            checkDef(ndef, scope);
         }
     }
 
     // 常数定义 ConstDef → Var '=' ConstInitVal
     // 变量定义 VarDef → Var | Var '=' InitVal
-    public void checkDef(Def def) {
+    public void checkDef(Def def, Symbol.Scope scope) {
         /*
          *  int a = a * a;
          * */
@@ -170,6 +170,7 @@ public class SymbolTableBuilder {
             if (def.hasInitVal()) {  // 已经初始化
                 InitVal initVal = def.getInitVal();
                 Symbol symbol = checkVar(def.getVar());  // 先检查initial Val，再检查Var
+                symbol.setScope(scope);
                 try {  // 全部扔到ConstExpCalculator里面去算，能算就算，得到AssertionError就在运行中计算
                     int val;
                     if (!initVal.isConst()) {
@@ -253,6 +254,7 @@ public class SymbolTableBuilder {
                 // }
             } else {  // 没有初始化
                 Symbol symbol = checkVar(def.getVar());  // 先检查initial Val，再检查Var
+                symbol.setScope(scope);
                 if (currFunc == null) {  // pre decl, not in a function
                     symbol.setAddress(currSymbolTable.getStackSize() - symbol.getSize());
                     middleCode.addInt(def.getVar().getIdent().getContent(), symbol.getAddress(), 0);
@@ -270,6 +272,7 @@ public class SymbolTableBuilder {
             if (def.hasInitVal()) {  // 已经初始化
                 InitVal initVal = def.getInitVal();
                 Symbol symbol = checkVar(def.getVar());  // 先检查initial Val，再检查Var
+                symbol.setScope(scope);
                 ArrayList<AddExp> initExp = flatArrayInitVal(initVal);
 
                 try {  // 全部扔到ConstExpCalculator里面去算，能算就算，得到AssertionError就在运行中计算
@@ -369,6 +372,7 @@ public class SymbolTableBuilder {
                 // }
             } else {  // 没有初始化
                 Symbol symbol = checkVar(def.getVar());  // 先检查initial Val，再检查Var
+                symbol.setScope(scope);
                 if (currFunc == null) {
                     ArrayList<Integer> initZero = new ArrayList<>();
                     int totalCount = symbol.getSize() / 4;  // 数组应该初始化为多少个零
@@ -586,7 +590,7 @@ public class SymbolTableBuilder {
     // 语句块项 BlockItem → Decl | Stmt
     public void checkBlockItem(BlockItem blockItem) {
         if (blockItem instanceof Decl) {
-            checkDecl((Decl) blockItem);
+            checkDecl((Decl) blockItem, Symbol.Scope.LOCAL);
         } else if (blockItem instanceof Stmt) {
             checkStmt((Stmt) blockItem);
         } else {
