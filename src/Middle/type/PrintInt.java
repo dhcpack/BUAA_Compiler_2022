@@ -1,6 +1,6 @@
 package Middle.type;
 
-public class PrintInt implements BlockNode {
+public class PrintInt extends BlockNode {
     public enum PrintType {
         PRINT_INT,
         PRINT_STR,

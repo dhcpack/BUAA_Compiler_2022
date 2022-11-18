@@ -2,7 +2,11 @@ package BackEnd.optimizer;
 
 import BackEnd.Registers;
 import Frontend.Symbol.Symbol;
+import Middle.optimizer.DefUseCalcUtil;
 import Middle.type.BasicBlock;
+import Middle.type.BlockNode;
+import Middle.type.Branch;
+import Middle.type.Jump;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,9 +15,10 @@ import java.util.LinkedHashMap;
 import java.util.Stack;
 
 public class ConflictGraph {
-    private final ArrayList<BasicBlock> basicBlocks = new ArrayList<>();
-    private final LinkedHashMap<BasicBlock, HashSet<Symbol>> inSymbols = new LinkedHashMap<>();
-    private final LinkedHashMap<BasicBlock, HashSet<Symbol>> outSymbols = new LinkedHashMap<>();
+    // private final ArrayList<BasicBlock> basicBlocks = new ArrayList<>();
+    private final ArrayList<BlockNode> blockNodes = new ArrayList<>();
+    private final LinkedHashMap<BlockNode, HashSet<Symbol>> inSymbols = new LinkedHashMap<>();
+    private final LinkedHashMap<BlockNode, HashSet<Symbol>> outSymbols = new LinkedHashMap<>();
     private final HashMap<Symbol, ConflictGraphNode> conflictNodes = new HashMap<>();
 
     // 保存图着色法的寄存器分配结果
@@ -29,15 +34,16 @@ public class ConflictGraph {
 
     public ConflictGraph(ArrayList<BasicBlock> basicBlocks, ArrayList<Symbol> params) {
         for (int i = basicBlocks.size() - 1; i >= 0; i--) {
-            this.basicBlocks.add(basicBlocks.get(i));
+            // this.basicBlocks.add(basicBlocks.get(i));
             BasicBlock block = basicBlocks.get(i);
-            inSymbols.put(block, new HashSet<>());
-            outSymbols.put(block, new HashSet<>());
+            ArrayList<BlockNode> blockNodes = block.getContent();
+            for (int j = blockNodes.size() - 1; j >= 0; j--) {
+                DefUseCalcUtil.calcDefUse(blockNodes.get(j));
+                this.blockNodes.add(blockNodes.get(j));
+                inSymbols.put(blockNodes.get(j), new HashSet<>());
+                outSymbols.put(blockNodes.get(j), new HashSet<>());
+            }
         }
-        //
-        // for (Symbol param : params) {
-        //
-        // }
         getActiveVariableStream();
         getConflictMap();
         manageRegisters();
@@ -48,21 +54,30 @@ public class ConflictGraph {
     // IN[B] = USE[B] U (OUT[B] - DEF[B])
     private void getActiveVariableStream() {
         boolean flag = false;
-        for (BasicBlock block : basicBlocks) {
-            if (block.toString().equals("L_AND_EXP_13")) {
-                System.out.println(1);
+        for (int i = 0; i < blockNodes.size(); i++) {
+            BlockNode blockNode = blockNodes.get(i);
+            int outSize = outSymbols.get(blockNode).size();
+            outSymbols.get(blockNode).clear();
+            if (blockNode instanceof Jump) {
+                for (BlockNode nextBlockNode : ((Jump) blockNode).getNextBlockNode()) {
+                    outSymbols.get(blockNode).addAll(inSymbols.get(nextBlockNode));
+                }
+            } else if (blockNode instanceof Branch) {
+                for (BlockNode nextBlockNode : ((Branch) blockNode).getNextBlockNode()) {
+                    outSymbols.get(blockNode).addAll(inSymbols.get(nextBlockNode));
+                }
+            } else {
+                if (i != 0) {
+                    BlockNode nextBlockNode = blockNodes.get(i - 1);
+                    outSymbols.get(blockNode).addAll(inSymbols.get(nextBlockNode));
+                }
             }
-            int outSize = outSymbols.get(block).size();
-            outSymbols.get(block).clear();
-            for (BasicBlock nextBlock : block.getNextBlock()) {
-                outSymbols.get(block).addAll(inSymbols.get(nextBlock));
-            }
-            int inSize = inSymbols.get(block).size();
-            inSymbols.get(block).clear();
-            inSymbols.get(block).addAll(outSymbols.get(block));
-            inSymbols.get(block).removeAll(block.getDef());
-            inSymbols.get(block).addAll(block.getUse());
-            if (outSize != outSymbols.get(block).size() || inSize != inSymbols.get(block).size()) {
+            int inSize = inSymbols.get(blockNode).size();
+            inSymbols.get(blockNode).clear();
+            inSymbols.get(blockNode).addAll(outSymbols.get(blockNode));
+            inSymbols.get(blockNode).removeAll(blockNode.getDefSet());
+            inSymbols.get(blockNode).addAll(blockNode.getUseSet());
+            if (outSize != outSymbols.get(blockNode).size() || inSize != inSymbols.get(blockNode).size()) {
                 flag = true;
                 // System.out.printf("%d, %d\n", inSize, inSymbols.get(block).size());
                 // System.out.printf("%d, %d\n", outSize, outSymbols.get(block).size());
@@ -232,5 +247,10 @@ public class ConflictGraph {
     public boolean hasNoConflict(Symbol symbol) {
         return symbol.getScope() == Symbol.Scope.LOCAL && !overflowSymbol.contains(symbol) && !symbolRegisterMap.containsKey(
                 symbol);
+    }
+
+    // 检查变量是否活跃，用于删除死代码
+    public boolean checkActive(Symbol symbol, BlockNode blockNode) {
+        return symbol.getScope() != Symbol.Scope.LOCAL || this.outSymbols.get(blockNode).contains(symbol);
     }
 }

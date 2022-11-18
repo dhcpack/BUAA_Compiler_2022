@@ -24,6 +24,22 @@ public class BasicBlock implements Comparable<BasicBlock> {
         this.hasIndex = true;
     }
 
+    public HashSet<BlockNode> getFirstBlockNode() {
+        HashSet<BlockNode> nextNodes = new HashSet<>();
+        if (content.size() != 0) {
+            nextNodes.add(this.content.get(0));
+            return nextNodes;
+        }
+        if (nextBlock.size() == 0) {
+            return nextNodes;
+        } else {
+            for (BasicBlock block : nextBlock) {
+                nextNodes.addAll(block.getFirstBlockNode());
+            }
+        }
+        return nextNodes;
+    }
+
     public int getIndex() {
         return index;
     }
