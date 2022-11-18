@@ -155,9 +155,11 @@ public class Translator {
             }
             register = localRegisters.allocRegister(symbol);
         } else {
+            // TODO:: 20221118 20:45
             if (register == Registers.$5 && currentConflictGraph.isOccupied(Registers.$5)) {
-                Symbol occupyingSymbol = currentConflictGraph.getRegisterSymbol(Registers.$5);
-                freeSymbolRegister(occupyingSymbol, true);
+                currentConflictGraph.freeRegister(Registers.$5);  // 直接free不保存
+                // Symbol occupyingSymbol = currentConflictGraph.getRegisterSymbol(Registers.$5);
+                // freeSymbolRegister(occupyingSymbol, true);
             }
             if (loadVal) {
                 loadSymbol(symbol, register);  // loadRegister要求先不占用该寄存器
@@ -273,7 +275,7 @@ public class Translator {
         for (Symbol symbol : symbols) {
             if (symbol.getScope() == Symbol.Scope.GLOBAL && (type & FREE_GLOBAL) != 0) {
                 freeSymbolRegister(symbol, save);
-            } else if ((symbol.getScope() == Symbol.Scope.LOCAL || symbol.getScope() == Symbol.Scope.TEMP) && (type & FREE_LOCAL) != 0) {
+            } else if (symbol.getScope() == Symbol.Scope.LOCAL && (type & FREE_LOCAL) != 0) {
                 freeSymbolRegister(symbol, save);
             } else if (symbol.getScope() == Symbol.Scope.TEMP && (type & FREE_TEMP) != 0) {
                 freeSymbolRegister(symbol, save);
@@ -292,6 +294,16 @@ public class Translator {
         for (int i = 0; i < blockNodes.size(); i++) {
             BlockNode blockNode = blockNodes.get(i);
             currentBasicBlockIndex = i;
+            // TODO: 死代码删除
+            if (blockNode instanceof FourExpr) {
+                if (!currentConflictGraph.checkActive(((FourExpr) blockNode).getRes(), blockNode)) {
+                    continue;
+                }
+            } else if (blockNode instanceof Pointer && ((Pointer) blockNode).getOp() == Pointer.Op.LOAD) {
+                if (!currentConflictGraph.checkActive(((Pointer) blockNode).getLoad(), blockNode)) {
+                    continue;
+                }
+            }
             mipsCode.addInstr(new Comment(blockNode.toString()));
             if (blockNode instanceof Branch) {
                 translateBranch((Branch) blockNode);
@@ -320,7 +332,7 @@ public class Translator {
     }
 
     private void translateBranch(Branch branch) {
-        freeAllRegisters(FREE_TEMP, true);  // TODO: is it necessary? check
+        freeAllRegisters(FREE_TEMP | FREE_LOCAL | FREE_GLOBAL, true);  // TODO: is it necessary? check
         Operand cond = branch.getCond();
         if (cond instanceof Immediate) {
             mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v1, ((Immediate) cond).getNumber()));
@@ -794,7 +806,7 @@ public class Translator {
     }
 
     private void translateJump(Jump jump) {
-        freeAllRegisters(FREE_TEMP, true);  // TODO: check
+        freeAllRegisters(FREE_TEMP | FREE_LOCAL | FREE_GLOBAL, true);  // TODO: check
         mipsCode.addInstr(new J(jump.getTarget().getLabel()));
         // queue.add(jump.getTarget());
     }
