@@ -6,6 +6,7 @@ import Middle.optimizer.DefUseCalcUtil;
 import Middle.type.BasicBlock;
 import Middle.type.BlockNode;
 import Middle.type.Branch;
+import Middle.type.FuncParamBlock;
 import Middle.type.Jump;
 
 import java.util.ArrayList;
@@ -44,6 +45,11 @@ public class ConflictGraph {
                 outSymbols.put(blockNodes.get(j), new HashSet<>());
             }
         }
+        HashSet<Symbol> paramSet = new HashSet<>(params);
+        FuncParamBlock funcParamBlock = new FuncParamBlock(paramSet);
+        this.blockNodes.add(funcParamBlock);
+        inSymbols.put(funcParamBlock, new HashSet<>());
+        outSymbols.put(funcParamBlock, new HashSet<>());
         getActiveVariableStream();
         getConflictMap();
         manageRegisters();

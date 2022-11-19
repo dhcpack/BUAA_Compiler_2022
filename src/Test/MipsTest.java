@@ -1,19 +1,12 @@
 package Test;
 
-import BackEnd.MipsCode;
-import BackEnd.Translator;
-import BackEnd.optimizer.DeleteUselessJump;
+import Config.Config;
+import Config.ErrorWriter;
+import Config.MiddleWriter;
 import Config.MipsWriter;
-import Config.Reader;
 import Config.TestWriter;
-import Frontend.Lexer.Lexer;
-import Frontend.Parser.Parser;
-import Frontend.Parser.TokenHandler;
-import Frontend.SymbolTableBuilder;
-import Middle.MiddleCode;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -47,21 +40,12 @@ public class MipsTest {
     }
 
     public boolean run() throws IOException {
-        File file = new File("mips.txt");
-        if (file.exists()) {
-            file.delete();
-        }
+        ErrorWriter.string = "";
+        MiddleWriter.string = "";
         MipsWriter.string = "";
-        SymbolTableBuilder symbolTableBuilder = new SymbolTableBuilder(
-                Parser.parseCompUnit(new TokenHandler(Lexer.lex(Reader.input(this.testfile)))));
-        symbolTableBuilder.checkCompUnit();
-        MiddleCode middleCode = symbolTableBuilder.getMiddleCode();
-        MipsCode mipsCode = new Translator(middleCode).translate();
 
-        // mips optimizer
-        DeleteUselessJump.optimize(mipsCode);
+        Config.mipsRun(this.testfile);
 
-        mipsCode.output();  // through MipsWriter
         Process mars = Runtime.getRuntime().exec("java -jar " + marsPath + " nc " + "mips.txt");
         System.out.println("java -jar " + marsPath + " nc " + "mips.txt");
         OutputStream stdin = mars.getOutputStream();
@@ -113,10 +97,36 @@ public class MipsTest {
         // check
         if (output.size() < expected.size()) {
             TestWriter.print("Your output is shorter than we expected");
+            TestWriter.print("EXPECT: " + expected.size() + "line(s)");
+            TestWriter.print("OUTPUT: " + output.size() + "line(s)");
+            TestWriter.print("\n");
+            TestWriter.print("EXPECT: ");
+            for (String s : expected) {
+                TestWriter.print("\t" + s);
+            }
+            TestWriter.print("\n");
+            TestWriter.print("OUTPUT: ");
+            for (String s : output) {
+                TestWriter.print("\t" + s);
+            }
+            TestWriter.print("\n");
             TestWriter.print("TEST END AT " + simpleDateFormat.format(new Date()));
             return false;
         } else if (output.size() > expected.size()) {
             TestWriter.print("Your output is longer than we expected");
+            TestWriter.print("EXPECT: " + expected.size() + "line(s)");
+            TestWriter.print("OUTPUT: " + output.size() + "line(s)");
+            TestWriter.print("\n");
+            TestWriter.print("EXPECT: ");
+            for (String s : expected) {
+                TestWriter.print("\t" + s);
+            }
+            TestWriter.print("\n");
+            TestWriter.print("OUTPUT: ");
+            for (String s : output) {
+                TestWriter.print("\t" + s);
+            }
+            TestWriter.print("\n");
             TestWriter.print("TEST END AT " + simpleDateFormat.format(new Date()));
             return false;
         }
