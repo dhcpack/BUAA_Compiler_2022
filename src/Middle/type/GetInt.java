@@ -2,7 +2,7 @@ package Middle.type;
 
 import Frontend.Symbol.Symbol;
 
-public class GetInt extends BlockNode {
+public class GetInt implements BlockNode {
     private final Symbol target;
 
     public GetInt(Symbol target) {

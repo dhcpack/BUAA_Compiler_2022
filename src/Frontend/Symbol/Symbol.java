@@ -11,7 +11,7 @@ public class Symbol implements LeafNode, Operand {
         GLOBAL,
         LOCAL,
         TEMP,
-        PARAM,  // 只记录函数形参中的array类型变量
+        PARAM,  // 只记录函数实参中的array类型变量
     }
 
     // for all

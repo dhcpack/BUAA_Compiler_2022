@@ -1,8 +1,6 @@
 package Middle.type;
 
-import java.util.HashSet;
-
-public class Branch extends BlockNode {
+public class Branch implements BlockNode {
     private final Operand cond;
     private final BasicBlock thenBlock;
     private final BasicBlock elseBlock;
@@ -29,18 +27,6 @@ public class Branch extends BlockNode {
 
     public BasicBlock getElseBlock() {
         return elseBlock;
-    }
-
-    private HashSet<BlockNode> nextBlockNode = null;
-
-    public HashSet<BlockNode> getNextBlockNode() {
-        if (nextBlockNode != null) {
-            return nextBlockNode;
-        }
-        nextBlockNode = new HashSet<>();
-        nextBlockNode.addAll(thenBlock.getFirstBlockNode());
-        nextBlockNode.addAll(elseBlock.getFirstBlockNode());
-        return nextBlockNode;
     }
 
     @Override

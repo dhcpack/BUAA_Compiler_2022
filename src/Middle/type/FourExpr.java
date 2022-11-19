@@ -2,7 +2,7 @@ package Middle.type;
 
 import Frontend.Symbol.Symbol;
 
-public class FourExpr extends BlockNode {
+public class FourExpr implements BlockNode {
     public enum ExprOp {
         // 双操作数
         ADD,

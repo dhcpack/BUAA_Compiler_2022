@@ -8,9 +8,11 @@ import Middle.type.BlockNode;
 import Middle.type.Branch;
 import Middle.type.FuncBlock;
 import Middle.type.Jump;
+import Middle.type.Operand;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -158,16 +160,16 @@ public class MiddleCode implements Output {
         }
         visited.add(block);
         sortedBlock.add(block);
-        // for (Operand operand : block.getOperandUsage()) {
-        //     if (operand instanceof Symbol && ((Symbol) operand).getScope() == Symbol.Scope.TEMP && !((Symbol) operand).hasAddress()) {
-        //         Symbol symbol = (Symbol) operand;
-        //         if (symbolUsageMap.containsKey(symbol)) {
-        //             symbolUsageMap.put(symbol, symbolUsageMap.get(symbol) + 1);
-        //         } else {
-        //             symbolUsageMap.put(symbol, 1);
-        //         }
-        //     }
-        // }
+        for (Operand operand : block.getOperandUsage()) {
+            if (operand instanceof Symbol && ((Symbol) operand).getScope() == Symbol.Scope.TEMP && !((Symbol) operand).hasAddress()) {
+                Symbol symbol = (Symbol) operand;
+                if (symbolUsageMap.containsKey(symbol)) {
+                    symbolUsageMap.put(symbol, symbolUsageMap.get(symbol) + 1);
+                } else {
+                    symbolUsageMap.put(symbol, 1);
+                }
+            }
+        }
         for (BlockNode blockNode : block.getContent()) {
             if (blockNode instanceof Jump) {
                 BasicBlock target = ((Jump) blockNode).getTarget();
@@ -186,7 +188,7 @@ public class MiddleCode implements Output {
         }
     }
 
-    // private final HashMap<Symbol, Integer> symbolUsageMap = new HashMap<>();
+    private final HashMap<Symbol, Integer> symbolUsageMap = new HashMap<>();
 
     public LinkedHashMap<FuncBlock, ArrayList<BasicBlock>> getFuncToSortedBlock() {
         if (visited.size() == 0) {
@@ -195,10 +197,10 @@ public class MiddleCode implements Output {
         return this.funcToSortedBlock;
     }
 
-    // public HashMap<Symbol, Integer> getSymbolUsageMap() {
-    //     if (visited.size() == 0) {
-    //         getBlocks();
-    //     }
-    //     return this.symbolUsageMap;
-    // }
+    public HashMap<Symbol, Integer> getSymbolUsageMap() {
+        if (visited.size() == 0) {
+            getBlocks();
+        }
+        return this.symbolUsageMap;
+    }
 }
