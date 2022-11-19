@@ -295,15 +295,15 @@ public class Translator {
             BlockNode blockNode = blockNodes.get(i);
             currentBasicBlockIndex = i;
             // TODO: 死代码删除
-            if (blockNode instanceof FourExpr) {
-                if (!currentConflictGraph.checkActive(((FourExpr) blockNode).getRes(), blockNode)) {
-                    continue;
-                }
-            } else if (blockNode instanceof Pointer && ((Pointer) blockNode).getOp() == Pointer.Op.LOAD) {
-                if (!currentConflictGraph.checkActive(((Pointer) blockNode).getLoad(), blockNode)) {
-                    continue;
-                }
-            }
+            // if (blockNode instanceof FourExpr) {
+            //     if (!currentConflictGraph.checkActive(((FourExpr) blockNode).getRes(), blockNode)) {
+            //         continue;
+            //     }
+            // } else if (blockNode instanceof Pointer && ((Pointer) blockNode).getOp() == Pointer.Op.LOAD) {
+            //     if (!currentConflictGraph.checkActive(((Pointer) blockNode).getLoad(), blockNode)) {
+            //         continue;
+            //     }
+            // }
             mipsCode.addInstr(new Comment(blockNode.toString()));
             if (blockNode instanceof Branch) {
                 translateBranch((Branch) blockNode);
