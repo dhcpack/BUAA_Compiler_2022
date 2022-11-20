@@ -292,10 +292,12 @@ public class Translator {
             // TODO: 死代码删除
             if (blockNode instanceof FourExpr) {
                 if (!activeVariablesStream.checkActive(((FourExpr) blockNode).getRes(), blockNode)) {
+                    System.err.println("DEAD CODE: " + ((FourExpr) blockNode).toString());
                     continue;
                 }
             } else if (blockNode instanceof Pointer && ((Pointer) blockNode).getOp() == Pointer.Op.LOAD) {
                 if (!activeVariablesStream.checkActive(((Pointer) blockNode).getLoad(), blockNode)) {
+                    System.err.println("DEAD CODE: " + ((Pointer) blockNode).toString());
                     continue;
                 }
             }
@@ -327,7 +329,7 @@ public class Translator {
     }
 
     private void translateBranch(Branch branch) {
-        freeAllRegisters(FREE_LOCAL | FREE_GLOBAL | FREE_TEMP, true);  // TODO: is it necessary? check
+        freeAllRegisters(FREE_LOCAL | FREE_GLOBAL | FREE_TEMP, true);  // TODO: NECESSARY!!!
         Operand cond = branch.getCond();
         if (cond instanceof Immediate) {
             mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v1, ((Immediate) cond).getNumber()));
@@ -800,7 +802,16 @@ public class Translator {
     }
 
     private void translateJump(Jump jump) {
-        freeAllRegisters(FREE_LOCAL | FREE_GLOBAL | FREE_TEMP, true);  // TODO: check
+        BasicBlock currentBlock = currentFuncBlocks.get(currentBasicBlockIndex);
+        if (currentBlockNodeIndex == currentBlock.getContent()
+                .size() - 1 && currentBasicBlockIndex != currentFuncBlocks.size() - 1) {
+            BasicBlock nextBlock = currentFuncBlocks.get(currentBasicBlockIndex + 1);
+            if (jump.getTarget() == nextBlock) {
+                freeAllRegisters(FREE_LOCAL | FREE_GLOBAL | FREE_TEMP, true);  // TODO: NECESSARY!!!
+                return;  // DELETE USELESS JUMP
+            }
+        }
+        freeAllRegisters(FREE_LOCAL | FREE_GLOBAL | FREE_TEMP, true);  // TODO: NECESSARY!!!
         mipsCode.addInstr(new J(jump.getTarget().getLabel()));
         // queue.add(jump.getTarget());
     }
