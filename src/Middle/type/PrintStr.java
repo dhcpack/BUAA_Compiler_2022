@@ -1,6 +1,6 @@
 package Middle.type;
 
-public class PrintStr implements BlockNode {
+public class PrintStr extends BlockNode {
     private final PrintInt.PrintType type = PrintInt.PrintType.PRINT_STR;
 
     private final String strName;

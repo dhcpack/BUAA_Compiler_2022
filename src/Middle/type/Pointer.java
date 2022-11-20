@@ -2,7 +2,7 @@ package Middle.type;
 
 import Frontend.Symbol.Symbol;
 
-public class Pointer implements BlockNode {
+public class Pointer extends BlockNode {
     public enum Op {
         LOAD,
         STORE,

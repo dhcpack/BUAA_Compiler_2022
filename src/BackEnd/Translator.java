@@ -132,7 +132,7 @@ public class Translator {
     public void consumeUsage(Operand operand) {
         if (operand instanceof Symbol) {  // 全局变量和局部变量只做统计作用
             Symbol symbol = (Symbol) operand;
-            if(symbol.getScope() == Symbol.Scope.TEMP){
+            if (symbol.getScope() == Symbol.Scope.TEMP) {
                 assert funcTempSymbolUseMap.containsKey(symbol);
                 if (funcTempSymbolUseMap.get(symbol) == 1) {
                     funcTempSymbolUseMap.remove(symbol);
@@ -167,8 +167,8 @@ public class Translator {
         }
         if (!registers.hasFreeRegister()) {
             System.err.println("CALL OPT");
-            Symbol optSymbol = registers.OPTStrategy(currentFuncBlocks.get(currentBasicBlockIndex), currentBlockNodeIndex,
-                    blockLocalSymbolUseMap, activeVariablesStream);
+            Symbol optSymbol = registers.OPTStrategy(activeVariablesStream,
+                    currentFuncBlocks.get(currentBasicBlockIndex).getContent().get(currentBlockNodeIndex));
             if (optSymbol != null) {
                 freeSymbolRegister(optSymbol, true);  // 保存被OPT的Symbol
             }
@@ -290,15 +290,15 @@ public class Translator {
             BlockNode blockNode = blockNodes.get(i);
             currentBlockNodeIndex = i;
             // TODO: 死代码删除
-            // if (blockNode instanceof FourExpr) {
-            //     if (!currentConflictGraph.checkActive(((FourExpr) blockNode).getRes(), blockNode)) {
-            //         continue;
-            //     }
-            // } else if (blockNode instanceof Pointer && ((Pointer) blockNode).getOp() == Pointer.Op.LOAD) {
-            //     if (!currentConflictGraph.checkActive(((Pointer) blockNode).getLoad(), blockNode)) {
-            //         continue;
-            //     }
-            // }
+            if (blockNode instanceof FourExpr) {
+                if (!activeVariablesStream.checkActive(((FourExpr) blockNode).getRes(), blockNode)) {
+                    continue;
+                }
+            } else if (blockNode instanceof Pointer && ((Pointer) blockNode).getOp() == Pointer.Op.LOAD) {
+                if (!activeVariablesStream.checkActive(((Pointer) blockNode).getLoad(), blockNode)) {
+                    continue;
+                }
+            }
             mipsCode.addInstr(new Comment(blockNode.toString()));
             if (blockNode instanceof Branch) {
                 translateBranch((Branch) blockNode);

@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 public class Config {
-    public static final boolean debugMode = true;
+    public static final boolean debugMode = false;
 
     public static final String inputFile = "testfile.txt";
     public static final String syntaxFile = "syntax.txt";

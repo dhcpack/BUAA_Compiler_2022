@@ -5,7 +5,7 @@ import Frontend.Symbol.SymbolTable;
 
 import java.util.ArrayList;
 
-public class FuncBlock implements BlockNode {
+public class FuncBlock extends BlockNode {
     private final ReturnType returnType;
     private final String funcName;
     private final ArrayList<Symbol> params;

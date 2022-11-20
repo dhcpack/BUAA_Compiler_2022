@@ -2,28 +2,13 @@ package BackEnd;
 
 import BackEnd.optimizer.ActiveVariablesStreamAnalyzer;
 import Frontend.Symbol.Symbol;
-import Middle.type.BasicBlock;
 import Middle.type.BlockNode;
-import Middle.type.Branch;
-import Middle.type.FourExpr;
-import Middle.type.FuncBlock;
-import Middle.type.FuncCall;
-import Middle.type.GetInt;
-import Middle.type.Jump;
-import Middle.type.Memory;
-import Middle.type.Operand;
-import Middle.type.Pointer;
-import Middle.type.PrintInt;
-import Middle.type.PrintStr;
-import Middle.type.Return;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 import java.util.stream.Collectors;
 
@@ -80,152 +65,181 @@ public class Registers {
         freeRegisters.add(register);
     }
 
-    private Symbol getLatestUseLocalSymbol(HashSet<Symbol> symbols, BasicBlock startBlock) {
-        HashSet<Symbol> lastSymbol = new HashSet<>(symbols);
-        HashSet<BasicBlock> visited = new HashSet<>();
-        Queue<BasicBlock> bfsBlocks = new LinkedList<>(startBlock.getNextBlock());
+    private Symbol getLatestUseSymbol(ActiveVariablesStreamAnalyzer activeVariablesStreamAnalyzer, BlockNode startBlockNode) {
+        HashSet<Symbol> symbols = new HashSet<>(symbolToRegister.keySet());
+        HashSet<Symbol> lastSymbol = new HashSet<>(symbolToRegister.keySet());
+        HashSet<BlockNode> visited = new HashSet<>();
+        Queue<BlockNode> bfsBlocks = new LinkedList<>();
+        bfsBlocks.add(startBlockNode);
         while (bfsBlocks.size() != 0 && symbols.size() != 0) {
             // System.out.println(bfsBlocks.size());
-            BasicBlock currentBlock = bfsBlocks.remove();
-            if (visited.contains(currentBlock)) continue;
-            visited.add(currentBlock);
-            symbols.removeAll(currentBlock.getUse());
+            BlockNode blockNode = bfsBlocks.remove();
+            if (visited.contains(blockNode)) continue;
+            visited.add(blockNode);
+            symbols.removeAll(blockNode.getDefSet());
+            symbols.removeAll(blockNode.getUseSet());
             if (symbols.size() == 0) {
                 break;
             }
             lastSymbol = new HashSet<>(symbols);
-            bfsBlocks.addAll(currentBlock.getNextBlock());
+            bfsBlocks.addAll(activeVariablesStreamAnalyzer.getNextBlockNode(blockNode));
         }
         assert lastSymbol.size() != 0;
         return lastSymbol.iterator().next();  // 返回lastSymbol中的第一个Symbol
     }
 
-    public Symbol OPTStrategy(BasicBlock currentBasicBlock, int currentBlockNodeIndex,
-                              HashMap<Symbol, Integer> blockLocalSymbolUseMap,
-                              ActiveVariablesStreamAnalyzer activeVariablesStream) {
+    public Symbol OPTStrategy(ActiveVariablesStreamAnalyzer activeVariablesStream, BlockNode currentBlockNode) {
         assert registerToSymbol.size() == availRegisters.size() : "寄存器未满不需要使用OPT策略";
-        // TODO: 1. 首选之后不再使用的局部变量释放
         HashSet<Symbol> localSymbol = symbolToRegister.keySet().stream()
                 .filter(symbol -> symbol.getScope() == Symbol.Scope.LOCAL || symbol.getScope() == Symbol.Scope.GLOBAL || symbol.getScope() == Symbol.Scope.PARAM)
                 .collect(Collectors.toCollection(HashSet::new));
-        // TODO: 1.1 在该基本块中还将被使用的局部变量不可释放
-        localSymbol.removeAll(blockLocalSymbolUseMap.keySet());
+        // TODO: 1. 首选之后不再使用的局部变量释放
+        localSymbol.removeAll(activeVariablesStream.getOutSymbols(currentBlockNode));
         if (localSymbol.size() != 0) {
-            // TODO: 1.2 在后续基本块中不再使用的变量优先释放
-            localSymbol.removeAll(activeVariablesStream.getOutSymbols(currentBasicBlock));
-            if (localSymbol.size() != 0) {
-                for (Symbol symbol : localSymbol) {
-                    int register = getSymbolRegister(symbol);
-                    freeRegister(register);
-                    System.err.printf("OPT(UNUSED LOCAL SYMBOL): Register%2d, Symbol(%s)\n", register, symbol.getName());
-                    return null;
-                }
+            for (Symbol symbol : localSymbol) {
+                int register = getSymbolRegister(symbol);
+                freeRegister(register);
+                System.err.printf("OPT(UNUSED LOCAL SYMBOL): Register%2d, Symbol(%s)\n", register, symbol.getName());
+                return null;
             }
-            // TODO: 1.2 在后续基本块中还将被使用的局部变量释放出现最晚的OPT
-            HashSet<Symbol> outSymbols = new HashSet<>(activeVariablesStream.getOutSymbols(currentBasicBlock));
-            Symbol optSymbol = getLatestUseLocalSymbol(outSymbols, currentBasicBlock);
-            int register = getSymbolRegister(optSymbol);
-            System.err.printf("OPT(LATEST LOCAL SYMBOL): Register%2d, Symbol(%s)\n", register, optSymbol.getName());
-            return optSymbol;
         } else {
-            // TODO: 2. 寄存器中的变量在该基本块中都将被使用，遍历该基本块，选取最晚使用的释放
-            int latestRegister = -1, latestPlace = -1;
-            Symbol latestSymbol = null;
-            ArrayList<BlockNode> blockNodes = currentBasicBlock.getContent();
-            for (Map.Entry<Integer, Symbol> entry : registerToSymbol.entrySet()) {
-                int currRegister = entry.getKey(), currPlace = blockNodes.size() + 1;
-                Symbol currSymbol = entry.getValue();
-                for (int i = currentBlockNodeIndex; i < blockNodes.size(); i++) {
-                    BlockNode blockNode = blockNodes.get(i);
-                    if (blockNode instanceof Branch) {
-                        // "Branch " + cond + " ? " + thenBlock + " : " + elseBlock;
-                        if (((Branch) blockNode).getCond() == currSymbol) {
-                            currPlace = i;
-                            break;
-                        }
-                    } else if (blockNode instanceof FourExpr) {
-                        // this.op.name() + ", " + this.res + ", " + this.left + ", " + this.right;
-                        // this.op.name() + ", " + this.res + ", " + this.left;
-                        if (((FourExpr) blockNode).getLeft() == currSymbol || ((FourExpr) blockNode).getRes() == currSymbol) {
-                            currPlace = i;
-                            break;
-                        }
-                        if (!((FourExpr) blockNode).isSingle() && ((FourExpr) blockNode).getRight() == currSymbol) {
-                            currPlace = i;
-                            break;
-                        }
-                    } else if (blockNode instanceof FuncBlock) {
-                        assert false : "不会出现FuncBlock";
-                        continue;
-                    } else if (blockNode instanceof FuncCall) {
-                        // "Call %s; Params: %s"
-                        for (Operand params : ((FuncCall) blockNode).getrParams()) {
-                            if (params == currSymbol) {
-                                currPlace = i;
-                                break;
-                            }
-                        }
-                    } else if (blockNode instanceof GetInt) {
-                        // "GETINT " + target;
-                        if (((GetInt) blockNode).getTarget() == currSymbol) {
-                            currPlace = i;
-                            break;
-                        }
-                    } else if (blockNode instanceof Jump) {
-                        // add To nextBlock
-                        continue;
-                    } else if (blockNode instanceof Memory) {
-                        // "OFFSET (" + base + "+" + offset + ")->" + res;
-                        if (((Memory) blockNode).getRes() == currSymbol || ((Memory) blockNode).getBase() == currSymbol || ((Memory) blockNode).getOffset() == currSymbol) {
-                            currPlace = i;
-                            break;
-                        }
-                    } else if (blockNode instanceof Pointer) {
-                        Pointer pointer = (Pointer) blockNode;
-                        if (pointer.getPointer() == currSymbol) {
-                            currPlace = i;
-                            break;
-                        }
-                        if (pointer.getOp() == Pointer.Op.LOAD && pointer.getLoad() == currSymbol) {
-                            currPlace = i;
-                            break;
-                        }
-                        if (pointer.getOp() == Pointer.Op.STORE && pointer.getStore() == currSymbol) {
-                            currPlace = i;
-                            break;
-                        }
-                    } else if (blockNode instanceof PrintInt) {
-                        // "PRINT_INT " + val;
-                        if (((PrintInt) blockNode).getVal() == currSymbol) {
-                            currPlace = i;
-                            break;
-                        }
-                    } else if (blockNode instanceof PrintStr) {
-                        continue;
-                    } else if (blockNode instanceof Return) {
-                        // "RETURN " + returnVal;
-                        if (((Return) blockNode).getReturnVal() == currSymbol) {
-                            currPlace = i;
-                            break;
-                        }
-                    } else {
-                        assert false;
-                    }
-                }
-                if (currPlace > latestPlace) {
-                    latestPlace = currPlace;
-                    latestRegister = currRegister;
-                    latestSymbol = currSymbol;
-                }
-                if (latestPlace == blockNodes.size() + 1) {
-                    break;
-                }
-            }
-            assert latestSymbol != null;
-            System.err.printf("OPT(LATEST BLOCK SYMBOL): Register%2d, Symbol(%s)\n", latestRegister, latestSymbol.getName());
-            return latestSymbol;
+            // TODO: 2. BFS块节点，寻找最后使用的Symbol释放 OPT
+            Symbol optSymbol = getLatestUseSymbol(activeVariablesStream, currentBlockNode);
+            int register = getSymbolRegister(optSymbol);
+            System.err.printf("OPT(LATEST USE SYMBOL): Register%2d, Symbol(%s)\n", register, optSymbol.getName());
+            return optSymbol;
         }
+        return null;
     }
+
+    // public Symbol OPTStrategy(BasicBlock currentBasicBlock, int currentBlockNodeIndex,
+    //                           HashMap<Symbol, Integer> blockLocalSymbolUseMap,
+    //                           ActiveVariablesStreamAnalyzer activeVariablesStream) {
+    //     assert registerToSymbol.size() == availRegisters.size() : "寄存器未满不需要使用OPT策略";
+    //     // TODO: 1. 首选之后不再使用的局部变量释放
+    //     HashSet<Symbol> localSymbol = symbolToRegister.keySet().stream()
+    //             .filter(symbol -> symbol.getScope() == Symbol.Scope.LOCAL || symbol.getScope() == Symbol.Scope.GLOBAL ||
+    //             symbol.getScope() == Symbol.Scope.PARAM)
+    //             .collect(Collectors.toCollection(HashSet::new));
+    //     // TODO: 1.1 在该基本块中还将被使用的局部变量不可释放
+    //     localSymbol.removeAll(blockLocalSymbolUseMap.keySet());
+    //     if (localSymbol.size() != 0) {
+    //         // TODO: 1.2 在后续基本块中不再使用的变量优先释放
+    //         localSymbol.removeAll(activeVariablesStream.getOutSymbols(currentBasicBlock));
+    //         if (localSymbol.size() != 0) {
+    //             for (Symbol symbol : localSymbol) {
+    //                 int register = getSymbolRegister(symbol);
+    //                 freeRegister(register);
+    //                 System.err.printf("OPT(UNUSED LOCAL SYMBOL): Register%2d, Symbol(%s)\n", register, symbol.getName());
+    //                 return null;
+    //             }
+    //         }
+    //         // TODO: 1.2 在后续基本块中还将被使用的局部变量释放出现最晚的OPT
+    //         HashSet<Symbol> outSymbols = new HashSet<>(activeVariablesStream.getOutSymbols(currentBasicBlock));
+    //         Symbol optSymbol = getLatestUseSymbol(outSymbols, currentBasicBlock);
+    //         int register = getSymbolRegister(optSymbol);
+    //         System.err.printf("OPT(LATEST LOCAL SYMBOL): Register%2d, Symbol(%s)\n", register, optSymbol.getName());
+    //         return optSymbol;
+    //     } else {
+    //         // TODO: 2. 寄存器中的变量在该基本块中都将被使用，遍历该基本块，选取最晚使用的释放
+    //         int latestRegister = -1, latestPlace = -1;
+    //         Symbol latestSymbol = null;
+    //         ArrayList<BlockNode> blockNodes = currentBasicBlock.getContent();
+    //         for (Map.Entry<Integer, Symbol> entry : registerToSymbol.entrySet()) {
+    //             int currRegister = entry.getKey(), currPlace = blockNodes.size() + 1;
+    //             Symbol currSymbol = entry.getValue();
+    //             for (int i = currentBlockNodeIndex; i < blockNodes.size(); i++) {
+    //                 BlockNode blockNode = blockNodes.get(i);
+    //                 if (blockNode instanceof Branch) {
+    //                     // "Branch " + cond + " ? " + thenBlock + " : " + elseBlock;
+    //                     if (((Branch) blockNode).getCond() == currSymbol) {
+    //                         currPlace = i;
+    //                         break;
+    //                     }
+    //                 } else if (blockNode instanceof FourExpr) {
+    //                     // this.op.name() + ", " + this.res + ", " + this.left + ", " + this.right;
+    //                     // this.op.name() + ", " + this.res + ", " + this.left;
+    //                     if (((FourExpr) blockNode).getLeft() == currSymbol || ((FourExpr) blockNode).getRes() == currSymbol) {
+    //                         currPlace = i;
+    //                         break;
+    //                     }
+    //                     if (!((FourExpr) blockNode).isSingle() && ((FourExpr) blockNode).getRight() == currSymbol) {
+    //                         currPlace = i;
+    //                         break;
+    //                     }
+    //                 } else if (blockNode instanceof FuncBlock) {
+    //                     assert false : "不会出现FuncBlock";
+    //                     continue;
+    //                 } else if (blockNode instanceof FuncCall) {
+    //                     // "Call %s; Params: %s"
+    //                     for (Operand params : ((FuncCall) blockNode).getrParams()) {
+    //                         if (params == currSymbol) {
+    //                             currPlace = i;
+    //                             break;
+    //                         }
+    //                     }
+    //                 } else if (blockNode instanceof GetInt) {
+    //                     // "GETINT " + target;
+    //                     if (((GetInt) blockNode).getTarget() == currSymbol) {
+    //                         currPlace = i;
+    //                         break;
+    //                     }
+    //                 } else if (blockNode instanceof Jump) {
+    //                     // add To nextBlock
+    //                     continue;
+    //                 } else if (blockNode instanceof Memory) {
+    //                     // "OFFSET (" + base + "+" + offset + ")->" + res;
+    //                     if (((Memory) blockNode).getRes() == currSymbol || ((Memory) blockNode).getBase() == currSymbol || (
+    //                     (Memory) blockNode).getOffset() == currSymbol) {
+    //                         currPlace = i;
+    //                         break;
+    //                     }
+    //                 } else if (blockNode instanceof Pointer) {
+    //                     Pointer pointer = (Pointer) blockNode;
+    //                     if (pointer.getPointer() == currSymbol) {
+    //                         currPlace = i;
+    //                         break;
+    //                     }
+    //                     if (pointer.getOp() == Pointer.Op.LOAD && pointer.getLoad() == currSymbol) {
+    //                         currPlace = i;
+    //                         break;
+    //                     }
+    //                     if (pointer.getOp() == Pointer.Op.STORE && pointer.getStore() == currSymbol) {
+    //                         currPlace = i;
+    //                         break;
+    //                     }
+    //                 } else if (blockNode instanceof PrintInt) {
+    //                     // "PRINT_INT " + val;
+    //                     if (((PrintInt) blockNode).getVal() == currSymbol) {
+    //                         currPlace = i;
+    //                         break;
+    //                     }
+    //                 } else if (blockNode instanceof PrintStr) {
+    //                     continue;
+    //                 } else if (blockNode instanceof Return) {
+    //                     // "RETURN " + returnVal;
+    //                     if (((Return) blockNode).getReturnVal() == currSymbol) {
+    //                         currPlace = i;
+    //                         break;
+    //                     }
+    //                 } else {
+    //                     assert false;
+    //                 }
+    //             }
+    //             if (currPlace > latestPlace) {
+    //                 latestPlace = currPlace;
+    //                 latestRegister = currRegister;
+    //                 latestSymbol = currSymbol;
+    //             }
+    //             if (latestPlace == blockNodes.size() + 1) {
+    //                 break;
+    //             }
+    //         }
+    //         assert latestSymbol != null;
+    //         System.err.printf("OPT(LATEST BLOCK SYMBOL): Register%2d, Symbol(%s)\n", latestRegister, latestSymbol.getName());
+    //         return latestSymbol;
+    //     }
+    // }
 
     public boolean isOccupied(int register) {
         return this.registerToSymbol.containsKey(register);

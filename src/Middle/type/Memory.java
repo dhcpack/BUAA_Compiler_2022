@@ -2,7 +2,7 @@ package Middle.type;
 
 import Frontend.Symbol.Symbol;
 
-public class Memory implements BlockNode {
+public class Memory extends BlockNode {
     private final Symbol base;
     private final Operand offset;
     private final Symbol res;
