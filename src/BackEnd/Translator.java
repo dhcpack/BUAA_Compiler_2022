@@ -61,7 +61,7 @@ public class Translator {
 
     // 当前基本块和当前指令位置
     private BasicBlock currentBasicBlock;
-    private int currentBasicBlockIndex;
+    private int currentBlockNodeIndex;
 
     public Translator(MiddleCode middleCode) {
         this.middleCode = middleCode;
@@ -141,14 +141,18 @@ public class Translator {
     // TODO: 此函数的功能是为Symbol分配一个寄存器，操作数Symbol置loadVal = True会从内存中加载数据
     // Symbol已经在寄存器中会直接返回Symbol占用的寄存器
     // TODO: 首先尝试分配全局寄存器，分配失败(ConflictGraph.NO_GLOBAL)后分配局部寄存器
-    public int allocRegister(Symbol symbol, boolean loadVal) {
+    private final static int loadGlobalRegister = 0b01;
+    private final static int loadTempRegister = 0b10;
+    private final static int noLoad = 0;
+
+    public int allocRegister(Symbol symbol, int mode) {
         if (currentConflictGraph.occupyingGlobalRegister(symbol)) {
             // 检查Symbol是否占用global register
             return currentConflictGraph.getSymbolRegister(symbol);
         }
         if (currentConflictGraph.hasGlobalRegister(symbol)) {
             int register = currentConflictGraph.allocGlobalRegister(symbol, tempRegisters);
-            if (loadVal) {  // 如果是函数参数
+            if ((mode & loadGlobalRegister) != 0) {  // 如果是函数参数
                 mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.lw, Registers.sp, -symbol.getAddress(), register));
             }
             return register;
@@ -161,12 +165,15 @@ public class Translator {
         if (!tempRegisters.hasFreeRegister()) {
             // TODO: OPT
             System.out.println("Call OPT");
-            Symbol optSymbol = tempRegisters.OPTStrategy(currentBasicBlock, currentBasicBlockIndex);
+            Symbol optSymbol = tempRegisters.OPTStrategy(currentBasicBlock, currentBlockNodeIndex);
             freeSymbolRegister(optSymbol, true);
         }
         int register = tempRegisters.getFirstFreeRegister();
-        if (loadVal) {
+        if ((mode & loadTempRegister) != 0) {
             loadSymbol(symbol, register);  // loadRegister要求先不占用该寄存器
+        }
+        if (symbol.getScope() == Symbol.Scope.LOCAL || symbol.getScope() == Symbol.Scope.PARAM) {
+            currentConflictGraph.settleOverflowSymbol(symbol, register);
         }
         return tempRegisters.allocRegister(symbol);
     }
@@ -211,8 +218,12 @@ public class Translator {
     // TODO: ABOUT REGISTERS!!!!
     // TODO: 保存Symbol并释放寄存器
     public void freeSymbolRegister(Symbol symbol, boolean save) {
-        if (currentConflictGraph.hasGlobalRegister(symbol)) {
-            return;
+        if (symbol.getScope() == Symbol.Scope.LOCAL || symbol.getScope() == Symbol.Scope.PARAM) {
+            if (currentConflictGraph.hasGlobalRegister(symbol)) {
+                return;
+            } else {
+                currentConflictGraph.freeOverflowSymbol(symbol);  // 在冲突图中删除，并在下面做可能的保存
+            }
         }
         int register = 0;
         if (tempRegisters.occupyingRegister(symbol)) {
@@ -239,23 +250,30 @@ public class Translator {
 
     // TODO: ABOUT REGISTERS!!!!
     // TODO: 保存所有Symbol并释放所有寄存器
-    private static final int FREE_GLOBAL = 0b001;
-    private static final int FREE_LOCAL = 0b010;
-    private static final int FREE_TEMP = 0b100;
+    private static final int FREE_GLOBAL = 0b0001;
+    private static final int FREE_LOCAL = 0b0010;
+    private static final int FREE_PARAM = 0b0100;
+    private static final int FREE_TEMP = 0b1000;
 
     public void freeAllRegisters(int type, boolean save) {
         HashSet<Symbol> symbols = new HashSet<>(tempRegisters.getSymbolToRegister().keySet());
         for (Symbol symbol : symbols) {
-            if (symbol.getScope() == Symbol.Scope.GLOBAL && (type & FREE_GLOBAL) != 0) {
+            if ((type & FREE_GLOBAL) != 0 && symbol.getScope() == Symbol.Scope.GLOBAL) {
                 freeSymbolRegister(symbol, save);
-            } else if (symbol.getScope() == Symbol.Scope.LOCAL && (type & FREE_LOCAL) != 0) {
+            } else if ((type & FREE_LOCAL) != 0 && symbol.getScope() == Symbol.Scope.LOCAL && currentConflictGraph.hasGlobalRegister(
+                    symbol)) {
                 freeSymbolRegister(symbol, save);
-            } else if (symbol.getScope() == Symbol.Scope.TEMP && (type & FREE_TEMP) != 0) {
+            } else if ((type & FREE_PARAM) != 0 && symbol.getScope() == Symbol.Scope.PARAM && currentConflictGraph.hasGlobalRegister(
+                    symbol)) {
+                freeSymbolRegister(symbol, save);
+            } else if ((type & FREE_TEMP) != 0 && (symbol.getScope() == Symbol.Scope.TEMP || ((symbol.getScope() == Symbol.Scope.LOCAL || symbol.getScope() == Symbol.Scope.PARAM) && !currentConflictGraph.hasGlobalRegister(
+                    symbol)))) {
                 freeSymbolRegister(symbol, save);
             }
         }
-        if ((type & FREE_LOCAL) != 0) {
-            currentConflictGraph.freeAllGlobalRegisters(tempRegisters, mipsCode);
+        if ((type & FREE_LOCAL) != 0 && (type & FREE_PARAM) != 0) {  // FREE_LOCAL和FREE_PARAM会同时出现
+            currentConflictGraph.freeAllGlobalRegisters(tempRegisters, mipsCode,
+                    currentBasicBlock.getContent().get(currentBlockNodeIndex));
         }
     }
     // TODO: +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -267,14 +285,16 @@ public class Translator {
         // pay attention to label
         if (params != null) {
             for (Symbol param : params) {
-                allocRegister(param, true);
+                if (true) {
+                    allocRegister(param, loadGlobalRegister | loadTempRegister);
+                }
             }
         }
         currentBasicBlock = basicBlock;
         ArrayList<BlockNode> blockNodes = basicBlock.getContent();
         for (int i = 0; i < blockNodes.size(); i++) {
             BlockNode blockNode = blockNodes.get(i);
-            currentBasicBlockIndex = i;
+            currentBlockNodeIndex = i;
             // TODO: 死代码删除
             // TODO: 1121
             if (blockNode instanceof FourExpr) {  // 四元式的计算结果不活跃
@@ -328,12 +348,15 @@ public class Translator {
         Operand cond = branch.getCond();
         if (cond instanceof Immediate) {
             mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v1, ((Immediate) cond).getNumber()));
+            mipsCode.addInstr(
+                    new BranchInstr(BranchInstr.BranchType.bne, Registers.v1, Registers.zero, branch.getThenBlock().getLabel()));
         } else if (cond instanceof Symbol) {
             Symbol symbol = (Symbol) cond;
-            loadSymbol(symbol, Registers.v1);
+            int register = allocRegister(symbol, loadTempRegister);
+            mipsCode.addInstr(
+                    new BranchInstr(BranchInstr.BranchType.bne, register, Registers.zero, branch.getThenBlock().getLabel()));
         }
-        mipsCode.addInstr(
-                new BranchInstr(BranchInstr.BranchType.bne, Registers.v1, Registers.zero, branch.getThenBlock().getLabel()));
+
         mipsCode.addInstr(new J(branch.getElseBlock().getLabel()));
         consumeUsage(cond);
         // queue.add(branch.getThenBlock());
@@ -350,34 +373,34 @@ public class Translator {
         if (fourExpr.isSingle()) {
             if (op == FourExpr.ExprOp.DEF || op == FourExpr.ExprOp.ASS) {
                 if (left instanceof Immediate) {
-                    int resRegister = allocRegister(res, false);
+                    int resRegister = allocRegister(res, noLoad);
                     mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, resRegister, ((Immediate) left).getNumber()));
                 } else if (left instanceof Symbol) {
-                    int leftRegister = allocRegister((Symbol) left, true);
-                    int resRegister = allocRegister(res, false);  // 要注意先找leftRegister，再找resRegister
+                    int leftRegister = allocRegister((Symbol) left, loadTempRegister);
+                    int resRegister = allocRegister(res, noLoad);  // 要注意先找leftRegister，再找resRegister
                     mipsCode.addInstr(new MoveInstr(leftRegister, resRegister));
                 } else {
                     assert false;
                 }
             } else if (op == FourExpr.ExprOp.NOT) {
                 if (left instanceof Immediate) {
-                    int resRegister = allocRegister(res, false);
+                    int resRegister = allocRegister(res, noLoad);
                     mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.seq, resRegister, Registers.zero,  // 等于0时候not值为1
                             ((Immediate) left).getNumber()));
                 } else if (left instanceof Symbol) {
-                    int leftRegister = allocRegister((Symbol) left, true);
-                    int resRegister = allocRegister(res, false);  // 要注意先找leftRegister，再找resRegister
+                    int leftRegister = allocRegister((Symbol) left, loadTempRegister);
+                    int resRegister = allocRegister(res, noLoad);  // 要注意先找leftRegister，再找resRegister
                     mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.seq, resRegister, Registers.zero, leftRegister));
                 } else {
                     assert false;
                 }
             } else if (op == FourExpr.ExprOp.NEG) {  // 取反
                 if (left instanceof Immediate) {
-                    int resRegister = allocRegister(res, false);
+                    int resRegister = allocRegister(res, noLoad);
                     mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, resRegister, -((Immediate) left).getNumber()));
                 } else if (left instanceof Symbol) {
-                    int leftRegister = allocRegister((Symbol) left, true);
-                    int resRegister = allocRegister(res, false);  // 要注意先找leftRegister，再找resRegister
+                    int leftRegister = allocRegister((Symbol) left, loadTempRegister);
+                    int resRegister = allocRegister(res, noLoad);  // 要注意先找leftRegister，再找resRegister
                     mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.subu, resRegister, Registers.zero, leftRegister));
                 } else {
                     assert false;
@@ -391,7 +414,7 @@ public class Translator {
             if (left instanceof Immediate && right instanceof Immediate) {
                 int leftVal = ((Immediate) left).getNumber();
                 int rightVal = ((Immediate) right).getNumber();
-                int resRegister = allocRegister(res, false);
+                int resRegister = allocRegister(res, noLoad);
                 if (op == FourExpr.ExprOp.ADD) {  //  零个寄存器，两个立即数
                     mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, resRegister, leftVal + rightVal));
                 } else if (op == FourExpr.ExprOp.SUB) {
@@ -424,9 +447,9 @@ public class Translator {
                     assert false;
                 }
             } else if (left instanceof Symbol && right instanceof Immediate) {
-                int leftRegister = allocRegister((Symbol) left, true);  // 先找leftRegister
+                int leftRegister = allocRegister((Symbol) left, loadTempRegister);  // 先找leftRegister
                 int rightVal = ((Immediate) right).getNumber();
-                int resRegister = allocRegister(res, false);  // 再找resRegister
+                int resRegister = allocRegister(res, noLoad);  // 再找resRegister
                 if (op == FourExpr.ExprOp.ADD) {  // 左值寄存器，右值立即数
                     mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.addiu, resRegister, leftRegister, rightVal));
                 } else if (op == FourExpr.ExprOp.SUB) {
@@ -478,9 +501,9 @@ public class Translator {
                     assert false;
                 }
             } else if (left instanceof Immediate && right instanceof Symbol) {
-                int rightRegister = allocRegister((Symbol) right, true);
+                int rightRegister = allocRegister((Symbol) right, loadTempRegister);
                 int leftVal = ((Immediate) left).getNumber();
-                int resRegister = allocRegister(res, false);  // 先找rightRegister，再找resRegister
+                int resRegister = allocRegister(res, noLoad);  // 先找rightRegister，再找resRegister
                 if (op == FourExpr.ExprOp.ADD) {
                     mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.addiu, resRegister, rightRegister, leftVal));
                 } else if (op == FourExpr.ExprOp.SUB) {
@@ -533,9 +556,9 @@ public class Translator {
                     assert false;
                 }
             } else if (left instanceof Symbol && right instanceof Symbol) {
-                int leftRegister = allocRegister((Symbol) left, true);
-                int rightRegister = allocRegister((Symbol) right, true);
-                int resRegister = allocRegister(res, false);  // 要注意寻找左、右、res寄存器的顺序
+                int leftRegister = allocRegister((Symbol) left, loadTempRegister);
+                int rightRegister = allocRegister((Symbol) right, loadTempRegister);
+                int resRegister = allocRegister(res, noLoad);  // 要注意寻找左、右、res寄存器的顺序
                 if (op == FourExpr.ExprOp.ADD) {
                     mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.addu, resRegister, leftRegister, rightRegister));
                 } else if (op == FourExpr.ExprOp.SUB) {
@@ -736,15 +759,17 @@ public class Translator {
                 // System.err.println(paramSymbol.getScope());
                 // System.err.println(paramSymbol.isPointerParam());
                 // System.err.println();
-                loadSymbol((Symbol) param, Registers.v1);
-                mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.a0, offset, Registers.v1));
+                int register = allocRegister((Symbol) param, loadTempRegister);
+                // loadSymbol((Symbol) param, Registers.v1);
+                mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.a0, offset, register));
             } else {
                 assert false;
             }
             consumeUsage(param);
         }
-        HashSet<Symbol> formerGlobalSymbols = new HashSet<>(this.currentConflictGraph.memorizeGlobalRegisters());
-        freeAllRegisters(FREE_TEMP | FREE_LOCAL | FREE_GLOBAL, true);
+        HashSet<Symbol> formerGlobalSymbols = currentConflictGraph.getActiveGlobalSymbols(
+                currentBasicBlock.getContent().get(currentBlockNodeIndex));
+        freeAllRegisters(FREE_TEMP | FREE_LOCAL | FREE_PARAM | FREE_GLOBAL, true);
         mipsCode.addInstr(new MoveInstr(Registers.a0, Registers.sp));
         // freeAllRegisters(false);
         // 跳转
@@ -755,12 +780,12 @@ public class Translator {
         // 得到返回值
         if (funcCall.saveRet()) {
             Symbol ret = funcCall.getRet();
-            int retRegister = allocRegister(ret, false);
+            int retRegister = allocRegister(ret, noLoad);
             mipsCode.addInstr(new MoveInstr(Registers.v0, retRegister));
         }
         // 恢复局部变量
         for (Symbol symbol : formerGlobalSymbols) {
-            allocRegister(symbol, true);
+            allocRegister(symbol, loadTempRegister | loadGlobalRegister);
         }
     }
 
@@ -769,7 +794,7 @@ public class Translator {
         mipsCode.addInstr(new Syscall());
         Symbol symbol = getInt.getTarget();
         if (symbol.getSymbolType() == SymbolType.INT) {
-            int register = allocRegister(symbol, false);
+            int register = allocRegister(symbol, noLoad);
             mipsCode.addInstr(new MoveInstr(Registers.v0, register));
         } else if (symbol.getSymbolType() == SymbolType.POINTER) {  // 如果是pointer，直接存在内存里
             int pointer = tempRegisters.getSymbolRegister(symbol);
@@ -791,8 +816,8 @@ public class Translator {
         assert base.getSymbolType() == SymbolType.ARRAY;  // 一定是数组
         Symbol res = memory.getRes();
         Operand offset = memory.getOffset();
-        int resRegister = allocRegister(res, false);
         if (offset instanceof Immediate) {
+            int resRegister = allocRegister(res, noLoad);
             if (base.getScope() == Symbol.Scope.GLOBAL) {
                 mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.addiu, resRegister, Registers.gp,
                         base.getAddress() + ((Immediate) offset).getNumber()));
@@ -810,14 +835,20 @@ public class Translator {
             }
         } else if (offset instanceof Symbol) {
             // TODO: WARNING!!! base是global或local时，可以直接计算出它在内存中的地址(sp, gp)，但是base是param时，需要先把base在内存中的地址取出来，再和offset相加
+            if (base.getScope() == Symbol.Scope.PARAM) {
+                int baseRegister = allocRegister(base, loadTempRegister);
+                int offsetRegister = allocRegister((Symbol) offset, loadTempRegister);
+                int resRegister = allocRegister(res, noLoad);
+                mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.addu, resRegister, baseRegister, offsetRegister));
+                return;
+            }
             if (base.getScope() == Symbol.Scope.GLOBAL) {
                 mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.addiu, Registers.v1, Registers.gp, base.getAddress()));
-            } else if (base.getScope() == Symbol.Scope.PARAM) {  // TODO: WARNING!!! base是param，先把base在内存中的地址取出来，再和offset相加
-                mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.lw, Registers.sp, -base.getAddress(), Registers.v1));
             } else {
                 mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.addiu, Registers.v1, Registers.sp, -base.getAddress()));
             }
-            int offsetRegister = allocRegister((Symbol) offset, true);
+            int offsetRegister = allocRegister((Symbol) offset, loadTempRegister);
+            int resRegister = allocRegister(res, noLoad);
             mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.addu, resRegister, Registers.v1, offsetRegister));
         } else {
             assert false;
@@ -830,19 +861,19 @@ public class Translator {
         if (pointer.getOp() == Pointer.Op.LOAD) {
             Symbol point = pointer.getPointer();
             Symbol res = pointer.getLoad();
-            int baseRegister = allocRegister(point, true);
-            int targetRegister = allocRegister(res, false);
+            int baseRegister = allocRegister(point, loadTempRegister);
+            int targetRegister = allocRegister(res, noLoad);
             mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.lw, baseRegister, 0, targetRegister));
             consumeUsage(point);
         } else if (pointer.getOp() == Pointer.Op.STORE) {
             Symbol point = pointer.getPointer();
             Operand store = pointer.getStore();
-            int baseRegister = allocRegister(point, true);
+            int baseRegister = allocRegister(point, loadTempRegister);
             if (store instanceof Immediate) {
                 mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v1, ((Immediate) store).getNumber()));
                 mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, baseRegister, 0, Registers.v1));
             } else if (store instanceof Symbol) {
-                int storeRegister = allocRegister((Symbol) store, true);
+                int storeRegister = allocRegister((Symbol) store, loadTempRegister);
                 mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, baseRegister, 0, storeRegister));
             } else {
                 assert false;
@@ -861,7 +892,8 @@ public class Translator {
                     new ALUSingle(ALUSingle.ALUSingleType.li, Registers.a0, ((Immediate) printInt.getVal()).getNumber()));
         } else if (printInt.getVal() instanceof Symbol) {
             Symbol symbol = (Symbol) printInt.getVal();
-            loadSymbol(symbol, Registers.a0);  // 把symbol加载到a0寄存器，如果symbol本身就在a0寄存器则直接返回
+            int register = allocRegister(symbol, loadTempRegister);
+            mipsCode.addInstr(new MoveInstr(register, Registers.a0));  // 把Symbol加载到a0寄存器
             // if (registers.occupyingRegister(symbol)) {
             //     mipsCode.addInstr(new MoveInstr(registers.getSymbolRegister(symbol), Registers.a0));
             // } else {
@@ -890,7 +922,8 @@ public class Translator {
             if (returnVal instanceof Immediate) {
                 mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v0, ((Immediate) returnVal).getNumber()));
             } else {
-                loadSymbol((Symbol) returnVal, Registers.v0);
+                int register = allocRegister((Symbol) returnVal, loadTempRegister);
+                mipsCode.addInstr(new MoveInstr(register, Registers.v0));
             }
         }
         freeAllRegisters(FREE_GLOBAL, true);
