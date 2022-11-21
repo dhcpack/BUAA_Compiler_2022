@@ -1,0 +1,9 @@
+//47_hex_oct_add.sy
+//test add of hex and oct
+int main(){
+    int a, b;
+    a = 0xf;
+    b = 0xc;
+	printf("%d", a + b + 075);
+    return a + b + 075;
+}
