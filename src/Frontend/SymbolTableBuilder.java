@@ -266,7 +266,7 @@ public class SymbolTableBuilder {
                     symbol.setScope(Symbol.Scope.LOCAL);
                     // 未初始化的局部变量
                 }
-                assert !symbol.isConst():"没有初始化的符号应该不是常量吧";
+                assert !symbol.isConst() : "没有初始化的符号应该不是常量吧";
             }
         } else {  // 数组
             if (def.hasInitVal()) {  // 已经初始化
@@ -279,7 +279,7 @@ public class SymbolTableBuilder {
                     ConstExpCalculator constExpCalculator = new ConstExpCalculator(currSymbolTable, errors);
                     ArrayList<Integer> initNum = initExp.stream().map(constExpCalculator::calcAddExp)
                             .collect(Collectors.toCollection(ArrayList::new));
-                    if(symbol.isConst()){
+                    if (symbol.isConst()) {
                         symbol.setConstInitArray(initNum);
                     }
                     if (currFunc == null) {  // 全局变量
@@ -1224,8 +1224,15 @@ public class SymbolTableBuilder {
         currBlock.addContent(new Jump(lOrExpBlock));
         currBlock = lOrExpBlock;
         currBlock.setIndex(blockId++);
-        BasicBlock orEnd = new BasicBlock("OR_END_" + blockCount++);
         Operand and = checkLAndExp(lOrExp.getFirstExp());
+        ArrayList<LAndExp> andExps = lOrExp.getExps();
+        BasicBlock orEnd = new BasicBlock("OR_END_" + blockCount++);
+        if (andExps.size() == 0) {
+            currBlock.addContent(new Jump(orEnd));
+            currBlock = orEnd;
+            currBlock.setIndex(blockId++);
+            return and;
+        }
         Symbol orMidRes = Symbol.tempSymbol(SymbolType.INT);
         currBlock.addContent(new FourExpr(and, orMidRes, FourExpr.ExprOp.ASS));
         BasicBlock falseBlock = new BasicBlock("OR_" + blockCount++);
@@ -1233,7 +1240,6 @@ public class SymbolTableBuilder {
 
         currBlock = falseBlock;
         currBlock.setIndex(blockId++);
-        ArrayList<LAndExp> andExps = lOrExp.getExps();
         for (LAndExp lAndExp : andExps) {
             and = checkLAndExp(lAndExp);
             // Symbol orMidRes = Symbol.tempSymbol(SymbolType.INT);  maybe we can use former temp var res
@@ -1258,8 +1264,15 @@ public class SymbolTableBuilder {
         currBlock.addContent(new Jump(lAndExpBlock));
         currBlock = lAndExpBlock;
         currBlock.setIndex(blockId++);
-        BasicBlock andEnd = new BasicBlock("AND_END_" + blockCount++);
+        ArrayList<EqExp> eqExps = lAndExp.getExps();
         Operand eq = checkEqExp(lAndExp.getFirstExp());
+        BasicBlock andEnd = new BasicBlock("AND_END_" + blockCount++);
+        if (eqExps.size() == 0) {
+            currBlock.addContent(new Jump(andEnd));
+            currBlock = andEnd;
+            currBlock.setIndex(blockId++);
+            return eq;
+        }
         Symbol andMidRes = Symbol.tempSymbol(SymbolType.INT);
         currBlock.addContent(new FourExpr(eq, andMidRes, FourExpr.ExprOp.ASS));
         BasicBlock trueBlock = new BasicBlock("AND_" + blockCount++);
@@ -1267,7 +1280,6 @@ public class SymbolTableBuilder {
 
         currBlock = trueBlock;
         currBlock.setIndex(blockId++);
-        ArrayList<EqExp> eqExps = lAndExp.getExps();
         for (EqExp eqExp : eqExps) {
             eq = checkEqExp(eqExp);
             currBlock.addContent(new FourExpr(eq, andMidRes, andMidRes, FourExpr.ExprOp.AND));
