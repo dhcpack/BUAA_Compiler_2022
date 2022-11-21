@@ -20,12 +20,14 @@ import java.util.Stack;
 
 public class ConflictGraph {
     // private final ArrayList<BasicBlock> basicBlocks = new ArrayList<>();
+    private final String funcName;
     private final ArrayList<BlockNode> blockNodes = new ArrayList<>();
     private final LinkedHashMap<BlockNode, HashSet<Symbol>> inSymbols = new LinkedHashMap<>();
     private final LinkedHashMap<BlockNode, HashSet<Symbol>> outSymbols = new LinkedHashMap<>();
     private final HashMap<Symbol, ConflictGraphNode> conflictNodes = new HashMap<>();
 
-    public ConflictGraph(ArrayList<BasicBlock> basicBlocks, ArrayList<Symbol> params) {
+    public ConflictGraph(String funcName, ArrayList<BasicBlock> basicBlocks, ArrayList<Symbol> params) {
+        this.funcName = funcName;
         for (int i = basicBlocks.size() - 1; i >= 0; i--) {
             // this.basicBlocks.add(basicBlocks.get(i));
             BasicBlock block = basicBlocks.get(i);
@@ -153,13 +155,16 @@ public class ConflictGraph {
             }
         }
         // 节点着色
+        System.err.printf("%s ALLOC RESULT:\n", funcName);
         while (stack.size() != 0) {
             ConflictGraphNode node = stack.pop();
             HashSet<Integer> usedRegister = node.getConflictRegister();
             for (Integer r : registers) {
                 if (!usedRegister.contains(r)) {
+                    System.err.printf("\tSYMBOL(%s), REGISTER(%d)\n", node.getSymbol().toString(), r);
                     node.setRegister(r);
                     symbolRegisterMap.put(node.getSymbol(), r);
+                    break;
                 }
             }
         }
@@ -203,15 +208,19 @@ public class ConflictGraph {
         }
     }
 
+    public int getSymbolRegister(Symbol symbol) {
+        return this.symbolToGlobalRegister.get(symbol);
+    }
+
     // TODO: only used when translate func call
     public void freeAllGlobalRegisters(Registers tempRegisters, MipsCode mipsCode) {
-        for(Map.Entry<Symbol, Integer> symbolRegister : symbolToGlobalRegister.entrySet()){
+        for (Map.Entry<Symbol, Integer> symbolRegister : symbolToGlobalRegister.entrySet()) {
             Symbol symbol = symbolRegister.getKey();
             int register = symbolRegister.getValue();
             assert symbol.getScope() == Symbol.Scope.LOCAL;
             mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.sp, -symbol.getAddress(), register));
         }
-        for(Map.Entry<Symbol, Integer> symbolRegister : symbolToTempRegister.entrySet()){
+        for (Map.Entry<Symbol, Integer> symbolRegister : symbolToTempRegister.entrySet()) {
             Symbol symbol = symbolRegister.getKey();
             int register = symbolRegister.getValue();
             tempRegisters.freeRegister(register);
@@ -224,9 +233,18 @@ public class ConflictGraph {
         globalRegisterToSymbol.clear();
     }
 
-    public boolean occupyingGlobalRegister(Symbol symbol) {
+    public boolean hasGlobalRegister(Symbol symbol) {
         return symbol.getScope() == Symbol.Scope.LOCAL && !overflowSymbol.contains(symbol);
     }
+
+    public boolean occupyingGlobalRegister(Symbol symbol) {
+        return this.symbolToGlobalRegister.containsKey(symbol);
+    }
+
+    public boolean inOutSymbols(Symbol symbol, BlockNode blockNode) {
+        return this.outSymbols.get(blockNode).contains(symbol);
+    }
+
 
     // public static final int NO_GLOBAL = -2;
     // private final HashMap<Symbol, Integer> symbolToRegister = new HashMap<>();
@@ -309,8 +327,12 @@ public class ConflictGraph {
     //             symbol);
     // }
     //
-    // // 检查变量是否活跃，用于删除死代码
-    // public boolean checkActive(Symbol symbol, BlockNode blockNode) {
-    //     return symbol.getScope() != Symbol.Scope.LOCAL || this.outSymbols.get(blockNode).contains(symbol);
-    // }
+    // 检查变量是否活跃，用于删除死代码
+    public boolean checkActive(Symbol symbol, BlockNode blockNode) {
+        return symbol.getScope() != Symbol.Scope.LOCAL || this.outSymbols.get(blockNode).contains(symbol);
+    }
+
+    public HashSet<Symbol> memorizeGlobalRegisters() {
+        return new HashSet<>(this.symbolToGlobalRegister.keySet());
+    }
 }

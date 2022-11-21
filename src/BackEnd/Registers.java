@@ -46,7 +46,7 @@ public class Registers {
 
 
     // free registers
-    private final Queue<Integer> freeRegisters = new LinkedList<>(localRegisters);
+    private Queue<Integer> freeRegisters = new LinkedList<>(localRegisters);
 
     // allocated registers
     private final HashMap<Integer, Symbol> registerToSymbol = new HashMap<>();
@@ -83,7 +83,6 @@ public class Registers {
         Symbol symbol = registerToSymbol.get(register);
         registerToSymbol.remove(register);
         symbolToRegister.remove(symbol);
-        // registerCache.remove(register);
         freeRegisters.add(register);
     }
 
@@ -181,7 +180,7 @@ public class Registers {
                 break;
             }
         }
-        System.err.printf("OPT: Register%2d, Place%4d, Symbol(%s)\n", latestRegister, latestPlace, latestSymbol.getName());
+        System.out.printf("OPT: Register%2d, Place%4d, Symbol(%s)\n", latestRegister, latestPlace, latestSymbol.getName());
         return latestSymbol;
     }
 
@@ -208,5 +207,11 @@ public class Registers {
 
     public HashMap<Symbol, Integer> getSymbolToRegister() {
         return symbolToRegister;
+    }
+
+    public void freeAllTempRegisters() {
+        this.symbolToRegister.clear();
+        this.registerToSymbol.clear();
+        this.freeRegisters = new LinkedList<>(localRegisters);
     }
 }
