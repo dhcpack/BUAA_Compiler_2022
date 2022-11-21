@@ -510,13 +510,17 @@ public class SymbolTableBuilder {
                     returnType.getType() == TokenType.INTTK ? SymbolType.INT : SymbolType.VOID, params, ident));
         }
 
-        // 给末尾没有return语句的void函数加return(直接在所有函数结尾无脑加jr $ra)
-        if (returnType.getType() == TokenType.VOIDTK) {
-            BlockStmt funcBody = funcDef.getBlockStmt();
-            if (funcBody.getReturn() == null) {
+        // 给末尾没有return语句的函数加return(直接在所有函数结尾无脑加jr $ra)
+        BlockStmt funcBody = funcDef.getBlockStmt();
+        if (funcBody.getReturn() == null) {
+            if(returnType.getType() == TokenType.VOIDTK){
+                funcBody.getBlockItems()
+                        .add(new Stmt(new ReturnStmt(Token.tempToken(TokenType.RETURNTK, funcBody.getRightBrace().getLine()))));
+            } else {
                 funcBody.getBlockItems()
                         .add(new Stmt(new ReturnStmt(Token.tempToken(TokenType.RETURNTK, funcBody.getRightBrace().getLine()))));
             }
+
         }
 
         // check func block
