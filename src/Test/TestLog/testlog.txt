@@ -1,0 +1,8 @@
+
+====== Auto Test Begin ======
+2022-11-21 11:49:16
+
+Line 1: 
+We get: 0
+But we expected: 19241027
+TEST END AT 2022-11-21 11:49:17
