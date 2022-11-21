@@ -46,7 +46,7 @@ public class Registers {
 
 
     // free registers
-    private Queue<Integer> freeRegisters = new LinkedList<>(localRegisters);
+    private final Queue<Integer> freeRegisters = new LinkedList<>(localRegisters);
 
     // allocated registers
     private final HashMap<Integer, Symbol> registerToSymbol = new HashMap<>();
@@ -71,6 +71,7 @@ public class Registers {
         int register = freeRegisters.remove();
         registerToSymbol.put(register, symbol);
         symbolToRegister.put(symbol, register);
+        System.out.printf("%s 4=> %d\n", symbol, register);
         // registerCache.add(register);
         return register;
     }
@@ -86,7 +87,7 @@ public class Registers {
         freeRegisters.add(register);
     }
 
-    public Symbol OPTStrategy(BasicBlock currentBasicBlock, int currentBasicBlockIndex) {
+    public Symbol OPTStrategy(BasicBlock currentBasicBlock, int currentBlockNodeIndex) {
         assert registerToSymbol.size() == localRegisters.size() : "局部寄存器未满不需要使用OPT策略";
         int latestRegister = -1, latestPlace = -1;
         Symbol latestSymbol = null;
@@ -94,7 +95,7 @@ public class Registers {
         for (Map.Entry<Integer, Symbol> entry : registerToSymbol.entrySet()) {
             int currRegister = entry.getKey(), currPlace = blockNodes.size() + 1;
             Symbol currSymbol = entry.getValue();
-            for (int i = currentBasicBlockIndex; i < blockNodes.size(); i++) {
+            for (int i = currentBlockNodeIndex; i < blockNodes.size(); i++) {
                 BlockNode blockNode = blockNodes.get(i);
                 if (blockNode instanceof Branch) {
                     // "Branch " + cond + " ? " + thenBlock + " : " + elseBlock;
@@ -209,9 +210,9 @@ public class Registers {
         return symbolToRegister;
     }
 
-    public void freeAllTempRegisters() {
-        this.symbolToRegister.clear();
-        this.registerToSymbol.clear();
-        this.freeRegisters = new LinkedList<>(localRegisters);
-    }
+    // public void freeAllTempRegisters() {
+    //     this.symbolToRegister.clear();
+    //     this.registerToSymbol.clear();
+    //     this.freeRegisters = new LinkedList<>(localRegisters);
+    // }
 }

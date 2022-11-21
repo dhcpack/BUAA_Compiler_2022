@@ -24,10 +24,10 @@ public class DefUseCalcUtil {
     private static HashSet<Symbol> defSet;
     private static HashSet<Symbol> useSet;
 
-    // 记录全局变量（LOCAL变量）
+    // 记录全局变量（LOCAL or PARAM变量）
     // DEF
     private static void addToDefSet(Operand operand) {
-        if (!(operand instanceof Symbol && ((Symbol) operand).getScope() == Symbol.Scope.LOCAL)) {
+        if (!(operand instanceof Symbol && (((Symbol) operand).getScope() == Symbol.Scope.LOCAL || ((Symbol) operand).getScope() == Symbol.Scope.PARAM))) {
             return;
         }
         Symbol localSymbol = (Symbol) operand;
@@ -39,7 +39,7 @@ public class DefUseCalcUtil {
 
     // USE
     private static void addToUseSet(Operand operand) {
-        if (!(operand instanceof Symbol && ((Symbol) operand).getScope() == Symbol.Scope.LOCAL)) {
+        if (!(operand instanceof Symbol && (((Symbol) operand).getScope() == Symbol.Scope.LOCAL || ((Symbol) operand).getScope() == Symbol.Scope.PARAM))) {
             return;
         }
         Symbol localSymbol = (Symbol) operand;

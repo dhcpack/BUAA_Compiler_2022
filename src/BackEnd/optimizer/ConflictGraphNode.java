@@ -24,12 +24,12 @@ public class ConflictGraphNode implements Comparable<ConflictGraphNode> {
         this.conflictGraphNodes.add(conflictGraphNode);
     }
 
-    public void initialEdgeCount() {
+    public void initialCurrEdgeCount() {
         this.edgeCount = conflictGraphNodes.size();
     }
 
-    public int getEdgeCount() {
-        return this.conflictGraphNodes.size();
+    public int getCurrEdgeCount() {
+        return this.edgeCount;
     }
 
     public int getRegister() {
@@ -58,7 +58,7 @@ public class ConflictGraphNode implements Comparable<ConflictGraphNode> {
 
     @Override
     public int compareTo(ConflictGraphNode o) {
-        return o.getEdgeCount() - this.edgeCount;
+        return o.getCurrEdgeCount() - this.edgeCount;
     }
 
     @Override
