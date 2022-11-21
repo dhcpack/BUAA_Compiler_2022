@@ -139,10 +139,10 @@ public class ConflictGraph {
         }
         // 得到节点着色顺序
         Stack<ConflictGraphNode> stack = new Stack<>();
-        for (ConflictGraphNode node : nodesList) {
-            System.out.println(node);
-        }
-        System.out.println();
+        // for (ConflictGraphNode node : nodesList) {
+        //     System.out.println(node);
+        // }
+        // System.out.println();
         while (nodesList.size() != 0) {
             // 根据边数从高到低排序
             nodesList.sort(ConflictGraphNode::compareTo);
@@ -175,13 +175,13 @@ public class ConflictGraph {
             }
         }
         // 节点着色
-        System.err.printf("%s ALLOC RESULT:\n", funcName);
+        // System.err.printf("%s ALLOC RESULT:\n", funcName);
         while (stack.size() != 0) {
             ConflictGraphNode node = stack.pop();
             HashSet<Integer> usedRegister = node.getConflictRegister();
             for (Integer r : registers) {
                 if (!usedRegister.contains(r)) {
-                    System.err.printf("\tSYMBOL(%s), REGISTER(%d)\n", node.getSymbol().toString(), r);
+                    // System.err.printf("\tSYMBOL(%s), REGISTER(%d)\n", node.getSymbol().toString(), r);
                     node.setRegister(r);
                     symbolRegisterMap.put(node.getSymbol(), r);
                     break;
@@ -212,19 +212,19 @@ public class ConflictGraph {
         if (symbolRegisterMap.containsKey(symbol)) {
             int register = symbolRegisterMap.get(symbol);
             symbolToGlobalRegister.put(symbol, register);
-            System.out.printf("%s 1=> %d\n", symbol, register);
+            // System.out.printf("%s 1=> %d\n", symbol, register);
             return register;
         } else {
             int register = registers.get(0);
             symbolToGlobalRegister.put(symbol, register);
-            System.out.printf("%s 3=> %d\n", symbol, register);
+            // System.out.printf("%s 3=> %d\n", symbol, register);
             return register;
         }
     }
 
     public void settleOverflowSymbol(Symbol symbol, int register) {
         symbolToTempRegister.put(symbol, register);
-        System.out.printf("%s 2=> %d\n", symbol, register);
+        // System.out.printf("%s 2=> %d\n", symbol, register);
     }
 
     public void freeOverflowSymbol(Symbol symbol) {

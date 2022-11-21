@@ -127,7 +127,7 @@ public class Translator {
                 if (tempRegisters.occupyingRegister(symbol)) {
                     int register = tempRegisters.getSymbolRegister(symbol);
                     freeSymbolRegister(symbol, false);  // 释放占用的寄存器，不必保存Symbol
-                    System.err.printf("FREE TEMP SYMBOL(%s), REGISTER(%d)\n", symbol.getName(), register);
+                    // System.err.printf("FREE TEMP SYMBOL(%s), REGISTER(%d)\n", symbol.getName(), register);
                 }
             } else {
                 symbolUsageMap.put(symbol, symbolUsageMap.get(symbol) - 1);
@@ -164,7 +164,7 @@ public class Translator {
         // 为该变量分配临时寄存器
         if (!tempRegisters.hasFreeRegister()) {
             // TODO: OPT
-            System.out.println("Call OPT");
+            // System.out.println("Call OPT");
             Symbol optSymbol = tempRegisters.OPTStrategy(currentBasicBlock, currentBlockNodeIndex);
             freeSymbolRegister(optSymbol, true);
         }
@@ -280,17 +280,15 @@ public class Translator {
 
     private void translateBasicBlock(BasicBlock basicBlock, ArrayList<Symbol> params) {
         // 更新当前基本块的SymbolUsageMap
+        currentBasicBlock = basicBlock;
         symbolUsageMap = basicBlock.getSymbolUsageMap();
         mipsCode.addInstr(new Label(basicBlock.getLabel()));
         // pay attention to label
         if (params != null) {
             for (Symbol param : params) {
-                if (true) {
-                    allocRegister(param, loadGlobalRegister | loadTempRegister);
-                }
+                allocRegister(param, loadGlobalRegister | loadTempRegister);
             }
         }
-        currentBasicBlock = basicBlock;
         ArrayList<BlockNode> blockNodes = basicBlock.getContent();
         for (int i = 0; i < blockNodes.size(); i++) {
             BlockNode blockNode = blockNodes.get(i);
