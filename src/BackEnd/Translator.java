@@ -802,15 +802,6 @@ public class Translator {
     }
 
     private void translateJump(Jump jump) {
-        BasicBlock currentBlock = currentFuncBlocks.get(currentBasicBlockIndex);
-        if (currentBlockNodeIndex == currentBlock.getContent()
-                .size() - 1 && currentBasicBlockIndex != currentFuncBlocks.size() - 1) {
-            BasicBlock nextBlock = currentFuncBlocks.get(currentBasicBlockIndex + 1);
-            if (jump.getTarget() == nextBlock) {
-                freeAllRegisters(FREE_LOCAL | FREE_GLOBAL | FREE_TEMP, true);  // TODO: NECESSARY!!!
-                return;  // DELETE USELESS JUMP
-            }
-        }
         freeAllRegisters(FREE_LOCAL | FREE_GLOBAL | FREE_TEMP, true);  // TODO: NECESSARY!!!
         mipsCode.addInstr(new J(jump.getTarget().getLabel()));
         // queue.add(jump.getTarget());

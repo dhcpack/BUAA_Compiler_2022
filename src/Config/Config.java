@@ -2,6 +2,7 @@ package Config;
 
 import BackEnd.MipsCode;
 import BackEnd.Translator;
+import BackEnd.optimizer.DeleteUselessJump;
 import Frontend.Lexer.Lexer;
 import Frontend.Parser.CompUnit;
 import Frontend.Parser.Parser;
@@ -17,7 +18,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 public class Config {
-    public static final boolean debugMode = true;
+    public static final boolean debugMode = false;
 
     public static final String inputFile = "testfile.txt";
     public static final String syntaxFile = "syntax.txt";
@@ -45,7 +46,7 @@ public class Config {
         MipsCode mipsCode = new Translator(middleCode).translate();
 
         // Mips Optimize
-        // DeleteUselessJump.optimize(mipsCode);
+        DeleteUselessJump.optimize(mipsCode);
 
         // output mips code
         mipsCode.output();  // through MipsWriter
