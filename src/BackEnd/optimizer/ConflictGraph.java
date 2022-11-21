@@ -1,6 +1,8 @@
 package BackEnd.optimizer;
 
+import BackEnd.MipsCode;
 import BackEnd.Registers;
+import BackEnd.instructions.MemoryInstr;
 import Frontend.Symbol.Symbol;
 import Middle.optimizer.DefUseCalcUtil;
 import Middle.type.BasicBlock;
@@ -13,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Stack;
 
 public class ConflictGraph {
@@ -21,17 +24,6 @@ public class ConflictGraph {
     private final LinkedHashMap<BlockNode, HashSet<Symbol>> inSymbols = new LinkedHashMap<>();
     private final LinkedHashMap<BlockNode, HashSet<Symbol>> outSymbols = new LinkedHashMap<>();
     private final HashMap<Symbol, ConflictGraphNode> conflictNodes = new HashMap<>();
-
-    // 保存图着色法的寄存器分配结果
-    // TODO: CHECK!!!三种结果：1.冲突图中分配寄存器symbolRegisterMap；2.冲突图中溢出overflowSymbol；3.不在冲突图中，可以任意分配寄存器
-    private final HashMap<Symbol, Integer> symbolRegisterMap = new HashMap<>();
-    private final HashSet<Symbol> overflowSymbol = new HashSet<>();
-    // private final HashSet<Integer> freeRegisters = new HashSet<>();  // 未参与着色的寄存器
-
-    // 可分配的全局寄存器
-    // 固定顺序，着色时候会优先使用较小的寄存器
-    private final ArrayList<Integer> registers = new ArrayList<>(Registers.globalRegisters);
-
 
     public ConflictGraph(ArrayList<BasicBlock> basicBlocks, ArrayList<Symbol> params) {
         for (int i = basicBlocks.size() - 1; i >= 0; i--) {
@@ -171,92 +163,154 @@ public class ConflictGraph {
                 }
             }
         }
-
     }
 
-    public static final int NO_GLOBAL = -2;
-    private final HashMap<Symbol, Integer> symbolToRegister = new HashMap<>();
-    private final HashMap<Integer, Symbol> registerToSymbol = new HashMap<>();
+    // 保存图着色法的寄存器分配结果
+    // TODO: CHECK!!!三种结果：1.冲突图中分配寄存器symbolRegisterMap；2.冲突图中溢出overflowSymbol；3.不在冲突图中，可以任意分配寄存器
+    private final HashMap<Symbol, Integer> symbolRegisterMap = new HashMap<>();
+    private final HashSet<Symbol> overflowSymbol = new HashSet<>();
+    // private final HashSet<Integer> freeRegisters = new HashSet<>();  // 未参与着色的寄存器
 
-    public boolean occupyingRegister(Symbol symbol) {
-        return this.symbolToRegister.containsKey(symbol);
-    }
+    // 可分配的全局寄存器
+    // 固定顺序，着色时候会优先使用较小的寄存器
+    private final ArrayList<Integer> registers = new ArrayList<>(Registers.globalRegisters);
 
-    public Symbol getRegisterSymbol(int register) {
-        assert registerToSymbol.containsKey(register);
-        return registerToSymbol.get(register);
-    }
+    private final HashMap<Symbol, Integer> symbolToTempRegister = new HashMap<>();
+    private final HashMap<Integer, Symbol> tempRegisterToSymbol = new HashMap<>();
 
-    public int getSymbolRegister(Symbol symbol) {
-        assert occupyingRegister(symbol);
-        return symbolToRegister.get(symbol);
-    }
+    private final HashMap<Symbol, Integer> symbolToGlobalRegister = new HashMap<>();
+    private final HashMap<Integer, Symbol> globalRegisterToSymbol = new HashMap<>();
 
-    // TODO: 得到目标寄存器但不进行分配
-    public int getTargetGlobalRegister(Symbol symbol) {
-        if (!(symbol.getScope() == Symbol.Scope.LOCAL)) {
-            return NO_GLOBAL;  // TODO: 不分配全局寄存器时返回-2
-        }
-        if (overflowSymbol.contains(symbol)) {
-            return NO_GLOBAL;  // TODO: 不分配全局寄存器时返回-2
-        }
-        // TODO: 如果没在symbolRegisterMap可以随便分配一个寄存器，这里分配的是$5
-        return this.symbolRegisterMap.getOrDefault(symbol, Registers.$5);
-    }
-
-    // TODO: 得到目标寄存器并进行分配
-    public Integer allocGlobalRegister(Symbol symbol) {
-        if (!(symbol.getScope() == Symbol.Scope.LOCAL)) {
-            return NO_GLOBAL;  // TODO: 不分配全局寄存器时返回-2
-        }
-        if (overflowSymbol.contains(symbol)) {
-            return NO_GLOBAL;  // TODO: 不分配全局寄存器时返回-2
-        }
-        // TODO: 如果没在symbolRegisterMap可以随便分配一个寄存器，这里分配的是$5
-        int register = this.symbolRegisterMap.getOrDefault(symbol, Registers.$5);
-        if (registerToSymbol.containsKey(register)) {
-            Symbol occ = registerToSymbol.get(register);
-            symbolToRegister.remove(occ);
-            registerToSymbol.remove(register);
-        }
-        symbolToRegister.put(symbol, register);
-        registerToSymbol.put(register, symbol);
-        return register;
-    }
-
-    public boolean isOccupied(int register) {
-        return this.registerToSymbol.containsKey(register);
-    }
-
-    public void freeRegister(int register) {
-        // 检查是否属于全局寄存器
-        if (!Registers.globalRegisters.contains(register) && register != Registers.$5) {
-            return;
-        }
-        Symbol symbol = registerToSymbol.get(register);
-        symbolToRegister.remove(symbol);
-        registerToSymbol.remove(register);
-        if (register != Registers.$5) {
-            registers.add(register);
+    // TODO: 相当于符号和寄存器绑定
+    // 管理LOCAL Symbol的寄存器分配(全局寄存器)
+    public int allocGlobalRegister(Symbol symbol, Registers tempRegisters) {
+        assert symbol.getScope() == Symbol.Scope.LOCAL;
+        if (symbolRegisterMap.containsKey(symbol)) {
+            int register = symbolRegisterMap.get(symbol);
+            symbolToGlobalRegister.put(symbol, register);
+            globalRegisterToSymbol.put(register, symbol);
+            return register;
+        } else if (overflowSymbol.contains(symbol)) {
+            int register = tempRegisters.allocRegister(symbol);
+            symbolToTempRegister.put(symbol, register);
+            tempRegisterToSymbol.put(register, symbol);
+            return register;
+        } else {
+            int register = registers.get(0);
+            symbolToGlobalRegister.put(symbol, register);
+            globalRegisterToSymbol.put(register, symbol);
+            return register;
         }
     }
 
-    public HashMap<Symbol, Integer> getSymbolToRegister() {
-        return symbolToRegister;
+    // TODO: only used when translate func call
+    public void freeAllGlobalRegisters(Registers tempRegisters, MipsCode mipsCode) {
+        for(Map.Entry<Symbol, Integer> symbolRegister : symbolToGlobalRegister.entrySet()){
+            Symbol symbol = symbolRegister.getKey();
+            int register = symbolRegister.getValue();
+            assert symbol.getScope() == Symbol.Scope.LOCAL;
+            mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.sp, -symbol.getAddress(), register));
+        }
+        for(Map.Entry<Symbol, Integer> symbolRegister : symbolToTempRegister.entrySet()){
+            Symbol symbol = symbolRegister.getKey();
+            int register = symbolRegister.getValue();
+            tempRegisters.freeRegister(register);
+            assert symbol.getScope() == Symbol.Scope.LOCAL && overflowSymbol.contains(symbol);
+            mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.sp, -symbol.getAddress(), register));
+        }
+        symbolToTempRegister.clear();
+        tempRegisterToSymbol.clear();
+        symbolToGlobalRegister.clear();
+        globalRegisterToSymbol.clear();
     }
 
-    public HashMap<Integer, Symbol> getRegisterToSymbol() {
-        return registerToSymbol;
+    public boolean occupyingGlobalRegister(Symbol symbol) {
+        return symbol.getScope() == Symbol.Scope.LOCAL && !overflowSymbol.contains(symbol);
     }
 
-    // 不与任何Symbol冲突
-    public boolean hasNoConflict(Symbol symbol) {
-        return symbol.getScope() == Symbol.Scope.LOCAL && !overflowSymbol.contains(symbol) && !symbolRegisterMap.containsKey(
-                symbol);
-    }
-
-    // 检查变量是否活跃，用于删除死代码
-    public boolean checkActive(Symbol symbol, BlockNode blockNode) {
-        return symbol.getScope() != Symbol.Scope.LOCAL || this.outSymbols.get(blockNode).contains(symbol);
-    }
+    // public static final int NO_GLOBAL = -2;
+    // private final HashMap<Symbol, Integer> symbolToRegister = new HashMap<>();
+    // private final HashMap<Integer, Symbol> registerToSymbol = new HashMap<>();
+    //
+    // public boolean occupyingRegister(Symbol symbol) {
+    //     return this.symbolToRegister.containsKey(symbol);
+    // }
+    //
+    // public Symbol getRegisterSymbol(int register) {
+    //     assert registerToSymbol.containsKey(register);
+    //     return registerToSymbol.get(register);
+    // }
+    //
+    // public int getSymbolRegister(Symbol symbol) {
+    //     assert occupyingRegister(symbol);
+    //     return symbolToRegister.get(symbol);
+    // }
+    //
+    // // TODO: 得到目标寄存器但不进行分配
+    // public int getTargetGlobalRegister(Symbol symbol) {
+    //     if (!(symbol.getScope() == Symbol.Scope.LOCAL)) {
+    //         return NO_GLOBAL;  // TODO: 不分配全局寄存器时返回-2
+    //     }
+    //     if (overflowSymbol.contains(symbol)) {
+    //         return NO_GLOBAL;  // TODO: 不分配全局寄存器时返回-2
+    //     }
+    //     // TODO: 如果没在symbolRegisterMap可以随便分配一个寄存器，这里分配的是$5
+    //     return this.symbolRegisterMap.getOrDefault(symbol, Registers.$5);
+    // }
+    //
+    // // TODO: 得到目标寄存器并进行分配
+    // public Integer allocGlobalRegister(Symbol symbol) {
+    //     if (!(symbol.getScope() == Symbol.Scope.LOCAL)) {
+    //         return NO_GLOBAL;  // TODO: 不分配全局寄存器时返回-2
+    //     }
+    //     if (overflowSymbol.contains(symbol)) {
+    //         return NO_GLOBAL;  // TODO: 不分配全局寄存器时返回-2
+    //     }
+    //     // TODO: 如果没在symbolRegisterMap可以随便分配一个寄存器，这里分配的是$5
+    //     int register = this.symbolRegisterMap.getOrDefault(symbol, Registers.$5);
+    //     if (registerToSymbol.containsKey(register)) {
+    //         Symbol occ = registerToSymbol.get(register);
+    //         symbolToRegister.remove(occ);
+    //         registerToSymbol.remove(register);
+    //     }
+    //     symbolToRegister.put(symbol, register);
+    //     registerToSymbol.put(register, symbol);
+    //     return register;
+    // }
+    //
+    // public boolean isOccupied(int register) {
+    //     return this.registerToSymbol.containsKey(register);
+    // }
+    //
+    // public void freeRegister(int register) {
+    //     // 检查是否属于全局寄存器
+    //     if (!Registers.globalRegisters.contains(register) && register != Registers.$5) {
+    //         return;
+    //     }
+    //     Symbol symbol = registerToSymbol.get(register);
+    //     symbolToRegister.remove(symbol);
+    //     registerToSymbol.remove(register);
+    //     if (register != Registers.$5) {
+    //         registers.add(register);
+    //     }
+    // }
+    //
+    // public HashMap<Symbol, Integer> getSymbolToRegister() {
+    //     return symbolToRegister;
+    // }
+    //
+    // public HashMap<Integer, Symbol> getRegisterToSymbol() {
+    //     return registerToSymbol;
+    // }
+    //
+    // // 不与任何Symbol冲突
+    // public boolean hasNoConflict(Symbol symbol) {
+    //     return symbol.getScope() == Symbol.Scope.LOCAL && !overflowSymbol.contains(symbol) && !symbolRegisterMap.containsKey(
+    //             symbol);
+    // }
+    //
+    // // 检查变量是否活跃，用于删除死代码
+    // public boolean checkActive(Symbol symbol, BlockNode blockNode) {
+    //     return symbol.getScope() != Symbol.Scope.LOCAL || this.outSymbols.get(blockNode).contains(symbol);
+    // }
 }

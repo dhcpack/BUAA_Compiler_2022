@@ -65,17 +65,4 @@ public class ConflictGraphNode implements Comparable<ConflictGraphNode> {
     public String toString() {
         return this.symbol + ": " + this.edgeCount;
     }
-
-    // @Override
-    // public boolean equals(Object o) {
-    //     if (this == o) return true;
-    //     if (o == null || getClass() != o.getClass()) return false;
-    //     ConflictGraphNode that = (ConflictGraphNode) o;
-    //     return Objects.equals(symbol, that.symbol) && Objects.equals(conflictGraphNodes, that.conflictGraphNodes);
-    // }
-    //
-    // @Override
-    // public int hashCode() {
-    //     return Objects.hash(symbol, conflictGraphNodes);
-    // }
 }
