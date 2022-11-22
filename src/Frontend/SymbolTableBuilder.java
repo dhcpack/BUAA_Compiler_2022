@@ -1,5 +1,7 @@
 package Frontend;
 
+import BackEnd.instructions.J;
+import BackEnd.instructions.Label;
 import Exceptions.IllegalBreakContinueException;
 import Exceptions.IllegalReturnException;
 import Exceptions.IllegalSymbolException;
@@ -77,11 +79,16 @@ import Middle.type.Pointer;
 import Middle.type.PrintInt;
 import Middle.type.PrintStr;
 import Middle.type.Return;
+import sun.dc.pr.PRError;
 
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Stack;
+import java.util.concurrent.TransferQueue;
 import java.util.stream.Collectors;
+
+import static Middle.type.FourExpr.ExprOp.ASS;
 
 /*
  *
@@ -174,9 +181,11 @@ public class SymbolTableBuilder {
                 try {  // 全部扔到ConstExpCalculator里面去算，能算就算，得到AssertionError就在运行中计算
                     int val;
                     if (!initVal.isConst()) {
-                        val = new ConstExpCalculator(currSymbolTable, errors).calcExp(initVal.getExp());
+                        val = new ConstExpCalculator(currSymbolTable, errors, inlining,
+                                inlining ? this.currFunc.getFuncSymbolTable() : null).calcExp(initVal.getExp());
                     } else {
-                        val = new ConstExpCalculator(currSymbolTable, errors).calcConstExp(initVal.getConstExp());
+                        val = new ConstExpCalculator(currSymbolTable, errors, inlining,
+                                inlining ? this.currFunc.getFuncSymbolTable() : null).calcConstExp(initVal.getConstExp());
                     }
                     if (symbol.isConst()) {  // 为常量赋初始值
                         symbol.setConstInitInt(val);
@@ -276,7 +285,8 @@ public class SymbolTableBuilder {
                 ArrayList<AddExp> initExp = flatArrayInitVal(initVal);
 
                 try {  // 全部扔到ConstExpCalculator里面去算，能算就算，得到AssertionError就在运行中计算
-                    ConstExpCalculator constExpCalculator = new ConstExpCalculator(currSymbolTable, errors);
+                    ConstExpCalculator constExpCalculator = new ConstExpCalculator(currSymbolTable, errors, inlining,
+                            inlining ? this.currFunc.getFuncSymbolTable() : null);
                     ArrayList<Integer> initNum = initExp.stream().map(constExpCalculator::calcAddExp)
                             .collect(Collectors.toCollection(ArrayList::new));
                     if (symbol.isConst()) {
@@ -426,7 +436,8 @@ public class SymbolTableBuilder {
         // check const Exp and **calc it**; save the result into ARRAY dimSize
         ArrayList<ConstExp> dimExp = var.getDimExp();
         ArrayList<Integer> dimSize = new ArrayList<>();
-        ConstExpCalculator dimSizeCalculator = new ConstExpCalculator(currSymbolTable, errors);
+        ConstExpCalculator dimSizeCalculator = new ConstExpCalculator(currSymbolTable, errors, inlining,
+                inlining ? this.currFunc.getFuncSymbolTable() : null);
         for (ConstExp constExp : dimExp) {
             dimSize.add(dimSizeCalculator.calcConstExp(constExp));
             // TODO: put error check in calcUti. DONE!
@@ -499,6 +510,7 @@ public class SymbolTableBuilder {
         FuncBlock funcBlock = new FuncBlock(funcDef.getReturnType()
                 .getType() == TokenType.INTTK ? FuncBlock.ReturnType.INT : FuncBlock.ReturnType.VOID,
                 funcDef.getIdent().getContent(), params, currSymbolTable, isMainFunc);
+        funcBlock.setFuncDef(funcDef);
         middleCode.addFunc(funcBlock);  // 加入到中间代码入口表中
         currFunc = funcBlock;
 
@@ -513,7 +525,7 @@ public class SymbolTableBuilder {
         // 给末尾没有return语句的函数加return(直接在所有函数结尾无脑加jr $ra)
         BlockStmt funcBody = funcDef.getBlockStmt();
         if (funcBody.getReturn() == null) {
-            if(returnType.getType() == TokenType.VOIDTK){
+            if (returnType.getType() == TokenType.VOIDTK) {
                 funcBody.getBlockItems()
                         .add(new Stmt(new ReturnStmt(Token.tempToken(TokenType.RETURNTK, funcBody.getRightBrace().getLine()))));
             } else {
@@ -524,7 +536,7 @@ public class SymbolTableBuilder {
         }
 
         // check func block
-        BasicBlock body = checkBlockStmt(funcDef.getBlockStmt(), true, funcBlock.getLabel());
+        BasicBlock body = checkBlockStmt(funcDef.getBlockStmt(), true, funcBlock.getLabel(), null);
 
         // BasicBlock body = new BasicBlock(funcBlock.getLabel());
         // body.addContent(new Jump(block));
@@ -570,7 +582,8 @@ public class SymbolTableBuilder {
         if (!redefine) {
             if (funcFParam.isArray()) {
                 ArrayList<ConstExp> dimExp = funcFParam.getDimExp();
-                ConstExpCalculator constExpCalculator = new ConstExpCalculator(currSymbolTable, errors);
+                ConstExpCalculator constExpCalculator = new ConstExpCalculator(currSymbolTable, errors, inlining,
+                        inlining ? this.currFunc.getFuncSymbolTable() : null);
                 ArrayList<Integer> dimSize = dimExp.stream().map(constExpCalculator::calcConstExp)
                         .collect(Collectors.toCollection(ArrayList::new));
                 dimSize.add(0, -20231164);  // 第一维省略
@@ -612,7 +625,7 @@ public class SymbolTableBuilder {
         if (stmtInterface instanceof AssignStmt) {
             checkAssignStmt((AssignStmt) stmtInterface);
         } else if (stmtInterface instanceof BlockStmt) {
-            checkBlockStmt((BlockStmt) stmtInterface, false, null);
+            checkBlockStmt((BlockStmt) stmtInterface, false, null, null);
         } else if (stmtInterface instanceof BreakStmt) {
             checkBreakStmt((BreakStmt) stmtInterface);
         } else if (stmtInterface instanceof ContinueStatement) {
@@ -642,7 +655,7 @@ public class SymbolTableBuilder {
         if (lVal.getSymbolType() == SymbolType.POINTER) {  // 如果返回的是指针，直接存在内存里
             currBlock.addContent(new Pointer(Pointer.Op.STORE, lVal, operand));  // 数组存内存
         } else if (lVal.getSymbolType() == SymbolType.INT) {
-            currBlock.addContent(new FourExpr(operand, lVal, FourExpr.ExprOp.ASS));
+            currBlock.addContent(new FourExpr(operand, lVal, ASS));
         } else {
             assert false;
         }
@@ -650,7 +663,7 @@ public class SymbolTableBuilder {
     }
 
     // Block → '{' { BlockItem } '}'
-    public BasicBlock checkBlockStmt(BlockStmt blockStmt, boolean isFunc, String funcLabel) {
+    public BasicBlock checkBlockStmt(BlockStmt blockStmt, boolean isFunc, String funcLabel, BasicBlock nextBlock) {
         if (!isFunc) {
             currSymbolTable = new SymbolTable(currSymbolTable, currFunc.getFuncSymbolTable());  // 下降一层
         }
@@ -670,7 +683,9 @@ public class SymbolTableBuilder {
         for (BlockItem blockItem : blockItems) {
             checkBlockItem(blockItem);
         }
-        BasicBlock nextBlock = new BasicBlock("B_" + blockCount++, blockId++);
+        if (nextBlock == null) {
+            nextBlock = new BasicBlock("B_" + blockCount++, blockId++);
+        }
         // blockDepth--;
         if (!isFunc) {
             basicBlock.addContent(new Jump(nextBlock));
@@ -822,9 +837,18 @@ public class SymbolTableBuilder {
         }
         if (returnStmt.getReturnExp() != null) {
             Operand returnVal = checkExp(returnStmt.getReturnExp(), false);
-            currBlock.addContent(new Return(returnVal));
+            if (inlining) {
+                currBlock.addContent(new FourExpr(returnVal, (Symbol) this.returnSymbol, FourExpr.ExprOp.DEF));
+                currBlock.addContent(new Jump(this.endBlock));
+            } else {
+                currBlock.addContent(new Return(returnVal));
+            }
         } else {
-            currBlock.addContent(new Return());
+            if (inlining) {
+                currBlock.addContent(new Jump(this.endBlock));
+            } else {
+                currBlock.addContent(new Return());
+            }
         }
         // return int是否正确在checkFunc中检查
     }
@@ -1021,7 +1045,12 @@ public class SymbolTableBuilder {
     public Symbol checkLVal(LVal lVal, boolean checkConst) {  // checkConst represents check const or not
         // 查符号表!!!
         Token ident = lVal.getIdent();
-        Symbol symbol = currSymbolTable.getSymbol(ident.getContent(), true);
+        Symbol symbol;
+        if (inlining) {
+            symbol = currSymbolTable.getSymbol(ident.getContent(), true, this.currFunc.getFuncSymbolTable(), inlining);
+        } else {
+            symbol = currSymbolTable.getNormalSymbol(ident.getContent(), true);
+        }
         if (symbol == null) {
             errors.add(new UndefinedTokenException(ident.getLine()));
             return null;  // error  TODO: WARNING!!!: NOT EXIST IN SYMBOL TABLE
@@ -1066,7 +1095,13 @@ public class SymbolTableBuilder {
             for (int i = placeExp.size() - 1; i >= 0; i--) {
                 Operand weight = new Immediate(suffix.get(i) * 4);  // 后缀积
                 Symbol mid = Symbol.tempSymbol(SymbolType.INT);
-                Operand currPlace = checkExp(placeExp.get(i), false);
+                Operand currPlace;
+                try {
+                    currPlace = new Immediate(new ConstExpCalculator(currSymbolTable, errors, inlining,
+                            inlining ? this.currFunc.getFuncSymbolTable() : null).calcExp(placeExp.get(i)));
+                } catch (MyAssert myAssert) {
+                    currPlace = checkExp(placeExp.get(i), false);
+                }
                 currBlock.addContent(new FourExpr(currPlace, weight, mid, FourExpr.ExprOp.MUL));
                 currBlock.addContent(new FourExpr(mid, offset, mid, FourExpr.ExprOp.ADD));
                 offset = mid;
@@ -1098,10 +1133,19 @@ public class SymbolTableBuilder {
 
         // 查符号表
         Token ident = funcExp.getIdent();
-        Symbol symbol = currSymbolTable.getSymbol(ident.getContent(), true);
+        Symbol symbol;
+        if (inlining) {
+            symbol = currSymbolTable.getSymbol(ident.getContent(), true, this.currFunc.getFuncSymbolTable(), inlining);
+        } else {
+            symbol = currSymbolTable.getNormalSymbol(ident.getContent(), true);
+        }
         if (symbol == null) {
             errors.add(new UndefinedTokenException(ident.getLine()));
             return null;  // error  TODO: WARNING!!!: NOT EXIST IN SYMBOL TABLE
+        }
+        if (symbol.getName().equals(currFunc.getFuncName())) {  // 递归调用
+            currFunc.setRecursive();
+            System.err.printf("%s recursive\n", symbol.getName());
         }
         // if (!symbol.isFunc()) {
         //     return null;  // TODO: 帖子，什么错误类型？？
@@ -1203,16 +1247,68 @@ public class SymbolTableBuilder {
                 // }
             }
         }
-        FuncBlock funcBlock = middleCode.getFunc(symbol.getName());
-        if (funcBlock.getReturnType() == FuncBlock.ReturnType.INT) {
-            Symbol res = Symbol.tempSymbol(SymbolType.INT);
-            currBlock.addContent(new FuncCall(funcBlock, Rparams, res));
+
+        FuncBlock inlineFunc = middleCode.getFunc(symbol.getName());
+
+        if (!inlineFunc.isRecursive()) {
+            FuncBlock formerFunc = this.currFunc;
+            HashMap<Symbol, Symbol> formerInlineMapper = this.inlineMapper;
+            String formerInlineLabel = this.inlineFuncEnd;
+            boolean formerInlining = this.inlining;
+            Operand formerReturnSymbol = this.returnSymbol;
+            BasicBlock formerEndBlock = this.endBlock;
+
+            this.currFunc = inlineFunc;
+            String inlineFuncBegin = "INLINE_BEGIN_" + inlineFuncIndex;
+            this.inlineFuncEnd = "INLINE_END_" + inlineFuncIndex++;
+            this.inlineMapper = currSymbolTable.copySymbolTable(inlineFunc.getFuncSymbolTable());
+            this.inlining = true;
+
+            Operand res;
+            if (inlineFunc.getReturnType() == FuncBlock.ReturnType.INT) {
+                res = Symbol.tempSymbol(SymbolType.INT);
+            } else {
+                res = new Immediate(0);
+            }
+            this.returnSymbol = res;
+
+            BasicBlock endBlock = new BasicBlock(this.inlineFuncEnd);
+            this.endBlock = endBlock;
+            BasicBlock inlineBody = checkBlockStmt(inlineFunc.getFuncDef().getBlockStmt(), true, inlineFuncBegin, endBlock);
+
+            currBlock = endBlock;
+            currBlock.setIndex(blockId++);
+
+
+            this.currFunc = formerFunc;
+            this.inlineMapper = formerInlineMapper;
+            this.inlineFuncEnd = formerInlineLabel;
+            this.inlining = formerInlining;
+            this.returnSymbol = formerReturnSymbol;
+            this.endBlock = formerEndBlock;
+
+
             return res;
         } else {
-            currBlock.addContent(new FuncCall(funcBlock, Rparams));
-            return new Immediate(0);
+            if (inlineFunc.getReturnType() == FuncBlock.ReturnType.INT) {
+                Symbol res = Symbol.tempSymbol(SymbolType.INT);
+                currBlock.addContent(new FuncCall(inlineFunc, Rparams, res));
+                return res;
+            } else {
+                currBlock.addContent(new FuncCall(inlineFunc, Rparams));
+                return new Immediate(0);
+            }
         }
     }
+
+    private int inlineFuncIndex = 1;
+    private String inlineFuncEnd = null;
+    private HashMap<Symbol, Symbol> inlineMapper = null;
+    // private FuncBlock outsideFunc = null;
+    private boolean inlining = false;
+    private Operand returnSymbol = null;
+    private BasicBlock endBlock = null;
+
 
     // Cond → LOrExp
     // return Symbol
@@ -1238,7 +1334,7 @@ public class SymbolTableBuilder {
             return and;
         }
         Symbol orMidRes = Symbol.tempSymbol(SymbolType.INT);
-        currBlock.addContent(new FourExpr(and, orMidRes, FourExpr.ExprOp.ASS));
+        currBlock.addContent(new FourExpr(and, orMidRes, ASS));
         BasicBlock falseBlock = new BasicBlock("OR_" + blockCount++);
         currBlock.addContent(new Branch(orMidRes, orEnd, falseBlock, false));
 
@@ -1278,7 +1374,7 @@ public class SymbolTableBuilder {
             return eq;
         }
         Symbol andMidRes = Symbol.tempSymbol(SymbolType.INT);
-        currBlock.addContent(new FourExpr(eq, andMidRes, FourExpr.ExprOp.ASS));
+        currBlock.addContent(new FourExpr(eq, andMidRes, ASS));
         BasicBlock trueBlock = new BasicBlock("AND_" + blockCount++);
         currBlock.addContent(new Branch(eq, trueBlock, andEnd, true));
 

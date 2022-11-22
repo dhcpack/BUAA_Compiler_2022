@@ -31,10 +31,14 @@ import java.util.ArrayList;
 public class ConstExpCalculator {
     private final SymbolTable symbolTable;
     private final Errors errors;
+    private final boolean inlining;
+    private final SymbolTable funcSymbolTable;
 
-    public ConstExpCalculator(SymbolTable symbolTable, Errors errors) {
+    public ConstExpCalculator(SymbolTable symbolTable, Errors errors, boolean inlining, SymbolTable funcSymbolTable) {
         this.symbolTable = symbolTable;
         this.errors = errors;
+        this.inlining = inlining;
+        this.funcSymbolTable = funcSymbolTable;
     }
 
     public int calcConstExp(ConstExp constExp) {
@@ -104,7 +108,7 @@ public class ConstExpCalculator {
                 } else {
                     return 0;
                 }
-            } else if(unaryOp.getToken().getType() == TokenType.PLUS){
+            } else if (unaryOp.getToken().getType() == TokenType.PLUS) {
                 return res;
             } else {
                 MyAssert.ass(false);
@@ -121,7 +125,7 @@ public class ConstExpCalculator {
             return calcLVal((LVal) primaryExpInterface);
         } else if (primaryExpInterface instanceof Number) {
             return ((Number) primaryExpInterface).getNumber();
-        } else{
+        } else {
             MyAssert.ass(false);
             return -20231164;
         }
@@ -129,7 +133,12 @@ public class ConstExpCalculator {
 
     public int calcLVal(LVal lVal) {
         Token ident = lVal.getIdent();
-        Symbol symbol = symbolTable.getSymbol(ident.getContent(), true);
+        Symbol symbol;
+        if (inlining) {
+            symbol = symbolTable.getSymbol(ident.getContent(), true, funcSymbolTable, inlining);
+        } else {
+            symbol = symbolTable.getNormalSymbol(ident.getContent(), true);
+        }
         if (symbol == null) {
             errors.add(new UndefinedTokenException(ident.getLine()));
             MyAssert.ass(false);

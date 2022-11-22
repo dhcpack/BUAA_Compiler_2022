@@ -43,6 +43,10 @@ public class FuncCall extends BlockNode {
         return this.ret;
     }
 
+    public FuncBlock getTargetBlock() {
+        return this.funcBlock;
+    }
+
     @Override
     public String toString() {
         String call = String.format("CALL %s", funcBlock.getLabel());

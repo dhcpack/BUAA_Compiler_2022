@@ -149,11 +149,11 @@ public class ConflictGraph {
             if (nodesList.get(nodesList.size() - 1).getCurrEdgeCount() >= registers.size()) {  // !!!OVERFLOW
                 ConflictGraphNode overflow = nodesList.remove(0);
                 overflowSymbol.add(overflow.getSymbol());
-                // System.out.printf("remove %s\n", overflowSymbol.toString());
+                System.out.printf("remove %s\n", overflowSymbol.toString());
                 for (ConflictGraphNode conflictGraphNode : nodesList) {
                     conflictGraphNode.removeConnection(overflow);
-                    // System.out.printf("\t%s: %d edges\n", conflictGraphNode.getSymbol().toString(), conflictGraphNode
-                    // .getCurrEdgeCount());
+                    System.out.printf("\t%s: %d edges\n", conflictGraphNode.getSymbol().toString(), conflictGraphNode
+                    .getCurrEdgeCount());
                 }
             } else {  // 分配给刚好小于globalRegisters.length的节点
                 ConflictGraphNode coloredNode = null;
@@ -166,22 +166,22 @@ public class ConflictGraph {
                 assert coloredNode != null;
                 nodesList.remove(coloredNode);
                 stack.add(coloredNode);
-                // System.out.printf("remove %s\n", coloredNode.toString());
+                System.out.printf("remove %s\n", coloredNode.toString());
                 for (ConflictGraphNode conflictGraphNode : nodesList) {
                     conflictGraphNode.removeConnection(coloredNode);
-                    // System.out.printf("\t%s: %d edges\n", conflictGraphNode.getSymbol().toString(), conflictGraphNode
-                    // .getCurrEdgeCount());
+                    System.out.printf("\t%s: %d edges\n", conflictGraphNode.getSymbol().toString(), conflictGraphNode
+                    .getCurrEdgeCount());
                 }
             }
         }
         // 节点着色
-        // System.err.printf("%s ALLOC RESULT:\n", funcName);
+        System.err.printf("%s ALLOC RESULT:\n", funcName);
         while (stack.size() != 0) {
             ConflictGraphNode node = stack.pop();
             HashSet<Integer> usedRegister = node.getConflictRegister();
             for (Integer r : registers) {
                 if (!usedRegister.contains(r)) {
-                    // System.err.printf("\tSYMBOL(%s), REGISTER(%d)\n", node.getSymbol().toString(), r);
+                    System.err.printf("\tSYMBOL(%s), REGISTER(%d)\n", node.getSymbol().toString(), r);
                     node.setRegister(r);
                     symbolRegisterMap.put(node.getSymbol(), r);
                     break;
@@ -212,19 +212,19 @@ public class ConflictGraph {
         if (symbolRegisterMap.containsKey(symbol)) {
             int register = symbolRegisterMap.get(symbol);
             symbolToGlobalRegister.put(symbol, register);
-            // System.out.printf("%s 1=> %d\n", symbol, register);
+            System.out.printf("%s 1=> %d\n", symbol, register);
             return register;
         } else {
             int register = registers.get(0);
             symbolToGlobalRegister.put(symbol, register);
-            // System.out.printf("%s 3=> %d\n", symbol, register);
+            System.out.printf("%s 3=> %d\n", symbol, register);
             return register;
         }
     }
 
     public void settleOverflowSymbol(Symbol symbol, int register) {
         symbolToTempRegister.put(symbol, register);
-        // System.out.printf("%s 2=> %d\n", symbol, register);
+        System.out.printf("%s 2=> %d\n", symbol, register);
     }
 
     public void freeOverflowSymbol(Symbol symbol) {

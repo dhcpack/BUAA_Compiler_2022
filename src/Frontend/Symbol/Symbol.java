@@ -6,7 +6,7 @@ import Middle.type.Operand;
 
 import java.util.ArrayList;
 
-public class Symbol implements LeafNode, Operand {
+public class Symbol implements LeafNode, Operand, Cloneable {
     public enum Scope {
         GLOBAL,
         LOCAL,
@@ -267,5 +267,17 @@ public class Symbol implements LeafNode, Operand {
             }
         }
         return String.format("%s(%s%s)", this.symbolType, this.name, addr);
+    }
+
+    @Override
+    public Symbol clone() {
+        try {
+            // Symbol clone = (Symbol) super.clone();
+            // // TODO: copy mutable state here, so the clone can't change the internals of the original
+            // return clone;
+            return (Symbol) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }

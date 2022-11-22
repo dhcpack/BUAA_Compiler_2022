@@ -18,6 +18,7 @@ import BackEnd.instructions.MoveInstr;
 import BackEnd.instructions.Mult;
 import BackEnd.instructions.Syscall;
 import BackEnd.optimizer.ConflictGraph;
+import Config.Config;
 import Config.SIPair;
 import Frontend.Symbol.Symbol;
 import Frontend.Symbol.SymbolType;
@@ -51,6 +52,12 @@ public class Translator {
     private final MipsCode mipsCode = new MipsCode();
     private Registers tempRegisters = new Registers();
     private HashMap<Symbol, Integer> symbolUsageMap;
+
+    // 函数内联
+    private LinkedHashMap<FuncBlock, ArrayList<BasicBlock>> funcToSortedBlock = null;
+    private boolean translatingInLineFunction = false;
+    private int inlineFuncIndex = 1;
+    private String inlineFuncEnd = null;
 
     // 当前函数和当前函数栈空间
     private FuncBlock currentFunc = null;
@@ -96,9 +103,12 @@ public class Translator {
     }
 
     private void translateFuncs() {
-        LinkedHashMap<FuncBlock, ArrayList<BasicBlock>> funcToSortedBlock = middleCode.getFuncToSortedBlock();
+        this.funcToSortedBlock = middleCode.getFuncToSortedBlock();
         for (Map.Entry<FuncBlock, ArrayList<BasicBlock>> funcAndBlock : funcToSortedBlock.entrySet()) {
             currentFunc = funcAndBlock.getKey();
+            if (!(currentFunc.isRecursive() || currentFunc.isMainFunc())) {
+                continue;
+            }
             currentStackSize = currentFunc.getStackSize();
             ArrayList<Symbol> params = currentFunc.getParams();
             currentConflictGraph = new ConflictGraph(currentFunc.getFuncName(), funcAndBlock.getValue(), params);
@@ -127,7 +137,7 @@ public class Translator {
                 if (tempRegisters.occupyingRegister(symbol)) {
                     int register = tempRegisters.getSymbolRegister(symbol);
                     freeSymbolRegister(symbol, false);  // 释放占用的寄存器，不必保存Symbol
-                    // System.err.printf("FREE TEMP SYMBOL(%s), REGISTER(%d)\n", symbol.getName(), register);
+                    System.err.printf("FREE TEMP SYMBOL(%s), REGISTER(%d)\n", symbol.getName(), register);
                 }
             } else {
                 symbolUsageMap.put(symbol, symbolUsageMap.get(symbol) - 1);
@@ -164,7 +174,7 @@ public class Translator {
         // 为该变量分配临时寄存器
         if (!tempRegisters.hasFreeRegister()) {
             // TODO: OPT
-            // System.out.println("Call OPT");
+            System.out.println("Call OPT");
             Symbol optSymbol = tempRegisters.OPTStrategy(currentBasicBlock, currentBlockNodeIndex);
             freeSymbolRegister(optSymbol, true);
         }
@@ -733,6 +743,12 @@ public class Translator {
     private double calcCost(ArrayList<Instruction> instructions) {
         return instructions.stream().mapToDouble(Instruction::getCost).sum();
     }
+
+    // 函数内联
+    // private LinkedHashMap<FuncBlock, ArrayList<BasicBlock>> funcToSortedBlock = null;
+    // private boolean translatingInLineFunction = false;
+    // private int inlineFuncIndex = 1;
+    // private String inlineFuncEnd = null;
 
     private void translateFuncCall(FuncCall funcCall) {
         // 保存所有正在使用的寄存器

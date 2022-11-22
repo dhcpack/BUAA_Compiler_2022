@@ -1,5 +1,6 @@
 package Middle.type;
 
+import Frontend.Parser.func.types.FuncDef;
 import Frontend.Symbol.Symbol;
 import Frontend.Symbol.SymbolTable;
 
@@ -12,6 +13,7 @@ public class FuncBlock extends BlockNode {
     private final SymbolTable funcSymbolTable;
     private BasicBlock body;
     private final Boolean isMainFunc;
+    private boolean isRecursive;
 
     public enum ReturnType {
         INT,
@@ -64,6 +66,23 @@ public class FuncBlock extends BlockNode {
         return "FUNC_" + getFuncName();
     }
 
+    public void setRecursive() {
+        this.isRecursive = true;
+    }
+
+    public boolean isRecursive() {
+        return this.isRecursive;
+    }
+
+    private FuncDef funcDef;
+
+    public FuncDef getFuncDef() {
+        return funcDef;
+    }
+
+    public void setFuncDef(FuncDef funcDef) {
+        this.funcDef = funcDef;
+    }
     // @Override
     // public String toString() {
     //

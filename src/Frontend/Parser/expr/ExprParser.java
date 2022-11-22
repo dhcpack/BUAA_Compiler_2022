@@ -1,5 +1,6 @@
 package Frontend.Parser.expr;
 
+import Exceptions.MyAssert;
 import Frontend.Lexer.Token;
 import Frontend.Lexer.TokenType;
 import Frontend.Parser.TokenHandler;
@@ -123,6 +124,7 @@ public class ExprParser {
         } else if (token.getType() == TokenType.INTCON) {
             return new PrimaryExp(parseNum());
         } else {
+            MyAssert.ass(false, "Warning: bad parse of an expr");
             assert false;
             System.out.println("Warning: bad parse of an expr");
             return null;  // not an expr  Warning!!!

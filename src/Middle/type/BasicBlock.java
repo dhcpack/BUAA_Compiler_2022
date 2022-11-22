@@ -10,7 +10,7 @@ import java.util.HashSet;
 public class BasicBlock implements Comparable<BasicBlock> {
     private int index;
     private boolean hasIndex = false;
-    private final String label;
+    private String label;
     private final ArrayList<BlockNode> content = new ArrayList<>();
     private final ArrayList<Operand> operandUsage = new ArrayList<>();
 
@@ -200,6 +200,10 @@ public class BasicBlock implements Comparable<BasicBlock> {
 
     public String getLabel() {
         return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
     }
 
     public BlockNode getLastContent() {

@@ -34,14 +34,14 @@ public class Config {
 
         // compUnit.output();  // through SyntaxWriter
 
-        Errors errors = symbolTableBuilder.getErrors();
-        errors.output();  // through ErrorWriter
+        // Errors errors = symbolTableBuilder.getErrors();
+        // errors.output();  // through ErrorWriter
 
         MiddleCode middleCode = symbolTableBuilder.getMiddleCode();
         LinkedHashMap<FuncBlock, ArrayList<BasicBlock>> funcToSortedBlock = middleCode.getFuncToSortedBlock();
 
         // output middle code
-        middleCode.output();  // through MiddleWriter
+        // middleCode.output();  // through MiddleWriter
 
         MipsCode mipsCode = new Translator(middleCode).translate();
 
