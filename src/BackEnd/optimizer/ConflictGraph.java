@@ -47,6 +47,18 @@ public class ConflictGraph {
         this.blockNodes.add(funcParamBlock);
         inSymbols.put(funcParamBlock, new HashSet<>());
         outSymbols.put(funcParamBlock, new HashSet<>());
+
+        // not calc
+        // HashSet<Symbol> symbols = new HashSet<>();
+        // for (BlockNode blockNode : blockNodes) {
+        //     symbols.addAll(blockNode.getDefSet());
+        //     symbols.addAll(blockNode.getUseSet());
+        // }
+        // for (BlockNode blockNode : blockNodes) {
+        //     inSymbols.put(blockNode, new HashSet<>(symbols));
+        //     outSymbols.put(blockNode, new HashSet<>(symbols));
+        // }
+
         getActiveVariableStream();
         getConflictMap();
         manageRegisters();
@@ -82,11 +94,8 @@ public class ConflictGraph {
             inSymbols.get(blockNode).addAll(blockNode.getUseSet());
             if (outSize != outSymbols.get(blockNode).size() || inSize != inSymbols.get(blockNode).size()) {
                 flag = true;
-                // System.out.printf("%d, %d\n", inSize, inSymbols.get(block).size());
-                // System.out.printf("%d, %d\n", outSize, outSymbols.get(block).size());
             }
         }
-        // System.out.printf("%b", flag);
         if (flag) {
             getActiveVariableStream();
         }
@@ -143,17 +152,18 @@ public class ConflictGraph {
         //     System.out.println(node);
         // }
         // System.out.println();
+        nodesList.sort(ConflictGraphNode::compareTo);
         while (nodesList.size() != 0) {
             // 根据边数从高到低排序
-            nodesList.sort(ConflictGraphNode::compareTo);
+            // nodesList.sort(ConflictGraphNode::compareTo);
             if (nodesList.get(nodesList.size() - 1).getCurrEdgeCount() >= registers.size()) {  // !!!OVERFLOW
                 ConflictGraphNode overflow = nodesList.remove(0);
                 overflowSymbol.add(overflow.getSymbol());
-                // System.out.printf("remove %s\n", overflowSymbol.toString());
+                System.out.printf("remove %s\n", overflowSymbol.toString());
                 for (ConflictGraphNode conflictGraphNode : nodesList) {
                     conflictGraphNode.removeConnection(overflow);
-                    // System.out.printf("\t%s: %d edges\n", conflictGraphNode.getSymbol().toString(), conflictGraphNode
-                    // .getCurrEdgeCount());
+                    System.out.printf("\t%s: %d edges\n", conflictGraphNode.getSymbol().toString(), conflictGraphNode
+                            .getCurrEdgeCount());
                 }
             } else {  // 分配给刚好小于globalRegisters.length的节点
                 ConflictGraphNode coloredNode = null;
@@ -166,22 +176,22 @@ public class ConflictGraph {
                 assert coloredNode != null;
                 nodesList.remove(coloredNode);
                 stack.add(coloredNode);
-                // System.out.printf("remove %s\n", coloredNode.toString());
+                System.out.printf("remove %s\n", coloredNode.toString());
                 for (ConflictGraphNode conflictGraphNode : nodesList) {
                     conflictGraphNode.removeConnection(coloredNode);
-                    // System.out.printf("\t%s: %d edges\n", conflictGraphNode.getSymbol().toString(), conflictGraphNode
-                    // .getCurrEdgeCount());
+                    System.out.printf("\t%s: %d edges\n", conflictGraphNode.getSymbol().toString(), conflictGraphNode
+                            .getCurrEdgeCount());
                 }
             }
         }
         // 节点着色
-        // System.err.printf("%s ALLOC RESULT:\n", funcName);
+        System.err.printf("%s ALLOC RESULT:\n", funcName);
         while (stack.size() != 0) {
             ConflictGraphNode node = stack.pop();
             HashSet<Integer> usedRegister = node.getConflictRegister();
             for (Integer r : registers) {
                 if (!usedRegister.contains(r)) {
-                    // System.err.printf("\tSYMBOL(%s), REGISTER(%d)\n", node.getSymbol().toString(), r);
+                    System.err.printf("\tSYMBOL(%s), REGISTER(%d)\n", node.getSymbol().toString(), r);
                     node.setRegister(r);
                     symbolRegisterMap.put(node.getSymbol(), r);
                     break;
@@ -212,23 +222,23 @@ public class ConflictGraph {
         if (symbolRegisterMap.containsKey(symbol)) {
             int register = symbolRegisterMap.get(symbol);
             symbolToGlobalRegister.put(symbol, register);
-            // System.out.printf("%s 1=> %d\n", symbol, register);
+            System.out.printf("%s 1=> %d\n", symbol, register);
             return register;
         } else {
             int register = registers.get(0);
             symbolToGlobalRegister.put(symbol, register);
-            // System.out.printf("%s 3=> %d\n", symbol, register);
+            System.out.printf("%s 3=> %d\n", symbol, register);
             return register;
         }
     }
 
     public void settleOverflowSymbol(Symbol symbol, int register) {
         symbolToTempRegister.put(symbol, register);
-        // System.out.printf("%s 2=> %d\n", symbol, register);
+        System.out.printf("%s 2=> %d\n", symbol, register);
     }
 
     public void freeOverflowSymbol(Symbol symbol) {
-        assert this.overflowSymbol.contains(symbol);
+        assert this.overflowSymbol.contains(symbol) || this.registers.size() == 0;
         int register = this.symbolToTempRegister.get(symbol);
         this.symbolToTempRegister.remove(symbol);
     }
@@ -240,14 +250,6 @@ public class ConflictGraph {
     // TODO: only used when translate func call
     public void freeAllGlobalRegisters(Registers tempRegisters, MipsCode mipsCode, BlockNode currBlockNode) {
         HashSet<Symbol> activeSet = new HashSet<>(outSymbols.get(currBlockNode));
-        // HashMap<Integer, Integer> registerToSymbolCount = new HashMap<>();
-        // for (Integer register : symbolToGlobalRegister.values()) {
-        //     if (!registerToSymbolCount.containsKey(register)) {
-        //         registerToSymbolCount.put(register, 1);
-        //     } else {
-        //         registerToSymbolCount.put(register, registerToSymbolCount.get(register) + 1);
-        //     }
-        // }
         for (Map.Entry<Symbol, Integer> symbolRegister : symbolToGlobalRegister.entrySet()) {
             Symbol symbol = symbolRegister.getKey();
             int register = symbolRegister.getValue();
@@ -268,6 +270,9 @@ public class ConflictGraph {
     }
 
     public boolean hasGlobalRegister(Symbol symbol) {
+        if (registers.isEmpty()) {
+            return false;
+        }
         return (symbol.getScope() == Symbol.Scope.LOCAL || symbol.getScope() == Symbol.Scope.PARAM) && !overflowSymbol.contains(
                 symbol);
     }
@@ -285,88 +290,6 @@ public class ConflictGraph {
                 .collect(Collectors.toCollection(HashSet<Symbol>::new));
     }
 
-
-    // public static final int NO_GLOBAL = -2;
-    // private final HashMap<Symbol, Integer> symbolToRegister = new HashMap<>();
-    // private final HashMap<Integer, Symbol> registerToSymbol = new HashMap<>();
-    //
-    // public boolean occupyingRegister(Symbol symbol) {
-    //     return this.symbolToRegister.containsKey(symbol);
-    // }
-    //
-    // public Symbol getRegisterSymbol(int register) {
-    //     assert registerToSymbol.containsKey(register);
-    //     return registerToSymbol.get(register);
-    // }
-    //
-    // public int getSymbolRegister(Symbol symbol) {
-    //     assert occupyingRegister(symbol);
-    //     return symbolToRegister.get(symbol);
-    // }
-    //
-    // // TODO: 得到目标寄存器但不进行分配
-    // public int getTargetGlobalRegister(Symbol symbol) {
-    //     if (!(symbol.getScope() == Symbol.Scope.LOCAL)) {
-    //         return NO_GLOBAL;  // TODO: 不分配全局寄存器时返回-2
-    //     }
-    //     if (overflowSymbol.contains(symbol)) {
-    //         return NO_GLOBAL;  // TODO: 不分配全局寄存器时返回-2
-    //     }
-    //     // TODO: 如果没在symbolRegisterMap可以随便分配一个寄存器，这里分配的是$5
-    //     return this.symbolRegisterMap.getOrDefault(symbol, Registers.$5);
-    // }
-    //
-    // // TODO: 得到目标寄存器并进行分配
-    // public Integer allocGlobalRegister(Symbol symbol) {
-    //     if (!(symbol.getScope() == Symbol.Scope.LOCAL)) {
-    //         return NO_GLOBAL;  // TODO: 不分配全局寄存器时返回-2
-    //     }
-    //     if (overflowSymbol.contains(symbol)) {
-    //         return NO_GLOBAL;  // TODO: 不分配全局寄存器时返回-2
-    //     }
-    //     // TODO: 如果没在symbolRegisterMap可以随便分配一个寄存器，这里分配的是$5
-    //     int register = this.symbolRegisterMap.getOrDefault(symbol, Registers.$5);
-    //     if (registerToSymbol.containsKey(register)) {
-    //         Symbol occ = registerToSymbol.get(register);
-    //         symbolToRegister.remove(occ);
-    //         registerToSymbol.remove(register);
-    //     }
-    //     symbolToRegister.put(symbol, register);
-    //     registerToSymbol.put(register, symbol);
-    //     return register;
-    // }
-    //
-    // public boolean isOccupied(int register) {
-    //     return this.registerToSymbol.containsKey(register);
-    // }
-    //
-    // public void freeRegister(int register) {
-    //     // 检查是否属于全局寄存器
-    //     if (!Registers.globalRegisters.contains(register) && register != Registers.$5) {
-    //         return;
-    //     }
-    //     Symbol symbol = registerToSymbol.get(register);
-    //     symbolToRegister.remove(symbol);
-    //     registerToSymbol.remove(register);
-    //     if (register != Registers.$5) {
-    //         registers.add(register);
-    //     }
-    // }
-    //
-    // public HashMap<Symbol, Integer> getSymbolToRegister() {
-    //     return symbolToRegister;
-    // }
-    //
-    // public HashMap<Integer, Symbol> getRegisterToSymbol() {
-    //     return registerToSymbol;
-    // }
-    //
-    // // 不与任何Symbol冲突
-    // public boolean hasNoConflict(Symbol symbol) {
-    //     return symbol.getScope() == Symbol.Scope.LOCAL && !overflowSymbol.contains(symbol) && !symbolRegisterMap.containsKey(
-    //             symbol);
-    // }
-    //
     // 检查变量是否活跃，用于删除死代码
     public boolean checkActive(Symbol symbol, BlockNode blockNode) {
         return (symbol.getScope() != Symbol.Scope.LOCAL && symbol.getScope() != Symbol.Scope.PARAM) || this.outSymbols.get(
