@@ -127,7 +127,7 @@ public class Translator {
                 if (tempRegisters.occupyingRegister(symbol)) {
                     int register = tempRegisters.getSymbolRegister(symbol);
                     freeSymbolRegister(symbol, false);  // 释放占用的寄存器，不必保存Symbol
-                    // System.err.printf("FREE TEMP SYMBOL(%s), REGISTER(%d)\n", symbol.getName(), register);
+                    System.err.printf("FREE TEMP SYMBOL(%s), REGISTER(%d)\n", symbol.getName(), register);
                 }
             } else {
                 symbolUsageMap.put(symbol, symbolUsageMap.get(symbol) - 1);
@@ -164,7 +164,7 @@ public class Translator {
         // 为该变量分配临时寄存器
         if (!tempRegisters.hasFreeRegister()) {
             // TODO: OPT
-            // System.out.println("Call OPT");
+            System.out.println("Call OPT");
             Symbol optSymbol = tempRegisters.OPTStrategy(currentBasicBlock, currentBlockNodeIndex);
             freeSymbolRegister(optSymbol, true);
         }
