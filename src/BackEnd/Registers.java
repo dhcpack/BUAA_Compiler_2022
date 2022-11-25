@@ -40,10 +40,9 @@ public class Registers {
     // };
 
     // TODO: 全局寄存器(跨基本块)
-    public static final List<Integer> globalRegisters = Arrays.asList(5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-            21, 22, 23, 24, 25);
+    public static final List<Integer> globalRegisters = Arrays.asList(5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
     // TODO: 临时寄存器(基本块内部)
-    public static final List<Integer> localRegisters = Arrays.asList(26, 27);
+    public static final List<Integer> localRegisters = Arrays.asList(17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27);
     // // TODO: 全局寄存器(跨基本块)
     // public static final List<Integer> globalRegisters = Arrays.asList(5);
     // // TODO: 临时寄存器(基本块内部)

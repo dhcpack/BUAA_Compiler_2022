@@ -1,5 +1,6 @@
 package Frontend;
 
+import BackEnd.instructions.J;
 import Exceptions.IllegalBreakContinueException;
 import Exceptions.IllegalReturnException;
 import Exceptions.IllegalSymbolException;
@@ -513,7 +514,7 @@ public class SymbolTableBuilder {
         // 给末尾没有return语句的函数加return(直接在所有函数结尾无脑加jr $ra)
         BlockStmt funcBody = funcDef.getBlockStmt();
         if (funcBody.getReturn() == null) {
-            if(returnType.getType() == TokenType.VOIDTK){
+            if (returnType.getType() == TokenType.VOIDTK) {
                 funcBody.getBlockItems()
                         .add(new Stmt(new ReturnStmt(Token.tempToken(TokenType.RETURNTK, funcBody.getRightBrace().getLine()))));
             } else {
@@ -832,41 +833,105 @@ public class SymbolTableBuilder {
     // 'while' '(' Cond ')' Stmt
     public void checkWhileStmt(WhileStmt whileStmt) {
         loopDepth++;
+        // TODO: 20221125 my birthday!!!  循环优化 while -> do-while
+        /*
+         * while( cond )
+         * jump whileEnd
+         * {
+         *     stmt
+         *     jump whileBlock
+         * }
+         * 2n次jump
+         * ========================
+         * if( cond )  [ifBlock]
+         * {
+         *   jump whileEnd
+         *   do{        [doBody]
+         *      } while(cond)  [doCheckBlock]
+         *   jump whileBlock(doBlock)
+         * }
+         * [whileEnd]
+         * n+1次jump
+         * */
+
+
         // check missing Right Parenthesis
         if (whileStmt.missRightParenthesis()) {
             errors.add(new MissRparentException(whileStmt.getLine()));
         }
 
         // 通过ID保证中间代码和mips代码中基本块的顺序和遍历顺序一致
-        BasicBlock whileBlock = new BasicBlock("WHILE_" + blockCount++);
-        BasicBlock whileBody = new BasicBlock("WHILE_BODY_" + blockCount++);
-        BasicBlock whileEnd = new BasicBlock("WHILE_END_" + blockCount++);
-        whileHead.push(whileBlock);
-        whileNext.push(whileEnd);
-
-        // step into while
-        currBlock.addContent(new Jump(whileBlock));
-        currBlock = whileBlock;
-        currBlock.setIndex(blockId++);
+        BasicBlock doBlock = new BasicBlock("DO_BODY_" + blockCount++);
+        BasicBlock doCheckBlock = new BasicBlock("DO_CHECK_" + blockCount++);
+        BasicBlock doEnd = new BasicBlock("DO_END_" + blockCount++);
 
         // check Cond
         Operand cond = checkCond(whileStmt.getCond());
 
-        // step into whileBody
-        currBlock.addContent(new Branch(cond, whileBody, whileEnd, true));
-        currBlock = whileBody;
-        whileBody.setIndex(blockId++);
+        // for break and continue
+        whileHead.push(doCheckBlock);
+        whileNext.push(doEnd);
+
+        // translate If
+        currBlock.addContent(new Branch(cond, doBlock, doEnd, true));
+        currBlock.addContent(new Jump(doBlock));
+        // step into doBlock
+        currBlock = doBlock;
+        currBlock.setIndex(blockId++);
 
         currSymbolTable = new SymbolTable(currSymbolTable, currFunc.getFuncSymbolTable());  // 下降一层
         // check Stmt
         checkStmt(whileStmt.getStmt());
+        // step into doCheckBlock
+        currBlock.addContent(new Jump(doCheckBlock));
+        currBlock = doCheckBlock;
+        currBlock.setIndex(blockId++);
         currSymbolTable = currSymbolTable.getParent();  // 上升一层
         loopDepth--;
         whileNext.pop();
         whileHead.pop();
-        currBlock.addContent(new Jump(whileBlock));
-        currBlock = whileEnd;
-        whileEnd.setIndex(blockId++);
+
+
+        cond = checkCond(whileStmt.getCond());
+        currBlock.addContent(new Branch(cond, doBlock, doEnd, true));
+        currBlock.addContent(new Jump(doEnd));
+        currBlock = doEnd;
+        currBlock.setIndex(blockId++);
+
+        // currBlock.addContent(new Jump(whileBlock));
+        // currBlock = whileEnd;
+        // whileEnd.setIndex(blockId++);
+
+        // 通过ID保证中间代码和mips代码中基本块的顺序和遍历顺序一致
+        // BasicBlock whileBlock = new BasicBlock("WHILE_" + blockCount++);
+        // BasicBlock whileBody = new BasicBlock("WHILE_BODY_" + blockCount++);
+        // BasicBlock whileEnd = new BasicBlock("WHILE_END_" + blockCount++);
+        // whileHead.push(whileBlock);
+        // whileNext.push(whileEnd);
+
+        // step into while
+        // currBlock.addContent(new Jump(whileBlock));
+        // currBlock = whileBlock;
+        // currBlock.setIndex(blockId++);
+
+        // // check Cond
+        // Operand cond = checkCond(whileStmt.getCond());
+        //
+        // // step into whileBody
+        // currBlock.addContent(new Branch(cond, whileBody, whileEnd, true));
+        // currBlock = whileBody;
+        // whileBody.setIndex(blockId++);
+        //
+        // currSymbolTable = new SymbolTable(currSymbolTable, currFunc.getFuncSymbolTable());  // 下降一层
+        // // check Stmt
+        // checkStmt(whileStmt.getStmt());
+        // currSymbolTable = currSymbolTable.getParent();  // 上升一层
+        // loopDepth--;
+        // whileNext.pop();
+        // whileHead.pop();
+        // currBlock.addContent(new Jump(whileBlock));
+        // currBlock = whileEnd;
+        // whileEnd.setIndex(blockId++);
     }
 
     public Operand checkConstExp(ConstExp constExp, boolean returnPointer) {
