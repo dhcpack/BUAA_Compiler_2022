@@ -25,8 +25,12 @@ public class BasicBlock implements Comparable<BasicBlock> {
     }
 
     // 消除公共子表达式
-    public void setContent(ArrayList<BlockNode> content) {
-        this.content = content;
+    public void clearContent() {
+        this.content.clear();
+        this.defSet.clear();
+        this.useSet.clear();
+        this.nextBlock.clear();
+        this.operandUsage.clear();
     }
 
     public HashSet<BlockNode> getFirstBlockNode() {

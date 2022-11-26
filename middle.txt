@@ -1,37 +1,96 @@
 ###### GLOBAL STRING ######
-STR_1 : a = 
-STR_2 : , b =  
-STR_3 : , c = 
-STR_4 : , t1 = 
-STR_5 : , t2 = 
-STR_6 : , t3 = 
-STR_7 : , t4 = 
-STR_8 : \n
+STR_1 : 19374223\n
+STR_2 : fibo[
+STR_3 : ] = 
+STR_4 : \n
+STR_5 : ] / 2 = 
+STR_6 : /***************** END *****************/\n
 
 ###### GLOBAL ARRAY ######
 
 ###### GLOBAL VAR ######
+[0x0]n: 1
+[0x4]a: 1
+[0x8]b: 2
+[0xc]c: 3
+[0x10]d: 4
+[0x14]e: 5
 
 ###### TEXT ######
 JUMP FUNC_main
-# func main : stack size 0x1c
+# func fib : stack size 0x8
+# param: INT(n[sp-0x4])
+FUNC_fib:
+	DEF, INT(ret[sp-0x8]), 1
+	JUMP L_OR_EXP_0
+L_OR_EXP_0:
+	JUMP L_AND_EXP_1
+L_AND_EXP_1:
+	EQ, INT(tmp_int_2[temp]), INT(n[sp-0x4]), 1
+	JUMP AND_END_2
+AND_END_2:
+	JUMP OR_END_3
+OR_END_3:
+	Branch INT(tmp_int_2[temp]) ? IF_BODY_4 : IF_ELSE_6
+IF_BODY_4:
+	JUMP B_7
+B_7:
+	ASS, INT(ret[sp-0x8]), 1
+	JUMP B_8
+B_8:
+	JUMP IF_END_5
+IF_ELSE_6:
+	JUMP L_OR_EXP_9
+L_OR_EXP_9:
+	JUMP L_AND_EXP_10
+L_AND_EXP_10:
+	EQ, INT(tmp_int_3[temp]), INT(n[sp-0x4]), 2
+	JUMP AND_END_11
+AND_END_11:
+	JUMP OR_END_12
+OR_END_12:
+	Branch INT(tmp_int_3[temp]) ? IF_BODY_13 : IF_ELSE_15
+IF_BODY_13:
+	JUMP B_16
+B_16:
+	ASS, INT(ret[sp-0x8]), 1
+	JUMP B_17
+B_17:
+	JUMP IF_END_14
+IF_ELSE_15:
+	JUMP B_18
+B_18:
+	ADD, INT(tmp_int_6[temp]), INT(tmp_int_5[temp]), INT(tmp_int_8[temp])
+	ASS, INT(ret[sp-0x8]), INT(tmp_int_6[temp])
+	SUB, INT(tmp_int_7[temp]), INT(n[sp-0x4]), 2
+	SUB, INT(tmp_int_4[temp]), INT(n[sp-0x4]), 1
+	Call FUNC_fib; Params: INT(tmp_int_4[temp]); RET INT(tmp_int_5[temp])
+	Call FUNC_fib; Params: INT(tmp_int_7[temp]); RET INT(tmp_int_8[temp])
+	JUMP B_19
+B_19:
+	JUMP IF_END_14
+IF_END_14:
+	JUMP IF_END_5
+IF_END_5:
+	RETURN INT(ret[sp-0x8])
+# func main : stack size 0x4
 # param: 
 FUNC_main:
-	ASS, INT(b[sp-0x18]), 7
-	ASS, INT(b[sp-0x18]), INT(b[sp-0x18])
+	DIV, INT(tmp_int_11[temp]), INT(tmp_int_10[temp]), 2
+	DEF, INT(n[sp-0x4]), 0
+	GETINT INT(n[sp-0x4])
 	PRINT_STR STR_1
-	PRINT_INT INT(a[sp-0x14])
+	Call FUNC_fib; Params: INT(n[sp-0x4]); RET INT(tmp_int_9[temp])
 	PRINT_STR STR_2
-	PRINT_INT INT(b[sp-0x18])
+	PRINT_INT INT(n[sp-0x4])
 	PRINT_STR STR_3
-	PRINT_INT INT(c[sp-0x1c])
+	PRINT_INT INT(tmp_int_9[temp])
 	PRINT_STR STR_4
-	PRINT_INT INT(t1[sp-0x4])
+	Call FUNC_fib; Params: INT(n[sp-0x4]); RET INT(tmp_int_10[temp])
+	PRINT_STR STR_2
+	PRINT_INT INT(n[sp-0x4])
 	PRINT_STR STR_5
-	PRINT_INT INT(t2[sp-0x8])
+	PRINT_INT INT(tmp_int_11[temp])
+	PRINT_STR STR_4
 	PRINT_STR STR_6
-	PRINT_INT INT(t3[sp-0xc])
-	PRINT_STR STR_7
-	PRINT_INT INT(t4[sp-0x10])
-	PRINT_STR STR_8
 	RETURN 0

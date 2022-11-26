@@ -244,6 +244,11 @@ public class Symbol implements LeafNode, Operand {
         return null;
     }
 
+    private static int tempDAGCount = 0;
+    public static Symbol tempDAGSymbol() {
+        return new Symbol(SymbolType.INT, "tmp_dag_" + tempDAGCount++, false, Scope.LOCAL);
+    }
+
     public Scope getScope() {
         return scope;
     }

@@ -4,81 +4,19 @@
 	global:
 	
 	.space 4
-	STR_1: .asciiz "a = "
-	STR_2: .asciiz ", b =  "
-	STR_3: .asciiz ", c = "
-	STR_4: .asciiz ", t1 = "
-	STR_5: .asciiz ", t2 = "
-	STR_6: .asciiz ", t3 = "
-	STR_7: .asciiz ", t4 = "
-	STR_8: .asciiz "\n"
+	STR_1: .asciiz "19241091\n"
+	STR_2: .asciiz "==================testfile4 end=================="
 .text
 	la $gp, global
 	j FUNC_main
 FUNC_main:
-	# ASS, INT(b[sp-0x18]), 7
-	li $5, 7
-	# ASS, INT(b[sp-0x18]), INT(b[sp-0x18])
-	move $5, $5
 	# PRINT_STR STR_1
 	li $2, 4
 	la $4, STR_1
 	syscall
-	# PRINT_INT INT(a[sp-0x14])
-	li $2, 1
-	move $4, $10
-	syscall
 	# PRINT_STR STR_2
 	li $2, 4
 	la $4, STR_2
-	syscall
-	# PRINT_INT INT(b[sp-0x18])
-	li $2, 1
-	move $4, $5
-	syscall
-	# PRINT_STR STR_3
-	li $2, 4
-	la $4, STR_3
-	syscall
-	# PRINT_INT INT(c[sp-0x1c])
-	li $2, 1
-	move $4, $7
-	syscall
-	# PRINT_STR STR_4
-	li $2, 4
-	la $4, STR_4
-	syscall
-	# PRINT_INT INT(t1[sp-0x4])
-	li $2, 1
-	move $4, $8
-	syscall
-	# PRINT_STR STR_5
-	li $2, 4
-	la $4, STR_5
-	syscall
-	# PRINT_INT INT(t2[sp-0x8])
-	li $2, 1
-	move $4, $9
-	syscall
-	# PRINT_STR STR_6
-	li $2, 4
-	la $4, STR_6
-	syscall
-	# PRINT_INT INT(t3[sp-0xc])
-	li $2, 1
-	move $4, $11
-	syscall
-	# PRINT_STR STR_7
-	li $2, 4
-	la $4, STR_7
-	syscall
-	# PRINT_INT INT(t4[sp-0x10])
-	li $2, 1
-	move $4, $6
-	syscall
-	# PRINT_STR STR_8
-	li $2, 4
-	la $4, STR_8
 	syscall
 	# RETURN 0
 	li $2, 10

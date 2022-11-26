@@ -3,6 +3,7 @@ package Middle.type;
 import Frontend.Symbol.Symbol;
 
 import java.util.HashSet;
+import java.util.Objects;
 
 public abstract class BlockNode {
     private HashSet<Symbol> defSet = new HashSet<>();
@@ -25,4 +26,14 @@ public abstract class BlockNode {
     public void setUseSet(HashSet<Symbol> useSet) {
         this.useSet = useSet;
     }
+
+    // @Override
+    // public boolean equals(Object o) {
+    //     return false;
+    // }
+    //
+    // @Override
+    // public int hashCode() {
+    //     return Objects.hash(nextBlockNode);
+    // }
 }

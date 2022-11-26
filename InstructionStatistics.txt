@@ -2,5 +2,5 @@ DIV 	: 0
 MULT 	: 0
 JUMP/BRANCH 	: 1
 MEM 	: 0
-OTHER 	: 59
-FinalCycle : 60.5
+OTHER 	: 12
+FinalCycle : 13.5
