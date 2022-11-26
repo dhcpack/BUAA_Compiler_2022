@@ -897,41 +897,6 @@ public class SymbolTableBuilder {
         currBlock.addContent(new Jump(doEnd));
         currBlock = doEnd;
         currBlock.setIndex(blockId++);
-
-        // currBlock.addContent(new Jump(whileBlock));
-        // currBlock = whileEnd;
-        // whileEnd.setIndex(blockId++);
-
-        // 通过ID保证中间代码和mips代码中基本块的顺序和遍历顺序一致
-        // BasicBlock whileBlock = new BasicBlock("WHILE_" + blockCount++);
-        // BasicBlock whileBody = new BasicBlock("WHILE_BODY_" + blockCount++);
-        // BasicBlock whileEnd = new BasicBlock("WHILE_END_" + blockCount++);
-        // whileHead.push(whileBlock);
-        // whileNext.push(whileEnd);
-
-        // step into while
-        // currBlock.addContent(new Jump(whileBlock));
-        // currBlock = whileBlock;
-        // currBlock.setIndex(blockId++);
-
-        // // check Cond
-        // Operand cond = checkCond(whileStmt.getCond());
-        //
-        // // step into whileBody
-        // currBlock.addContent(new Branch(cond, whileBody, whileEnd, true));
-        // currBlock = whileBody;
-        // whileBody.setIndex(blockId++);
-        //
-        // currSymbolTable = new SymbolTable(currSymbolTable, currFunc.getFuncSymbolTable());  // 下降一层
-        // // check Stmt
-        // checkStmt(whileStmt.getStmt());
-        // currSymbolTable = currSymbolTable.getParent();  // 上升一层
-        // loopDepth--;
-        // whileNext.pop();
-        // whileHead.pop();
-        // currBlock.addContent(new Jump(whileBlock));
-        // currBlock = whileEnd;
-        // whileEnd.setIndex(blockId++);
     }
 
     public Operand checkConstExp(ConstExp constExp, boolean returnPointer) {

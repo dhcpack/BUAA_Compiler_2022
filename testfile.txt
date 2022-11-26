@@ -1,26 +1,13 @@
-const int Mod = 10007;
-
-const int Map[2][2] = {
-        {1, 1},
-        {1, 0}
-}, Bound[2] = {2, 2};
-
-int T, f[2] = {1, 0};
-int ori[2][2] = {
-        {1, 0},
-        {0, 0}
-};
-
-int main() {
-    T = 1050;
-    while (T) {
-        printf("T = %d\n", T);
-        if (T / 2 * 2 != T) {
-            printf("OK\n")
-        } else {}
-        printf("T = %d\n", T);
-        T = T / 2;
-        printf("T = %d\n", T);
-    }
+int main(){
+    int t1, t2, t3, t4, a, b, c;
+    c = 5;
+    b = 7;
+    t1 = -c;
+    t2 = b * t1;
+    t3 = -c;
+    c  = b * t3;
+    t4 = t2 + c;
+    a = t4;
+    printf("a = %d, b =  %d, c = %d, t1 = %d, t2 = %d, t3 = %d, t4 = %d\n", a, b, c, t1, t2, t3, t4);
     return 0;
 }

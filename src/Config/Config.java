@@ -10,12 +10,9 @@ import Frontend.Parser.TokenHandler;
 import Frontend.Symbol.Errors;
 import Frontend.SymbolTableBuilder;
 import Middle.MiddleCode;
-import Middle.type.BasicBlock;
-import Middle.type.FuncBlock;
+import Middle.optimizer.DAG.DeleteCommonExpr;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 
 public class Config {
     public static final boolean debugMode = false;
@@ -38,7 +35,9 @@ public class Config {
         errors.output();  // through ErrorWriter
 
         MiddleCode middleCode = symbolTableBuilder.getMiddleCode();
-        LinkedHashMap<FuncBlock, ArrayList<BasicBlock>> funcToSortedBlock = middleCode.getFuncToSortedBlock();
+
+        // MiddleCode Optimize
+        DeleteCommonExpr.optimize(middleCode);
 
         // output middle code
         middleCode.output();  // through MiddleWriter

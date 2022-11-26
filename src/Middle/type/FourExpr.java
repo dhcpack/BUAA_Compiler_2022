@@ -6,27 +6,40 @@ public class FourExpr extends BlockNode {
     public enum ExprOp {
         // 双操作数
         ADD,
-        SUB,
         MUL,
+        EQ,
+        NEQ,
+        AND,  // 短路求值
+        OR,  // 短路求值
+
+        SUB,
         DIV,
         MOD,
         GT,
         GE,
         LT,
         LE,
-        EQ,
-        NEQ,
 
 
         // 单操作数
         DEF,  // int a = b + c;
         ASS,
         NOT,
-        NEG,
+        NEG;
 
-        // not used
-        AND,  // 短路求值
-        OR,  // 短路求值
+        public boolean isSingle() {
+            return this == DEF || this == ASS || this == NOT || this == NEG;
+        }
+
+        public boolean couldSwap() {
+            if (this == ADD || this == MUL || this == EQ || this == NEQ || this == AND || this == OR) {
+                return true;
+            } else if (this == SUB || this == DIV || this == MOD || this == GT || this == GE || this == LT || this == LE) {
+                return false;
+            }
+            assert false;
+            return false;
+        }
     }
 
     private final Operand left;

@@ -11,7 +11,7 @@ public class BasicBlock implements Comparable<BasicBlock> {
     private int index;
     private boolean hasIndex = false;
     private final String label;
-    private final ArrayList<BlockNode> content = new ArrayList<>();
+    private ArrayList<BlockNode> content = new ArrayList<>();
     private final ArrayList<Operand> operandUsage = new ArrayList<>();
 
     public BasicBlock(String label) {
@@ -22,6 +22,11 @@ public class BasicBlock implements Comparable<BasicBlock> {
         this.label = label;
         this.index = index;
         this.hasIndex = true;
+    }
+
+    // 消除公共子表达式
+    public void setContent(ArrayList<BlockNode> content) {
+        this.content = content;
     }
 
     public HashSet<BlockNode> getFirstBlockNode() {
