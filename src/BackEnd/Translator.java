@@ -77,10 +77,10 @@ public class Translator {
         ArrayList<Integer> globalWords = new ArrayList<>();
         while (!nameAddr.isEmpty()) {
             SIPair pair = nameAddr.poll();
-            if (nameToVal.containsKey(pair.getName())) {
-                globalWords.add(nameToVal.get(pair.getName()));
-            } else if (nameToArray.containsKey(pair.getName())) {
-                globalWords.addAll(nameToArray.get(pair.getName()));
+            if (nameToVal.containsKey(pair.getString())) {
+                globalWords.add(nameToVal.get(pair.getString()));
+            } else if (nameToArray.containsKey(pair.getString())) {
+                globalWords.addAll(nameToArray.get(pair.getString()));
             } else {
                 assert false;
             }
@@ -254,6 +254,7 @@ public class Translator {
     private static final int FREE_LOCAL = 0b0010;
     private static final int FREE_PARAM = 0b0100;
     private static final int FREE_TEMP = 0b1000;
+    // private static final int FREE_INLINE_SYMBOL = 0b;
 
     public void freeAllRegisters(int type, boolean save) {
         HashSet<Symbol> symbols = new HashSet<>(tempRegisters.getSymbolToRegister().keySet());
@@ -811,6 +812,13 @@ public class Translator {
 
     private void translateMemory(Memory memory) {
         Symbol base = memory.getBase();
+        if (base.getSymbolType() == SymbolType.INT) {
+            assert base.getScope() == Symbol.Scope.TEMP;  // 函数内联传参
+            int offset = ((Immediate) memory.getOffset()).getNumber();
+            int resRegister = allocRegister(memory.getRes(), noLoad);
+            mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.addiu, resRegister, Registers.sp, -offset));
+            return;
+        }
         assert base.getSymbolType() == SymbolType.ARRAY;  // 一定是数组
         Symbol res = memory.getRes();
         Operand offset = memory.getOffset();

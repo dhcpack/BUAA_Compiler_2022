@@ -1,19 +1,16 @@
 package Frontend;
 
+import Config.SIPair;
 import Exceptions.IllegalBreakContinueException;
 import Exceptions.IllegalReturnException;
 import Exceptions.IllegalSymbolException;
 import Exceptions.MismatchParamCountException;
-import Exceptions.MismatchParamTypeException;
 import Exceptions.MismatchPrintfException;
 import Exceptions.MissRbrackException;
 import Exceptions.MissReturnException;
 import Exceptions.MissRparentException;
 import Exceptions.MissSemicnException;
-import Exceptions.ModifyConstException;
 import Exceptions.MyAssert;
-import Exceptions.RedefinedTokenException;
-import Exceptions.UndefinedTokenException;
 import Frontend.Lexer.Token;
 import Frontend.Lexer.TokenType;
 import Frontend.Parser.CompUnit;
@@ -29,13 +26,6 @@ import Frontend.Parser.expr.types.EqExp;
 import Frontend.Parser.expr.types.Exp;
 import Frontend.Parser.expr.types.FuncExp;
 import Frontend.Parser.expr.types.FuncRParams;
-import Frontend.Parser.expr.types.UnaryOp;
-import Frontend.Symbol.Errors;
-import Frontend.Symbol.Symbol;
-import Frontend.Symbol.SymbolTable;
-import Frontend.Symbol.SymbolType;
-import Middle.type.BlockNode;
-import Middle.type.Immediate;
 import Frontend.Parser.expr.types.LAndExp;
 import Frontend.Parser.expr.types.LOrExp;
 import Frontend.Parser.expr.types.LVal;
@@ -46,6 +36,7 @@ import Frontend.Parser.expr.types.PrimaryExpInterface;
 import Frontend.Parser.expr.types.RelExp;
 import Frontend.Parser.expr.types.UnaryExp;
 import Frontend.Parser.expr.types.UnaryExpInterface;
+import Frontend.Parser.expr.types.UnaryOp;
 import Frontend.Parser.func.types.FuncDef;
 import Frontend.Parser.func.types.FuncFParam;
 import Frontend.Parser.func.types.MainFuncDef;
@@ -62,14 +53,20 @@ import Frontend.Parser.stmt.types.ReturnStmt;
 import Frontend.Parser.stmt.types.Stmt;
 import Frontend.Parser.stmt.types.StmtInterface;
 import Frontend.Parser.stmt.types.WhileStmt;
+import Frontend.Symbol.Errors;
+import Frontend.Symbol.Symbol;
+import Frontend.Symbol.SymbolTable;
+import Frontend.Symbol.SymbolType;
 import Frontend.Util.ConstExpCalculator;
 import Middle.MiddleCode;
 import Middle.type.BasicBlock;
+import Middle.type.BlockNode;
 import Middle.type.Branch;
 import Middle.type.FourExpr;
 import Middle.type.FuncBlock;
 import Middle.type.FuncCall;
 import Middle.type.GetInt;
+import Middle.type.Immediate;
 import Middle.type.Jump;
 import Middle.type.Memory;
 import Middle.type.Operand;
@@ -78,8 +75,8 @@ import Middle.type.PrintInt;
 import Middle.type.PrintStr;
 import Middle.type.Return;
 
-
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
@@ -91,6 +88,7 @@ import java.util.stream.Collectors;
  */
 public class SymbolTableBuilder {
     private SymbolTable currSymbolTable = new SymbolTable(null, null);
+    private final SymbolTable topSymbolTable = currSymbolTable;
     private final Errors errors = new Errors();
     private final CompUnit compUnit;
     private final MiddleCode middleCode = new MiddleCode();
@@ -174,9 +172,11 @@ public class SymbolTableBuilder {
                 try {  // 全部扔到ConstExpCalculator里面去算，能算就算，得到AssertionError就在运行中计算
                     int val;
                     if (!initVal.isConst()) {
-                        val = new ConstExpCalculator(currSymbolTable, errors).calcExp(initVal.getExp());
+                        val = new ConstExpCalculator(currSymbolTable, errors, inlining, currentIndex,
+                                funcSymbolTableMap.get(inlineFunc), topSymbolTable).calcExp(initVal.getExp());
                     } else {
-                        val = new ConstExpCalculator(currSymbolTable, errors).calcConstExp(initVal.getConstExp());
+                        val = new ConstExpCalculator(currSymbolTable, errors, inlining, currentIndex,
+                                funcSymbolTableMap.get(inlineFunc), topSymbolTable).calcConstExp(initVal.getConstExp());
                     }
                     if (symbol.isConst()) {  // 为常量赋初始值
                         symbol.setConstInitInt(val);
@@ -203,55 +203,6 @@ public class SymbolTableBuilder {
                     currBlock.addContent(new Middle.type.FourExpr(val, symbol, FourExpr.ExprOp.DEF));
                     symbol.setScope(Symbol.Scope.LOCAL);
                 }
-                // if (initVal.isConst() || currFunc == null) {  // 初始化数值可以直接计算出结果
-                //     int val;
-                //     if (!initVal.isConst()) {
-                //         val = new ConstExpCalculator(currSymbolTable, errors).calcExp(initVal.getExp());
-                //     } else {
-                //         val = new ConstExpCalculator(currSymbolTable, errors).calcConstExp(initVal.getConstExp());
-                //     }
-                //     symbol.setConstInitInt(val);
-                //     if (currFunc == null) {  // pre decl, not in a function  // 全局
-                //         symbol.setAddress(currSymbolTable.getStackSize() - symbol.getSize());
-                //         middleCode.addInt(def.getVar().getIdent().getContent(), symbol.getAddress(), val);
-                //         symbol.setScope(Symbol.Scope.GLOBAL);
-                //     } else {  // decl in a function  // 局部
-                //         symbol.setAddress(currSymbolTable.getStackSize());
-                //         currBlock.addContent(new Middle.type.FourExpr(new Immediate(val), symbol, FourExpr.ExprOp.DEF));
-                //         symbol.setScope(Symbol.Scope.LOCAL);
-                //     }
-                // } else {  // 初始化数值不可以直接计算出结果，用FourExpr表示
-                //     try{
-                //         int val;
-                //         if (!initVal.isConst()) {
-                //             val = new ConstExpCalculator(currSymbolTable, errors).calcExp(initVal.getExp());
-                //         } else {
-                //             val = new ConstExpCalculator(currSymbolTable, errors).calcConstExp(initVal.getConstExp());
-                //         }
-                //         symbol.setConstInitInt(val);
-                //         if (currFunc == null) {  // pre decl, not in a function  // 全局
-                //             symbol.setAddress(currSymbolTable.getStackSize() - symbol.getSize());
-                //             middleCode.addInt(def.getVar().getIdent().getContent(), symbol.getAddress(), val);
-                //             symbol.setScope(Symbol.Scope.GLOBAL);
-                //         } else {  // decl in a function  // 局部
-                //             symbol.setAddress(currSymbolTable.getStackSize());
-                //             currBlock.addContent(new Middle.type.FourExpr(new Immediate(val), symbol, FourExpr.ExprOp.DEF));
-                //             symbol.setScope(Symbol.Scope.LOCAL);
-                //         }
-                //     } catch (AssertionError error){
-                //         System.err.println("cannot calculate, calc in the process");
-                //         Operand val;
-                //         if (initVal.isConst()) {
-                //             val = checkConstExp(initVal.getConstExp(), false);
-                //         } else {
-                //             val = checkExp(initVal.getExp(), false);
-                //         }
-                //
-                //         symbol.setAddress(currSymbolTable.getStackSize());
-                //         currBlock.addContent(new Middle.type.FourExpr(val, symbol, FourExpr.ExprOp.DEF));
-                //         symbol.setScope(Symbol.Scope.LOCAL);
-                //     }
-                // }
             } else {  // 没有初始化
                 Symbol symbol = checkVar(def.getVar());  // 先检查initial Val，再检查Var
                 symbol.setScope(scope);
@@ -276,7 +227,8 @@ public class SymbolTableBuilder {
                 ArrayList<AddExp> initExp = flatArrayInitVal(initVal);
 
                 try {  // 全部扔到ConstExpCalculator里面去算，能算就算，得到AssertionError就在运行中计算
-                    ConstExpCalculator constExpCalculator = new ConstExpCalculator(currSymbolTable, errors);
+                    ConstExpCalculator constExpCalculator = new ConstExpCalculator(currSymbolTable, errors, inlining,
+                            currentIndex, funcSymbolTableMap.get(inlineFunc), topSymbolTable);
                     ArrayList<Integer> initNum = initExp.stream().map(constExpCalculator::calcAddExp)
                             .collect(Collectors.toCollection(ArrayList::new));
                     if (symbol.isConst()) {
@@ -284,7 +236,7 @@ public class SymbolTableBuilder {
                     }
                     if (currFunc == null) {  // 全局变量
                         symbol.setAddress(currSymbolTable.getStackSize() - symbol.getSize());
-                        middleCode.addArray(symbol.getIdent().getContent(), symbol.getAddress(), initNum);
+                        middleCode.addArray(symbol.getName(), symbol.getAddress(), initNum);
                         symbol.setScope(Symbol.Scope.GLOBAL);
                     } else {  // 局部变量
                         int offset = 0;
@@ -310,66 +262,6 @@ public class SymbolTableBuilder {
                     symbol.setAddress(currSymbolTable.getStackSize());
                     symbol.setScope(Symbol.Scope.LOCAL);
                 }
-                // // int stackSize = 1;
-                // // ArrayList<Integer> dimSize = symbol.getDimSize();
-                // // for (Integer s : dimSize) {
-                // //     stackSize *= s;
-                // // }
-                // if (initVal.isConst() || currFunc == null) {  // 初始化数值可以直接计算出结果
-                //     ConstExpCalculator constExpCalculator = new ConstExpCalculator(currSymbolTable, errors);
-                //     ArrayList<Integer> initNum = initExp.stream().map(constExpCalculator::calcAddExp)
-                //             .collect(Collectors.toCollection(ArrayList::new));
-                //     symbol.setConstInitArray(initNum);
-                //     if (currFunc == null) {  // 全局变量
-                //         symbol.setAddress(currSymbolTable.getStackSize() - symbol.getSize());
-                //         middleCode.addArray(symbol.getIdent().getContent(), symbol.getAddress(), initNum);
-                //         symbol.setScope(Symbol.Scope.GLOBAL);
-                //     } else {  // 局部变量
-                //         int offset = 0;
-                //         for (Integer num : initNum) {
-                //             Symbol ptr = Symbol.tempSymbol(SymbolType.POINTER);
-                //             currBlock.addContent(new Memory(symbol, new Immediate(offset * 4), ptr));  // 局部数组
-                //             currBlock.addContent(new Pointer(Pointer.Op.STORE, ptr, new Immediate(num)));
-                //             offset++;
-                //         }
-                //         symbol.setAddress(currSymbolTable.getStackSize());
-                //         symbol.setScope(Symbol.Scope.LOCAL);
-                //     }
-                // } else {  // 初始化数值不可以直接计算出结果，用FourExpr表示
-                //     try{
-                //         ConstExpCalculator constExpCalculator = new ConstExpCalculator(currSymbolTable, errors);
-                //         ArrayList<Integer> initNum = initExp.stream().map(constExpCalculator::calcAddExp)
-                //                 .collect(Collectors.toCollection(ArrayList::new));
-                //         symbol.setConstInitArray(initNum);
-                //         if (currFunc == null) {  // 全局变量
-                //             symbol.setAddress(currSymbolTable.getStackSize() - symbol.getSize());
-                //             middleCode.addArray(symbol.getIdent().getContent(), symbol.getAddress(), initNum);
-                //             symbol.setScope(Symbol.Scope.GLOBAL);
-                //         } else {  // 局部变量
-                //             int offset = 0;
-                //             for (Integer num : initNum) {
-                //                 Symbol ptr = Symbol.tempSymbol(SymbolType.POINTER);
-                //                 currBlock.addContent(new Memory(symbol, new Immediate(offset * 4), ptr));  // 局部数组
-                //                 currBlock.addContent(new Pointer(Pointer.Op.STORE, ptr, new Immediate(num)));
-                //                 offset++;
-                //             }
-                //             symbol.setAddress(currSymbolTable.getStackSize());
-                //             symbol.setScope(Symbol.Scope.LOCAL);
-                //         }
-                //     } catch (AssertionError error){
-                //         System.err.println("cannot calculate array, calc in the process");
-                //         int offset = 0;
-                //         for (AddExp addExp : initExp) {
-                //             Operand exp = checkAddExp(addExp, false);
-                //             Symbol ptr = Symbol.tempSymbol(SymbolType.POINTER);
-                //             currBlock.addContent(new Memory(symbol, new Immediate(offset * 4), ptr));  // 局部数组
-                //             currBlock.addContent(new Pointer(Pointer.Op.STORE, ptr, exp));
-                //             offset++;
-                //         }
-                //         symbol.setAddress(currSymbolTable.getStackSize());
-                //         symbol.setScope(Symbol.Scope.LOCAL);
-                //     }
-                // }
             } else {  // 没有初始化
                 Symbol symbol = checkVar(def.getVar());  // 先检查initial Val，再检查Var
                 symbol.setScope(scope);
@@ -378,7 +270,7 @@ public class SymbolTableBuilder {
                     int totalCount = symbol.getSize() / 4;  // 数组应该初始化为多少个零
                     for (int i = 0; i < totalCount; i++) initZero.add(0);
                     symbol.setAddress(currSymbolTable.getStackSize() - symbol.getSize());
-                    middleCode.addArray(symbol.getIdent().getContent(), symbol.getAddress(), initZero);
+                    middleCode.addArray(symbol.getName(), symbol.getAddress(), initZero);
                     symbol.setScope(Symbol.Scope.GLOBAL);
                     // symbol.setConstInitArray(initZero);
                 } else {
@@ -411,12 +303,20 @@ public class SymbolTableBuilder {
     //  常量变量 Var -> Ident { '[' ConstExp ']' }
     public Symbol checkVar(Var var) {
         // check redefine
-        boolean redefine = false;
+        // boolean redefine = false;
         Token ident = var.getIdent();
-        if (currSymbolTable.contains(ident.getContent(), false)) {
-            errors.add(new RedefinedTokenException(ident.getLine()));
-            redefine = true;
-        }
+        // SIPair siPair = transferIdent(ident.getContent());
+        // int type = siPair.getInteger();
+        // boolean flag = false;
+        // if (type == origin || type == inlineLocal) {
+        //     flag = currSymbolTable.contains(siPair.getString(), false);
+        // } else {
+        //     flag = topSymbolTable.contains(siPair.getString(), false);
+        // }
+        // if (flag){
+        //     errors.add(new RedefinedTokenException(ident.getLine()));
+        //     redefine = true;
+        // }
 
         // check missRBrack
         if (var.missRBrack()) {
@@ -426,7 +326,8 @@ public class SymbolTableBuilder {
         // check const Exp and **calc it**; save the result into ARRAY dimSize
         ArrayList<ConstExp> dimExp = var.getDimExp();
         ArrayList<Integer> dimSize = new ArrayList<>();
-        ConstExpCalculator dimSizeCalculator = new ConstExpCalculator(currSymbolTable, errors);
+        ConstExpCalculator dimSizeCalculator = new ConstExpCalculator(currSymbolTable, errors, inlining, currentIndex,
+                funcSymbolTableMap.get(inlineFunc), topSymbolTable);
         for (ConstExp constExp : dimExp) {
             dimSize.add(dimSizeCalculator.calcConstExp(constExp));
             // TODO: put error check in calcUti. DONE!
@@ -435,44 +336,41 @@ public class SymbolTableBuilder {
         var.setDimSize(dimSize);
 
         // add to symbol table
-        if (!redefine) {
-            Symbol symbol = new Symbol(var.getDimCount() == 0 ? SymbolType.INT : SymbolType.ARRAY, ident, dimSize,
-                    var.getDimCount(), var.isConst(), null);  // checkVal没有设置scope
-            currSymbolTable.addSymbol(symbol);  // 会同时为Symbol申请空间
-            // symbol.setAddress(currSymbolTable.getStackSize());  // setAddress移动到调用LVal的函数中做，便于根据GLOBAL or LOCAL设定不同的address
-            return symbol;
+        // if (!redefine) {
+        Symbol symbol = new Symbol(var.getDimCount() == 0 ? SymbolType.INT : SymbolType.ARRAY,
+                transferIdent(ident.getContent()).getString(), dimSize, var.getDimCount(), var.isConst(),
+                null);  // checkVal没有设置scope
+        if (inlining) {
+            symbol.setInlining(currFunc, inlineFunc, currentIndex);
         }
-        assert false : "redefine";
-        return null;
+        currSymbolTable.addSymbol(symbol);  // 会同时为Symbol申请空间
+        // symbol.setAddress(currSymbolTable.getStackSize());  // setAddress移动到调用LVal的函数中做，便于根据GLOBAL or LOCAL设定不同的address
+        return symbol;
+        // }
+        // assert false : "redefine";
+        // return null;
     }
-
-    // 常量初值 ConstInitVal → ConstExp | '{' [ ConstInitVal { ',' ConstInitVal } ] '}'
-    // 变量初值 InitVal → Exp | '{' [ InitVal { ',' InitVal } ] '}'
-    // public void checkInitVal(InitVal initVal) {
-    //     if (initVal.getExp() != null) {  // only expr
-    //         checkExp(initVal.getExp());
-    //     } else if (initVal.getConstExp() != null) {  // only const expr
-    //         checkConstExp(initVal.getConstExp());
-    //     } else {  // initial Vals
-    //         ArrayList<InitVal> initVals = initVal.getInitVals();
-    //         for (InitVal initVal1 : initVals) {
-    //             checkInitVal(initVal1);
-    //         }
-    //     }
-    // }
 
     // FuncDef → FuncType Ident '(' [FuncFParams] ')' Block
     public void checkFunc(FuncDef funcDef, boolean isMainFunc) {
         currFuncType = funcDef.getReturnType().getType();
         Token ident = funcDef.getIdent();
         // check redefine
-        boolean redefine = false;
-        if (currSymbolTable.contains(ident.getContent(), false)) {  // check redefine
-            errors.add(new RedefinedTokenException(ident.getLine()));
-            redefine = true;
-            assert false;
-            // return;  //  TODO: stop here or not?
-        }
+        // boolean redefine = false;
+        // SIPair siPair = transferIdent(ident.getContent());
+        // int type = siPair.getInteger();
+        // boolean flag = false;
+        // if (type == origin || type == inlineLocal) {
+        //     flag = currSymbolTable.contains(siPair.getString(), false);
+        // } else {
+        //     flag = topSymbolTable.contains(siPair.getString(), false);
+        // }
+        // if (flag) {  // check redefine
+        //     errors.add(new RedefinedTokenException(ident.getLine()));
+        //     redefine = true;
+        //     assert false;
+        //     // return;  //  TODO: stop here or not?
+        // }
 
         currSymbolTable = new SymbolTable(currSymbolTable, null);  // 下降一层(函数符号表)
 
@@ -505,15 +403,15 @@ public class SymbolTableBuilder {
 
         // add to Frontend.Symbol Table(parent symbol table)
         Token returnType = funcDef.getReturnType();
-        if (!redefine) {
-            currSymbolTable.getParent().addSymbol(new Symbol(SymbolType.FUNCTION,  // func 加到父符号表中
-                    returnType.getType() == TokenType.INTTK ? SymbolType.INT : SymbolType.VOID, params, ident));
-        }
+        // if (!redefine) {
+        currSymbolTable.getParent().addSymbol(new Symbol(SymbolType.FUNCTION,  // func 加到父符号表中
+                returnType.getType() == TokenType.INTTK ? SymbolType.INT : SymbolType.VOID, params, ident));
+        // }
 
         // 给末尾没有return语句的函数加return(直接在所有函数结尾无脑加jr $ra)
         BlockStmt funcBody = funcDef.getBlockStmt();
         if (funcBody.getReturn() == null) {
-            if(returnType.getType() == TokenType.VOIDTK){
+            if (returnType.getType() == TokenType.VOIDTK) {
                 funcBody.getBlockItems()
                         .add(new Stmt(new ReturnStmt(Token.tempToken(TokenType.RETURNTK, funcBody.getRightBrace().getLine()))));
             } else {
@@ -529,6 +427,7 @@ public class SymbolTableBuilder {
         // BasicBlock body = new BasicBlock(funcBlock.getLabel());
         // body.addContent(new Jump(block));
         currFunc.setBody(body);
+        funcBlockDefMap.put(currFunc, funcDef);
         // checkFuncBlock(funcBlock, funcDef.getBlockStmt());
 
         // check return right or not
@@ -537,6 +436,7 @@ public class SymbolTableBuilder {
             errors.add(new MissReturnException(funcDef.getRightBrace().getLine()));
         }
 
+        funcSymbolTableMap.put(currFunc, currSymbolTable);
         currSymbolTable = currSymbolTable.getParent();  // 上升一层
         currFunc = null;  // 上升一层
         // currBlock = null;
@@ -553,12 +453,12 @@ public class SymbolTableBuilder {
     // TODO: WARNING!!! 这个函数会将函数形参放在符号表中，但不会给Symbol设置地址
     public Symbol checkFuncFParam(FuncFParam funcFParam) {
         // check redefine
-        boolean redefine = false;
+        // boolean redefine = false;
         Token ident = funcFParam.getIdent();
-        if (currSymbolTable.contains(ident.getContent(), false)) {
-            redefine = true;
-            errors.add(new RedefinedTokenException(ident.getLine()));
-        }
+        // if (currSymbolTable.contains(transferIdent(ident.getContent()), false)) {
+        //     redefine = true;
+        //     errors.add(new RedefinedTokenException(ident.getLine()));
+        // }
 
         // check miss RBrack
         if (funcFParam.missRBrack()) {
@@ -567,28 +467,29 @@ public class SymbolTableBuilder {
 
         // add to symbol table
         // 函数参数每一个的大小都是4
-        if (!redefine) {
-            if (funcFParam.isArray()) {
-                ArrayList<ConstExp> dimExp = funcFParam.getDimExp();
-                ConstExpCalculator constExpCalculator = new ConstExpCalculator(currSymbolTable, errors);
-                ArrayList<Integer> dimSize = dimExp.stream().map(constExpCalculator::calcConstExp)
-                        .collect(Collectors.toCollection(ArrayList::new));
-                dimSize.add(0, -20231164);  // 第一维省略
-                // TODO: WARNING!!! 这里会给数组类型的函数参数符号的Scope设置为PARAM，在translateMemory中会被用到
-                Symbol array = new Symbol(SymbolType.ARRAY, ident, dimSize, dimSize.size(), false, Symbol.Scope.PARAM);
-                currSymbolTable.addSymbol(array);
-                // array.setAddress(currSymbolTable.getStackSize());  // 在checkFunc中设置地址
-                return array;
-            } else {
-                Symbol val = new Symbol(SymbolType.INT, ident, false, Symbol.Scope.LOCAL);
-                currSymbolTable.addSymbol(val);
-                // val.setAddress(currSymbolTable.getStackSize());
-                return val;
-            }
+        // if (!redefine) {
+        if (funcFParam.isArray()) {
+            ArrayList<ConstExp> dimExp = funcFParam.getDimExp();
+            ConstExpCalculator constExpCalculator = new ConstExpCalculator(currSymbolTable, errors, inlining, currentIndex,
+                    funcSymbolTableMap.get(inlineFunc), topSymbolTable);
+            ArrayList<Integer> dimSize = dimExp.stream().map(constExpCalculator::calcConstExp)
+                    .collect(Collectors.toCollection(ArrayList::new));
+            dimSize.add(0, -20231164);  // 第一维省略
+            // TODO: WARNING!!! 这里会给数组类型的函数参数符号的Scope设置为PARAM，在translateMemory中会被用到
+            Symbol array = new Symbol(SymbolType.ARRAY, ident, dimSize, dimSize.size(), false, Symbol.Scope.PARAM);
+            currSymbolTable.addSymbol(array);
+            // array.setAddress(currSymbolTable.getStackSize());  // 在checkFunc中设置地址
+            return array;
         } else {
-            assert false : "TO BE FIXED: 函数参数重名";
-            return null;
+            Symbol val = new Symbol(SymbolType.INT, ident, false, Symbol.Scope.LOCAL);
+            currSymbolTable.addSymbol(val);
+            // val.setAddress(currSymbolTable.getStackSize());
+            return val;
         }
+        // } else {
+        //     assert false : "TO BE FIXED: 函数参数重名";
+        //     return null;
+        // }
     }
 
     // 语句块项 BlockItem → Decl | Stmt
@@ -816,15 +717,23 @@ public class SymbolTableBuilder {
     }
 
     public void checkReturnStmt(ReturnStmt returnStmt) {
-        assert currFunc != null;  // 不在Decl区
-        if (currFuncType == TokenType.VOIDTK && returnStmt.getReturnExp() != null) {
-            errors.add(new IllegalReturnException(returnStmt.getReturnToken().getLine()));
-        }
-        if (returnStmt.getReturnExp() != null) {
-            Operand returnVal = checkExp(returnStmt.getReturnExp(), false);
-            currBlock.addContent(new Return(returnVal));
+        // assert currFunc != null;  // 不在Decl区
+        if (!inlining) {
+            if (currFuncType == TokenType.VOIDTK && returnStmt.getReturnExp() != null) {
+                errors.add(new IllegalReturnException(returnStmt.getReturnToken().getLine()));
+            }
+            if (returnStmt.getReturnExp() != null) {
+                Operand returnVal = checkExp(returnStmt.getReturnExp(), false);
+                currBlock.addContent(new Return(returnVal));
+            } else {
+                currBlock.addContent(new Return());
+            }
         } else {
-            currBlock.addContent(new Return());
+            if (returnStmt.getReturnExp() != null) {
+                Operand returnVal = checkExp(returnStmt.getReturnExp(), false);
+                currBlock.addContent(new FourExpr(returnVal, this.returnVal, FourExpr.ExprOp.ASS));
+                currBlock.addContent(new Jump(inlineEnd));
+            }
         }
         // return int是否正确在checkFunc中检查
     }
@@ -832,41 +741,70 @@ public class SymbolTableBuilder {
     // 'while' '(' Cond ')' Stmt
     public void checkWhileStmt(WhileStmt whileStmt) {
         loopDepth++;
+        // TODO: 20221125 my birthday!!!  循环优化 while -> do-while
+        /*
+         * while( cond )
+         * jump whileEnd
+         * {
+         *     stmt
+         *     jump whileBlock
+         * }
+         * 2n次jump
+         * ========================
+         * if( cond )  [ifBlock]
+         * {
+         *   jump whileEnd
+         *   do{        [doBody]
+         *      } while(cond)  [doCheckBlock]
+         *   jump whileBlock(doBlock)
+         * }
+         * [whileEnd]
+         * n+1次jump
+         * */
+
+
         // check missing Right Parenthesis
         if (whileStmt.missRightParenthesis()) {
             errors.add(new MissRparentException(whileStmt.getLine()));
         }
 
         // 通过ID保证中间代码和mips代码中基本块的顺序和遍历顺序一致
-        BasicBlock whileBlock = new BasicBlock("WHILE_" + blockCount++);
-        BasicBlock whileBody = new BasicBlock("WHILE_BODY_" + blockCount++);
-        BasicBlock whileEnd = new BasicBlock("WHILE_END_" + blockCount++);
-        whileHead.push(whileBlock);
-        whileNext.push(whileEnd);
-
-        // step into while
-        currBlock.addContent(new Jump(whileBlock));
-        currBlock = whileBlock;
-        currBlock.setIndex(blockId++);
+        BasicBlock doBlock = new BasicBlock("DO_BODY_" + blockCount++);
+        BasicBlock doCheckBlock = new BasicBlock("DO_CHECK_" + blockCount++);
+        BasicBlock doEnd = new BasicBlock("DO_END_" + blockCount++);
 
         // check Cond
         Operand cond = checkCond(whileStmt.getCond());
 
-        // step into whileBody
-        currBlock.addContent(new Branch(cond, whileBody, whileEnd, true));
-        currBlock = whileBody;
-        whileBody.setIndex(blockId++);
+        // for break and continue
+        whileHead.push(doCheckBlock);
+        whileNext.push(doEnd);
+
+        // translate If
+        currBlock.addContent(new Branch(cond, doBlock, doEnd, true));
+        currBlock.addContent(new Jump(doBlock));
+        // step into doBlock
+        currBlock = doBlock;
+        currBlock.setIndex(blockId++);
 
         currSymbolTable = new SymbolTable(currSymbolTable, currFunc.getFuncSymbolTable());  // 下降一层
         // check Stmt
         checkStmt(whileStmt.getStmt());
+        // step into doCheckBlock
+        currBlock.addContent(new Jump(doCheckBlock));
+        currBlock = doCheckBlock;
+        currBlock.setIndex(blockId++);
         currSymbolTable = currSymbolTable.getParent();  // 上升一层
         loopDepth--;
         whileNext.pop();
         whileHead.pop();
-        currBlock.addContent(new Jump(whileBlock));
-        currBlock = whileEnd;
-        whileEnd.setIndex(blockId++);
+
+
+        cond = checkCond(whileStmt.getCond());
+        currBlock.addContent(new Branch(cond, doBlock, doEnd, true));
+        currBlock.addContent(new Jump(doEnd));
+        currBlock = doEnd;
+        currBlock.setIndex(blockId++);
     }
 
     public Operand checkConstExp(ConstExp constExp, boolean returnPointer) {
@@ -967,26 +905,6 @@ public class SymbolTableBuilder {
 
             if (lVal.getSymbolType() == SymbolType.POINTER) {
                 if (returnPointer) {  // 正在解析函数调用的参数
-                    // Symbol lValInitSymbol = ((LVal) primaryExpInterface).getSymbol();  // 该参数原始的symbol
-                    // ArrayList<Symbol> currFuncParam = currFunc.getParams();  // 主函数的参数
-                    // if (currFuncParam.contains(lValInitSymbol)) {  // 如果调用函数时的实参恰好是主函数的形参
-                    //     assert lValInitSymbol.getSymbolType() == SymbolType.ARRAY;  // 主函数形参需要是array类型的
-                    //     // 主函数的形参本身就是一个指向数组的pointer了，需要将这个pointer从内存中取出来，传递给子函数
-                    //     BlockNode lastBlock = currBlock.getLastContent();
-                    //     assert lastBlock != null && lastBlock instanceof Memory;
-                    //     Memory lastMemory = (Memory) lastBlock;
-                    //     if(lValInitSymbol == lastMemory.getBase()){
-                    //         Symbol temp = Symbol.tempSymbol(SymbolType.POINTER);
-                    //         currBlock.addContent(new Pointer(Pointer.Op.LOAD, lVal, temp));  // 则该地址存的就是一个数组指针
-                    //         return temp;
-                    //     } else {
-                    //         Symbol temp = Symbol.tempSymbol(SymbolType.POINTER);
-                    //         currBlock.addContent(new Pointer(Pointer.Op.LOAD, lVal, temp));  // 则该地址存的就是一个数组指针
-                    //         return temp;
-                    //     }
-                    // } else {
-                    //     return lVal;
-                    // }
                     return lVal;
                 } else {
                     Symbol temp = Symbol.tempSymbol(SymbolType.INT);
@@ -1021,29 +939,15 @@ public class SymbolTableBuilder {
     public Symbol checkLVal(LVal lVal, boolean checkConst) {  // checkConst represents check const or not
         // 查符号表!!!
         Token ident = lVal.getIdent();
-        Symbol symbol = currSymbolTable.getSymbol(ident.getContent(), true);
-        if (symbol == null) {
-            errors.add(new UndefinedTokenException(ident.getLine()));
-            return null;  // error  TODO: WARNING!!!: NOT EXIST IN SYMBOL TABLE
+        SIPair siPair = transferIdent(ident.getContent());
+        Symbol symbol;
+        if (siPair.getInteger() == origin || siPair.getInteger() == inlineLocal) {
+            symbol = currSymbolTable.getSymbol(siPair.getString(), true);
+        } else {
+            symbol = topSymbolTable.getSymbol(siPair.getString(), false);
         }
+        assert symbol != null;
 
-        // check const
-        if (checkConst && symbol.isConst()) {
-            errors.add(new ModifyConstException(ident.getLine()));
-        }
-
-        // check missing RBrack
-        if (lVal.missRBrack()) {
-            errors.add(new MissRbrackException(ident.getLine()));
-        }
-        // TODO: check LVal using right or not
-        /*
-         * int a;
-         * b = a[1];
-         *
-         * int a[1][2][3];
-         * b =  a[1];
-         * */
         lVal.setSymbol(symbol);  // TODO: 可以在未来用来检查lVal是否正确使用
         // return symbol;
 
@@ -1098,15 +1002,21 @@ public class SymbolTableBuilder {
 
         // 查符号表
         Token ident = funcExp.getIdent();
-        Symbol symbol = currSymbolTable.getSymbol(ident.getContent(), true);
-        if (symbol == null) {
-            errors.add(new UndefinedTokenException(ident.getLine()));
-            return null;  // error  TODO: WARNING!!!: NOT EXIST IN SYMBOL TABLE
+        // 函数符号
+        // TODO: 1127递归函数
+        if (currFunc != null && ident.getContent().equals(currFunc.getFuncName())) {
+            currFunc.setRecursive();
         }
-        // if (!symbol.isFunc()) {
-        //     return null;  // TODO: 帖子，什么错误类型？？
-        // }
+        SIPair siPair = transferIdent(ident.getContent());
+        Symbol symbol;
+        if (siPair.getInteger() == origin || siPair.getInteger() == inlineLocal) {
+            symbol = currSymbolTable.getSymbol(siPair.getString(), true);
+        } else {
+            symbol = topSymbolTable.getSymbol(siPair.getString(), false);
+        }
+        assert symbol != null;
         assert symbol.isFunc();  // assert symbol is a function
+
         funcExp.setReturnType(symbol.getReturnType());  // 设置function的returnType  TODO: 可以在未来用来检查funcExp是否正确使用
 
         // 形参表
@@ -1140,77 +1050,102 @@ public class SymbolTableBuilder {
             }  // check Exp会给所有的LVal和FuncExp设置SymbolType
         }
 
-        // match check
-        if (Fparams.size() != Rparams.size()) {
-            errors.add(new MismatchParamCountException(funcExp.getLine()));  // param count mismatch
+        FuncBlock funcBlock = middleCode.getFunc(symbol.getName());
+        // 调用的函数块
+        if (funcBlock.isRecursive()) {
+            if (funcBlock.getReturnType() == FuncBlock.ReturnType.INT) {
+                Symbol res = Symbol.tempSymbol(SymbolType.INT);
+                currBlock.addContent(new FuncCall(funcBlock, Rparams, res));
+                return res;
+            } else {
+                currBlock.addContent(new FuncCall(funcBlock, Rparams));
+                return new Immediate(0);
+            }
         } else {
-            for (int i = 0; i < Fparams.size(); i++) {
-                Symbol fParam = Fparams.get(i);
+            Symbol formerReturnVal = returnVal;
+            boolean formerInlining = inlining;
+            BasicBlock formerInlineEnd = inlineEnd;
+            FuncBlock formerInlineFunc = inlineFunc;
+            int formerIndex = currentIndex;
+
+            inlining = true;
+            currentIndex = functionInlineIndex++;
+            inlineEnd = new BasicBlock("INLINE_" + funcBlock.getFuncName() + "_END_" + currentIndex);
+            inlineFunc = funcBlock;
+
+            // 参数
+            for (int i = 0; i < Rparams.size(); i++) {
+                Symbol fparam = Fparams.get(i);
                 Operand rParam = Rparams.get(i);
-
-                if (rParam instanceof Immediate) {
-                    if (fParam.getSymbolType() != SymbolType.INT) {
-                        errors.add(new MismatchParamTypeException(funcRParams.getLine()));
-                        break;
-                        // TODO: do what?
-                    }
+                Symbol mappedSymbol = fparam.clone(transferIdent(fparam.getName()).getString(), currFunc, funcBlock,
+                        currentIndex);
+                currSymbolTable.addSymbol(mappedSymbol);
+                mappedSymbol.setAddress(currSymbolTable.getStackSize());
+                if (fparam.getSymbolType() == SymbolType.ARRAY) {
+                    currBlock.addContent(new FourExpr(rParam, mappedSymbol, FourExpr.ExprOp.ASS));
+                    Symbol ptr = Symbol.tempSymbol(SymbolType.POINTER);
+                    // currBlock.addContent(new FourExpr());
+                    currBlock.addContent(
+                            new Memory(Symbol.tempSymbol(SymbolType.INT), new Immediate(mappedSymbol.getAddress()), ptr));
+                    // currBlock.addContent(new Memory(mappedSymbol, new Immediate(0), ptr));
+                    currBlock.addContent(new Pointer(Pointer.Op.STORE, ptr, rParam));
                 } else {
-                    Symbol rp = (Symbol) rParam;
-                    if (fParam.getSymbolType() == SymbolType.ARRAY) {  // 形参是数组，对应实参应该是指针
-                        if (rp.getSymbolType() != SymbolType.POINTER) {
-                            errors.add(new MismatchParamTypeException(funcRParams.getLine()));
-                            break;
-                        }
-                    } else if (fParam.getSymbolType() == SymbolType.INT) {  // 形参是int，对应实参应该也是int
-                        if (rp.getSymbolType() != SymbolType.INT) {
-                            errors.add(new MismatchParamTypeException(funcRParams.getLine()));
-                            break;
-                        }
-                    } else {
-                        assert false : "形参只能是数组或int";
-                    }
+                    currBlock.addContent(new FourExpr(rParam, mappedSymbol, FourExpr.ExprOp.ASS));
                 }
+            }
 
-                // TODO: 需要检查维数和每一维的大小是否匹配
-                // // 由于之前checkExp已经给每个LeafNode赋过SymbolType了，这里一定可以得到SymbolType
-                // if (fParam.getSymbolType() != rParam.getSymbolType()) {  // param type mismatch
-                //     errors.add(new MismatchParamTypeException(funcRParams.getLine()));
-                //     break;
-                // }
-                // if (fParam.getSymbolType() == SymbolType.ARRAY) {  // 检查数组参数的维数是否正确
-                //     assert rParam instanceof LVal;  // 数组一定是LVal
-                //     if (fParam.getDimCount() != rParam.getDimCount()) {  // 维数不正确
-                //         errors.add(new MismatchParamTypeException(funcRParams.getLine()));
-                //         break;
-                //     }
-                //
-                //     // 检查每一维的数值是否正确
-                //     /*
-                //      *  int f(int a[][2]) {}
-                //      *  int main(){
-                //      *       int a[2][3];
-                //      *       f(a);  // mismatch!!!
-                //      *  }
-                //      * */
-                //     ArrayList<Integer> fDimSize = fParam.getDimSize();
-                //     ArrayList<Integer> rDimSize = rParam.getDimSize();
-                //     for (int j = 1; j < fDimSize.size(); j++) {  // 跳过第一维
-                //         if (!Objects.equals(fDimSize.get(j), rDimSize.get(j))) {
-                //             errors.add(new MismatchParamTypeException(funcRParams.getLine()));
-                //             break;
-                //         }
-                //     }
-                // }
+            // TODO: 非递归函数 inline!!!
+            if (funcBlock.getReturnType() == FuncBlock.ReturnType.INT) {
+                returnVal = Symbol.tempSymbol(SymbolType.INT);
+            } else {
+                returnVal = null;
+            }
+
+            // 内联
+            checkBlockStmt(funcBlockDefMap.get(funcBlock).getBlockStmt(), true,
+                    "INLINE_" + funcBlock.getFuncName() + "_BEGIN_" + currentIndex);
+
+            currBlock.addContent(new Jump(inlineEnd));
+            inlineEnd.setIndex(blockId++);
+            currBlock = inlineEnd;
+
+            // 恢复调用前状态
+            Symbol res = returnVal;
+            returnVal = formerReturnVal;
+            inlining = formerInlining;
+            inlineEnd = formerInlineEnd;
+            inlineFunc = formerInlineFunc;
+            currentIndex = formerIndex;
+            if (funcBlock.getReturnType() == FuncBlock.ReturnType.INT) {
+                return res;
+            } else {
+                return new Immediate(0);
             }
         }
-        FuncBlock funcBlock = middleCode.getFunc(symbol.getName());
-        if (funcBlock.getReturnType() == FuncBlock.ReturnType.INT) {
-            Symbol res = Symbol.tempSymbol(SymbolType.INT);
-            currBlock.addContent(new FuncCall(funcBlock, Rparams, res));
-            return res;
+    }
+
+    // about function inline
+    private final HashMap<FuncBlock, FuncDef> funcBlockDefMap = new HashMap<>();
+    private final HashMap<FuncBlock, SymbolTable> funcSymbolTableMap = new HashMap<>();
+    private Symbol returnVal = null;
+    private int functionInlineIndex = 1;
+    private int currentIndex = functionInlineIndex;
+    private boolean inlining = false;
+    private BasicBlock inlineEnd = null;
+    private FuncBlock inlineFunc = null;
+
+    private static final int origin = 0;
+    private static final int inlineLocal = 1;
+    private static final int global = 2;
+
+    public SIPair transferIdent(String former) {
+        if (!inlining) {
+            return new SIPair(former, origin);
         } else {
-            currBlock.addContent(new FuncCall(funcBlock, Rparams));
-            return new Immediate(0);
+            if (funcSymbolTableMap.get(inlineFunc).defined(former)) {
+                return new SIPair("INLINE_" + former + "_" + currentIndex, inlineLocal);
+            }
+            return new SIPair(former, global);  // global Var
         }
     }
 

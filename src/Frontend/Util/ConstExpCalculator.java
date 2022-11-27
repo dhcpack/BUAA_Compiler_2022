@@ -1,5 +1,6 @@
 package Frontend.Util;
 
+import Config.SIPair;
 import Exceptions.MissRbrackException;
 import Exceptions.MyAssert;
 import Exceptions.UndefinedTokenException;
@@ -31,10 +32,34 @@ import java.util.ArrayList;
 public class ConstExpCalculator {
     private final SymbolTable symbolTable;
     private final Errors errors;
+    private final boolean inlining;
+    private final int currentIndex;
+    private final SymbolTable inlineSymbolTable;
+    private final SymbolTable topSymbolTable;
 
-    public ConstExpCalculator(SymbolTable symbolTable, Errors errors) {
+    private static final int origin = 0;
+    private static final int inlineLocal = 1;
+    private static final int global = 2;
+
+    public SIPair transferIdent(String former) {
+        if (!inlining) {
+            return new SIPair(former, origin);
+        } else {
+            if (inlineSymbolTable.defined(former)) {
+                return new SIPair("INLINE_" + former + "_" + currentIndex, inlineLocal);
+            }
+            return new SIPair(former, global);  // global Var
+        }
+    }
+
+    public ConstExpCalculator(SymbolTable symbolTable, Errors errors, boolean inlining, int currentIndex,
+                              SymbolTable inlineSymbolTable, SymbolTable topSymbolTable) {
         this.symbolTable = symbolTable;
         this.errors = errors;
+        this.currentIndex = currentIndex;
+        this.inlining = inlining;
+        this.inlineSymbolTable = inlineSymbolTable;
+        this.topSymbolTable = topSymbolTable;
     }
 
     public int calcConstExp(ConstExp constExp) {
@@ -104,7 +129,7 @@ public class ConstExpCalculator {
                 } else {
                     return 0;
                 }
-            } else if(unaryOp.getToken().getType() == TokenType.PLUS){
+            } else if (unaryOp.getToken().getType() == TokenType.PLUS) {
                 return res;
             } else {
                 MyAssert.ass(false);
@@ -121,7 +146,7 @@ public class ConstExpCalculator {
             return calcLVal((LVal) primaryExpInterface);
         } else if (primaryExpInterface instanceof Number) {
             return ((Number) primaryExpInterface).getNumber();
-        } else{
+        } else {
             MyAssert.ass(false);
             return -20231164;
         }
@@ -129,7 +154,13 @@ public class ConstExpCalculator {
 
     public int calcLVal(LVal lVal) {
         Token ident = lVal.getIdent();
-        Symbol symbol = symbolTable.getSymbol(ident.getContent(), true);
+        SIPair siPair = transferIdent(ident.getContent());
+        Symbol symbol;
+        if (siPair.getInteger() == origin || siPair.getInteger() == inlineLocal) {
+            symbol = symbolTable.getSymbol(siPair.getString(), true);
+        } else {
+            symbol = topSymbolTable.getSymbol(siPair.getString(), false);
+        }
         if (symbol == null) {
             errors.add(new UndefinedTokenException(ident.getLine()));
             MyAssert.ass(false);

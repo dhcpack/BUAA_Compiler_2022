@@ -1,24 +1,24 @@
 package Config;
 
 public class SIPair implements Comparable<SIPair> {
-    private final String name;
-    private final Integer address;
+    private final String string;
+    private final Integer integer;
 
-    public SIPair(String name, Integer address) {
-        this.name = name;
-        this.address = address;
+    public SIPair(String string, Integer integer) {
+        this.string = string;
+        this.integer = integer;
     }
 
-    public String getName() {
-        return name;
+    public String getString() {
+        return string;
     }
 
-    public Integer getAddress() {
-        return address;
+    public Integer getInteger() {
+        return integer;
     }
 
     @Override
     public int compareTo(SIPair SIPair) {
-        return this.address - SIPair.address;
+        return this.integer - SIPair.integer;
     }
 }

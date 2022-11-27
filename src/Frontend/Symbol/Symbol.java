@@ -2,11 +2,12 @@ package Frontend.Symbol;
 
 import Frontend.Lexer.Token;
 import Frontend.Parser.expr.types.LeafNode;
+import Middle.type.FuncBlock;
 import Middle.type.Operand;
 
 import java.util.ArrayList;
 
-public class Symbol implements LeafNode, Operand {
+public class Symbol implements LeafNode, Operand, Cloneable {
     public enum Scope {
         GLOBAL,
         LOCAL,
@@ -15,7 +16,7 @@ public class Symbol implements LeafNode, Operand {
     }
 
     // for all
-    private final String name;
+    private String name;
     private final SymbolType symbolType;
     private Token ident;
     private final boolean isConst;
@@ -38,6 +39,27 @@ public class Symbol implements LeafNode, Operand {
     // 函数
     private final ArrayList<Symbol> params;
     private final SymbolType returnType;
+
+    // 是否是内联变量
+    private boolean inlineVariable = false;
+    private FuncBlock outerFunc = null;
+    private FuncBlock inlineFunc = null;
+    private int funcInliningIndex = 0;
+
+    public void setInlining(FuncBlock outerFunc, FuncBlock inlineFunc, int funcInliningIndex) {
+        this.inlineVariable = true;
+        this.outerFunc = outerFunc;
+        this.inlineFunc = inlineFunc;
+        this.funcInliningIndex = funcInliningIndex;
+    }
+
+    public void setMappedName(String name) {
+        this.name = name;
+    }
+
+    public boolean isInlineVariable() {
+        return inlineVariable;
+    }
 
     // int
     public Symbol(SymbolType symbolType, Token ident, Boolean isConst, Scope scope) {
@@ -91,6 +113,17 @@ public class Symbol implements LeafNode, Operand {
         this.params = null;
         this.returnType = symbolType;
         this.scope = scope;
+    }
+
+    public Symbol clone(String mappedName, FuncBlock outerFunc, FuncBlock inlineFunc, int funcInliningIndex) {
+        try {
+            Symbol symbol = (Symbol) super.clone();
+            symbol.setMappedName(mappedName);
+            symbol.setInlining(outerFunc, inlineFunc, funcInliningIndex);
+            return symbol;
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     // function

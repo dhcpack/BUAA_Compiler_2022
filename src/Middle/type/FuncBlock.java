@@ -13,6 +13,17 @@ public class FuncBlock extends BlockNode {
     private BasicBlock body;
     private final Boolean isMainFunc;
 
+    // 递归函数，不能inline
+    private boolean isRecursive = false;
+
+    public void setRecursive() {
+        this.isRecursive = true;
+    }
+
+    public boolean isRecursive() {
+        return this.isRecursive;
+    }
+
     public enum ReturnType {
         INT,
         VOID,
@@ -63,9 +74,4 @@ public class FuncBlock extends BlockNode {
     public String getLabel() {
         return "FUNC_" + getFuncName();
     }
-
-    // @Override
-    // public String toString() {
-    //
-    // }
 }

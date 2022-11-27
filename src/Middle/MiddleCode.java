@@ -158,16 +158,6 @@ public class MiddleCode implements Output {
         }
         visited.add(block);
         sortedBlock.add(block);
-        // for (Operand operand : block.getOperandUsage()) {
-        //     if (operand instanceof Symbol && ((Symbol) operand).getScope() == Symbol.Scope.TEMP && !((Symbol) operand).hasAddress()) {
-        //         Symbol symbol = (Symbol) operand;
-        //         if (symbolUsageMap.containsKey(symbol)) {
-        //             symbolUsageMap.put(symbol, symbolUsageMap.get(symbol) + 1);
-        //         } else {
-        //             symbolUsageMap.put(symbol, 1);
-        //         }
-        //     }
-        // }
         for (BlockNode blockNode : block.getContent()) {
             if (blockNode instanceof Jump) {
                 BasicBlock target = ((Jump) blockNode).getTarget();
