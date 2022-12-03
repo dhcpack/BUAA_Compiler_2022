@@ -101,6 +101,9 @@ public class Translator {
             currentFunc = funcAndBlock.getKey();
             currentStackSize = currentFunc.getStackSize();
             ArrayList<Symbol> params = currentFunc.getParams();
+            // 恢复默认registers
+            Registers.globalRegisters = new ArrayList<>(Registers.registersGroup2);
+            Registers.localRegisters = new ArrayList<>(Registers.registersGroup3);
             currentConflictGraph = new ConflictGraph(currentFunc.getFuncName(), funcAndBlock.getValue(), params);
             tempRegisters = new Registers();
             ArrayList<BasicBlock> funcBlocks = funcAndBlock.getValue();

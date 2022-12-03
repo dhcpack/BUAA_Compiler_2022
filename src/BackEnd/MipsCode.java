@@ -28,7 +28,7 @@ public class MipsCode implements Output {
         this.instructions.add(instruction);
     }
 
-    public void addInstrs(ArrayList<Instruction> instructions){
+    public void addInstrs(ArrayList<Instruction> instructions) {
         this.instructions.addAll(instructions);
     }
 
@@ -62,6 +62,8 @@ public class MipsCode implements Output {
                 MipsWriter.print(instruction.toString());
             }
         }
+        // clear!!!
+        // MipsWriter.string = "";
         try {
             MipsWriter.flush();
         } catch (IOException e) {

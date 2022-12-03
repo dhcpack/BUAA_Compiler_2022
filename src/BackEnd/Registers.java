@@ -35,19 +35,18 @@ public class Registers {
     public static final int fp = 30;
     public static final int ra = 31;
 
-    // private Integer[] availRegisters = {
-    //         5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27
-    // };
+    // 计算密集型
+    public static final List<Integer> registersGroup1 = Arrays.asList(5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+            21, 22, 23, 24, 25, 26, 27);
+    // 控制密集型
+    public static final List<Integer> registersGroup2 = Arrays.asList(5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
+    public static final List<Integer> registersGroup3 = Arrays.asList(17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27);
+
 
     // TODO: 全局寄存器(跨基本块)
-    public static final List<Integer> globalRegisters = Arrays.asList(5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
+    public static List<Integer> globalRegisters = Arrays.asList(5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
     // TODO: 临时寄存器(基本块内部)
-    public static final List<Integer> localRegisters = Arrays.asList(17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27);
-    // // TODO: 全局寄存器(跨基本块)
-    // public static final List<Integer> globalRegisters = Arrays.asList(5);
-    // // TODO: 临时寄存器(基本块内部)
-    // public static final List<Integer> localRegisters = Arrays.asList(17, 18);
-
+    public static List<Integer> localRegisters = Arrays.asList(17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27);
 
     // free registers
     private final Queue<Integer> freeRegisters = new LinkedList<>(localRegisters);
@@ -75,8 +74,7 @@ public class Registers {
         int register = freeRegisters.remove();
         registerToSymbol.put(register, symbol);
         symbolToRegister.put(symbol, register);
-        // System.out.printf("%s 4=> %d\n", symbol, register);
-        // registerCache.add(register);
+        System.out.printf("%s 4=> %d\n", symbol, register);
         return register;
     }
 

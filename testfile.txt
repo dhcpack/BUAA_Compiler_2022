@@ -1,81 +1,72 @@
-const int MAXN = 100;
+const int a1 = 1;
+const int b1 = 2,c1 = 3;
+int d1 = 4;
+int e1 = 0, f1 = 60;
+int test = 777;
 
-void swap(int a[], int i, int j) {
-    int tmp = a[i];
-    a[i] = a[j];
-    a[j] = tmp;
+
+int op1(int b2){
+    return a1+b2;
+}
+
+int op2(){
+    return 1;
+}
+
+void op3(){
+    test = 666;
+    return;
+}
+
+int op4(int a3, int b3){
+    return a3 + b3;
 }
 
 
-void heapify(int a[], int i) {
-    printf("444a[0] = %d\n", a[0]);
-
-    int l, r;
-    int largest;
-    l = 2 * i;
-    r = 2 * i + 1;
-
-    if (l <= a[0]) {
-        if (a[l] > a[i])
-            largest = l;
-        else
-            largest = i;
-    } else
-        largest = i;
-    if (r <= a[0]) {
-        if (a[r] > a[largest])
-            largest = r;
+int main(){
+    int a = 2, b = 3;
+    int c;
+    int d = 1;
+    ;
+    int e = 2*3;
+    printf("20231055\n"); //1
+    d = getint();
+    // d = 5;
+    if (a > 1){
+        printf("a>1\n"); //2
     }
-
-    if (largest != i) {
-        swap(a, i, largest);
-        heapify(a, largest);
+    // test /*
+    if (d != 1){
+        printf("d!=1\n"); //3
     }
-}
-
-
-void build_heap(int a[]) {
-    printf("222a[0] = %d\n", a[0]);
-    int i = a[0] / 2;
-    while (i >= 1) {
-        printf("222a[0] = %d\n", a[0]);
-        heapify(a, i);
-        i = i - 1;
+    /*
+    what
+    */
+    else{
+        printf("error\n");
     }
-}
-
-
-void heap_sort() {
-    int i, n;
-    int a[MAXN];
-    n = getint();
-    a[0] = n;
-    i = 1;
-    while (i < n + 1) {
-        a[i] = getint();
-        i = i + 1;
+    while (e > 0){
+        if (e == 4){
+            break;
+        }
+        if (e != 6){
+            e = e - 1;
+            continue;
+        }
+        printf("%d\n", e); // 4
+        e = e - 1;
     }
-    printf("111a[0] = %d\n", a[0]);
-    build_heap(a);
-    i = n;
-    while (i >= 2) {
-        swap(a, 1, i);
-        a[0] = a[0] - 1;
-        printf("333a[0] = %d\n", a[0]);
-        heapify(a, 1);
-        i = i - 1;
-    }
-    i = 1;
-    printf("20377020\n");
-    while (i < n + 1) {
-        printf("%d\n", a[i]);
-        i = i + 1;
-    }
-
-}
-
-
-int main() {
-    heap_sort();
+    c = op4(a, b);
+    printf("%d\n",c); //5
+    c = op1(e);
+    printf("%d\n",c); //6
+    op3();
+    printf("%d\n",test); //7
+    c = op2();
+    printf("%d\n",c); //8
+    c =6 + 5 * 2;
+    printf("%d\n",c); //9
+    c =5 - 8 / 2;
+    printf("%d\n",c); //10
     return 0;
 }
