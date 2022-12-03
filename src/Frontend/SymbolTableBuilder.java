@@ -946,6 +946,9 @@ public class SymbolTableBuilder {
         } else {
             symbol = topSymbolTable.getSymbol(siPair.getString(), false);
         }
+        if (symbol == null && siPair.getInteger() == inlineLocal) {
+            symbol = topSymbolTable.getSymbol(ident.getContent(), false);
+        }
         assert symbol != null;
 
         lVal.setSymbol(symbol);  // TODO: 可以在未来用来检查lVal是否正确使用
@@ -1013,6 +1016,9 @@ public class SymbolTableBuilder {
             symbol = currSymbolTable.getSymbol(siPair.getString(), true);
         } else {
             symbol = topSymbolTable.getSymbol(siPair.getString(), false);
+        }
+        if (symbol == null && siPair.getInteger() == inlineLocal) {
+            symbol = topSymbolTable.getSymbol(ident.getContent(), false);
         }
         assert symbol != null;
         assert symbol.isFunc();  // assert symbol is a function

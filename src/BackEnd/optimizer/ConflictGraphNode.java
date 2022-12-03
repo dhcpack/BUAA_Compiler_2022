@@ -11,7 +11,7 @@ public class ConflictGraphNode implements Comparable<ConflictGraphNode> {
     private final HashSet<ConflictGraphNode> conflictGraphNodes = new HashSet<>();
 
     // 记录着色过程中的连接边数目
-    private int edgeCount;
+    // private int edgeCount;
     // 着色
     private int register = -1;
     // private boolean colored = false;
@@ -24,12 +24,8 @@ public class ConflictGraphNode implements Comparable<ConflictGraphNode> {
         this.conflictGraphNodes.add(conflictGraphNode);
     }
 
-    public void initialCurrEdgeCount() {
-        this.edgeCount = conflictGraphNodes.size();
-    }
-
     public int getCurrEdgeCount() {
-        return this.edgeCount;
+        return this.conflictGraphNodes.size();
     }
 
     public int getRegister() {
@@ -46,10 +42,7 @@ public class ConflictGraphNode implements Comparable<ConflictGraphNode> {
 
     // 删除和anotherNode的连接边
     public void removeConnection(ConflictGraphNode anotherNode) {
-        if (conflictGraphNodes.contains(anotherNode)) {
-            edgeCount--;
-        }
-        assert edgeCount >= 0 : "连接边数不小于0";
+        this.conflictGraphNodes.remove(anotherNode);
     }
 
     public HashSet<Integer> getConflictRegister() {
@@ -58,11 +51,11 @@ public class ConflictGraphNode implements Comparable<ConflictGraphNode> {
 
     @Override
     public int compareTo(ConflictGraphNode o) {
-        return o.getCurrEdgeCount() - this.edgeCount;
+        return o.getCurrEdgeCount() - this.getCurrEdgeCount();
     }
 
     @Override
     public String toString() {
-        return this.symbol + ": " + this.edgeCount;
+        return this.symbol + ": " + this.getCurrEdgeCount();
     }
 }

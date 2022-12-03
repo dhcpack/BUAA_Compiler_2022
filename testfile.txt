@@ -1,72 +1,80 @@
-const int a1 = 1;
-const int b1 = 2,c1 = 3;
-int d1 = 4;
-int e1 = 0, f1 = 60;
-int test = 777;
+/**
+ * this is test file 2
+ */
 
+const int constArray[5] = {1, 2, 3, 4 ,5};
+const int a[2][2] = {{1, 0}, {0, 1}}, b[2][2] = {{0, 1}, {1, 0}};
 
-int op1(int b2){
-    return a1+b2;
+void multi(int n1[][2], int n2[][2], int ans[][2]) {
+    ans[0][0] = n1[0][0] * n2[0][0] + n1[0][1] * n2[1][0];
+    ans[0][1] = n1[0][0] * n2[0][1] + n1[0][1] * n2[1][1];
+    ans[1][0] = n1[1][0] * n2[0][0] + n1[1][1] * n2[1][0];
+    ans[1][1] = n1[1][0] * n2[0][1] + n1[1][1] * n2[1][1];
 }
 
-int op2(){
-    return 1;
+void add(int n1[][2], int n2[][2], int ans[][2]) {
+    ans[0][0] = n1[0][0] * n2[0][0];
+    ans[0][1] = n1[0][1] * n2[0][1];
+    ans[1][0] = n1[1][0] * n2[1][0];
+    ans[1][1] = n1[1][1] * n2[1][1];
 }
 
-void op3(){
-    test = 666;
-    return;
+void copyConst(int dst[][2], int type) {
+    if (type == 0) {
+        dst[0][0] = a[0][0];
+        dst[0][1] = a[0][1];
+        dst[1][0] = a[1][0];
+        dst[1][1] = a[1][1];
+    } else {
+        dst[0][0] = b[0][0];
+        dst[0][1] = b[0][1];
+        dst[1][0] = b[1][0];
+        dst[1][1] = b[1][1];
+    }
 }
 
-int op4(int a3, int b3){
-    return a3 + b3;
+void copy(int dst[][2], int src[][2]) {
+    dst[0][0] = src[0][0];
+    dst[0][1] = src[0][1];
+    dst[1][0] = src[1][0];
+    dst[1][1] = src[1][1];
 }
 
+void getMat(int buffer[][2]) {
+    buffer[0][0] = getint();
+    buffer[0][1] = getint();
+    buffer[1][0] = getint();
+    buffer[1][1] = getint();
+}
 
-int main(){
-    int a = 2, b = 3;
-    int c;
-    int d = 1;
-    ;
-    int e = 2*3;
-    printf("20231055\n"); //1
-    d = getint();
-    // d = 5;
-    if (a > 1){
-        printf("a>1\n"); //2
+int main() {
+    printf("19231111\n");
+    int c[2][2] = {{1, 2}, {3, 4}}, d[constArray[1]][a[0][0] + 1], ans[2][2];
+    copyConst(d, 1);
+    add(c, d, ans);
+    printf("%d %d %d %d\n", ans[0][0], ans[0][1], ans[1][0], ans[1][1]);
+    copy(d, ans);
+    printf("%d %d %d %d\n", d[0][0], d[0][1], d[1][0], d[1][1]);
+    multi(c, d, ans);
+    printf("%d %d %d %d\n", ans[0][0], ans[0][1], ans[1][0], ans[1][1]);
+    getMat(d);
+    multi(c, d, ans);
+    printf("%d %d %d %d\n", ans[0][0], ans[0][1], ans[1][0], ans[1][1]);
+
+    int arr1[1 + 5 * 0 - 9 / 9 + 56 / 8];
+    arr1[6] = 5;
+    printf("%d\n", arr1[6]);
+    int arr2[2222 / 1111] = {1, 2};
+    int i = 0;
+    while (i < 2) {
+        if (arr2[i] == constArray[i])
+            printf("true\n");
+        i = i + 1;
     }
-    // test /*
-    if (d != 1){
-        printf("d!=1\n"); //3
-    }
-    /*
-    what
-    */
-    else{
-        printf("error\n");
-    }
-    while (e > 0){
-        if (e == 4){
-            break;
-        }
-        if (e != 6){
-            e = e - 1;
-            continue;
-        }
-        printf("%d\n", e); // 4
-        e = e - 1;
-    }
-    c = op4(a, b);
-    printf("%d\n",c); //5
-    c = op1(e);
-    printf("%d\n",c); //6
-    op3();
-    printf("%d\n",test); //7
-    c = op2();
-    printf("%d\n",c); //8
-    c =6 + 5 * 2;
-    printf("%d\n",c); //9
-    c =5 - 8 / 2;
-    printf("%d\n",c); //10
-    return 0;
+    printf("%d\n", arr2[constArray[0]]);
+    c[0][1] = 123;
+    printf("%d\n", c[0][1]);
+    c[0][0] = c[0][1];
+    printf("%d\n", c[0][0]);
+    return 0; // test
 }

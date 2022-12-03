@@ -12,6 +12,7 @@ import Middle.type.FuncParamBlock;
 import Middle.type.Jump;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -30,7 +31,7 @@ public class ConflictGraph {
     private final LinkedHashMap<BlockNode, HashSet<Symbol>> outSymbols = new LinkedHashMap<>();
     private final HashMap<Symbol, ConflictGraphNode> conflictNodes = new HashMap<>();
     private final HashSet<Symbol> allSymbols = new HashSet<>();
-    private static final int TOP = 10;
+    private static final int TOP = 5;
 
     public ConflictGraph(String funcName, ArrayList<BasicBlock> basicBlocks, ArrayList<Symbol> params) {
         this.funcName = funcName;
@@ -69,53 +70,62 @@ public class ConflictGraph {
     private int recuTimes = 0;
 
     private void getActiveVariableStream() {
-        if (recuTimes == TOP) {
-            overflowSymbol.addAll(allSymbols);
-            Registers.localRegisters = new ArrayList<>(Registers.registersGroup1);
-            Registers.globalRegisters = new ArrayList<>();
+        boolean flag = true;
+        while (flag) {
+            flag = false;
+            if (recuTimes == TOP) {
+                overflowSymbol.addAll(allSymbols);
+                Registers.localRegisters = new ArrayList<>(Registers.registersGroup1);
+                Registers.globalRegisters = new ArrayList<>();
+                Registers.globalRegisters.add(5);
+                for (int i = 0; i < blockNodes.size(); i++) {
+                    BlockNode blockNode = blockNodes.get(i);
+                    outSymbols.get(blockNode).addAll(allSymbols);
+                    inSymbols.get(blockNode).addAll(allSymbols);
+                }
+                return;
+            }
             for (int i = 0; i < blockNodes.size(); i++) {
                 BlockNode blockNode = blockNodes.get(i);
-                outSymbols.get(blockNode).addAll(allSymbols);
-                inSymbols.get(blockNode).addAll(allSymbols);
-            }
-            return;
-        }
-        boolean flag = false;
-        for (int i = 0; i < blockNodes.size(); i++) {
-            BlockNode blockNode = blockNodes.get(i);
-            int outSize = outSymbols.get(blockNode).size();
-            outSymbols.get(blockNode).clear();
-            if (blockNode instanceof Jump) {
-                for (BlockNode nextBlockNode : ((Jump) blockNode).getNextBlockNode()) {
-                    outSymbols.get(blockNode).addAll(inSymbols.get(nextBlockNode));
+                int outSize = outSymbols.get(blockNode).size();
+                outSymbols.get(blockNode).clear();
+                if (blockNode instanceof Jump) {
+                    for (BlockNode nextBlockNode : ((Jump) blockNode).getNextBlockNode()) {
+                        outSymbols.get(blockNode).addAll(inSymbols.get(nextBlockNode));
+                    }
+                } else if (blockNode instanceof Branch) {
+                    for (BlockNode nextBlockNode : ((Branch) blockNode).getNextBlockNode()) {
+                        outSymbols.get(blockNode).addAll(inSymbols.get(nextBlockNode));
+                    }
+                } else {
+                    if (i != 0) {
+                        BlockNode nextBlockNode = blockNodes.get(i - 1);
+                        outSymbols.get(blockNode).addAll(inSymbols.get(nextBlockNode));
+                    }
                 }
-            } else if (blockNode instanceof Branch) {
-                for (BlockNode nextBlockNode : ((Branch) blockNode).getNextBlockNode()) {
-                    outSymbols.get(blockNode).addAll(inSymbols.get(nextBlockNode));
-                }
-            } else {
-                if (i != 0) {
-                    BlockNode nextBlockNode = blockNodes.get(i - 1);
-                    outSymbols.get(blockNode).addAll(inSymbols.get(nextBlockNode));
+                int inSize = inSymbols.get(blockNode).size();
+                inSymbols.get(blockNode).clear();
+                inSymbols.get(blockNode).addAll(outSymbols.get(blockNode));
+                inSymbols.get(blockNode).removeAll(blockNode.getDefSet());
+                inSymbols.get(blockNode).addAll(blockNode.getUseSet());
+                if (outSize != outSymbols.get(blockNode).size() || inSize != inSymbols.get(blockNode).size()) {
+                    flag = true;
+                    // System.out.printf("%d, %d\n", inSize, inSymbols.get(block).size());
+                    // System.out.printf("%d, %d\n", outSize, outSymbols.get(block).size());
                 }
             }
-            int inSize = inSymbols.get(blockNode).size();
-            inSymbols.get(blockNode).clear();
-            inSymbols.get(blockNode).addAll(outSymbols.get(blockNode));
-            inSymbols.get(blockNode).removeAll(blockNode.getDefSet());
-            inSymbols.get(blockNode).addAll(blockNode.getUseSet());
-            if (outSize != outSymbols.get(blockNode).size() || inSize != inSymbols.get(blockNode).size()) {
-                flag = true;
-                // System.out.printf("%d, %d\n", inSize, inSymbols.get(block).size());
-                // System.out.printf("%d, %d\n", outSize, outSymbols.get(block).size());
-            }
-        }
-        // System.out.printf("%b", flag);
-        if (flag) {
+            // System.out.printf("%b", flag);
             recuTimes++;
-            getActiveVariableStream();
         }
+
     }
+    /*
+    func getActiveVariableStream(){
+        // 计算一次
+        if(change)
+            getActiveVariableStream
+    }
+    */
 
     private ConflictGraphNode getConflictNode(Symbol symbol) {
         if (conflictNodes.containsKey(symbol)) {
@@ -158,69 +168,31 @@ public class ConflictGraph {
     private void manageRegisters() {
         // 初始化冲突边
         // 有限队列
-        PriorityQueue<ConflictGraphNode> toColorHeap = new PriorityQueue<>((o1, o2) -> o2.compareTo(o1));  // 大根堆
-        PriorityQueue<ConflictGraphNode> noColorHeap = new PriorityQueue<>((o1, o2) -> o2.compareTo(o1));  // 大根堆
+        PriorityQueue<ConflictGraphNode> nodesHeap = new PriorityQueue<>(
+                (o1, o2) -> o2.getCurrEdgeCount() - o1.getCurrEdgeCount());  // 大根堆
+        nodesHeap.addAll(conflictNodes.values());
 
-        for (ConflictGraphNode conflictGraphNode : conflictNodes.values()) {
-            conflictGraphNode.initialCurrEdgeCount();
-            noColorHeap.add(conflictGraphNode);
-        }
         // 得到节点着色顺序
-        Stack<ConflictGraphNode> stack = new Stack<>();
-        noColorHeap.removeIf(new Predicate<ConflictGraphNode>() {
-            @Override
-            public boolean test(ConflictGraphNode conflictGraphNode) {
-                if (conflictGraphNode.getCurrEdgeCount() < registers.size()) {
-                    toColorHeap.add(conflictGraphNode);
-                    return true;
-                }
-                return false;
-            }
-        });
-        while (noColorHeap.size() + toColorHeap.size() != 0) {
-            if (toColorHeap.isEmpty()) {  // !!!OVERFLOW
-                ConflictGraphNode overflow = noColorHeap.remove();
+        while (nodesHeap.size() != 0) {
+            if (nodesHeap.peek().getCurrEdgeCount() >= registers.size()) {
+                ConflictGraphNode overflow = nodesHeap.remove();
                 overflowSymbol.add(overflow.getSymbol());
-                for (ConflictGraphNode conflictGraphNode : noColorHeap) {
+                for (ConflictGraphNode conflictGraphNode : nodesHeap) {
                     conflictGraphNode.removeConnection(overflow);
                 }
-                for (ConflictGraphNode conflictGraphNode : toColorHeap) {
-                    conflictGraphNode.removeConnection(overflow);
-                }
-            } else {  // 分配给刚好小于globalRegisters.length的节点
-                ConflictGraphNode coloredNode = toColorHeap.remove();
-                stack.add(coloredNode);
-                for (ConflictGraphNode conflictGraphNode : noColorHeap) {
-                    conflictGraphNode.removeConnection(coloredNode);
-                }
-                for (ConflictGraphNode conflictGraphNode : toColorHeap) {
-                    conflictGraphNode.removeConnection(coloredNode);
-                }
+                continue;
             }
-            noColorHeap.removeIf(new Predicate<ConflictGraphNode>() {
-                @Override
-                public boolean test(ConflictGraphNode conflictGraphNode) {
-                    if (conflictGraphNode.getCurrEdgeCount() < registers.size()) {
-                        toColorHeap.add(conflictGraphNode);
-                        return true;
-                    }
-                    return false;
-                }
-            });
-        }
-        // 节点着色
-        // System.err.printf("%s ALLOC RESULT:\n", funcName);
-        while (stack.size() != 0) {
-            ConflictGraphNode node = stack.pop();
-            HashSet<Integer> usedRegister = node.getConflictRegister();
-            for (Integer r : registers) {
-                if (!usedRegister.contains(r)) {
-                    // System.err.printf("\tSYMBOL(%s), REGISTER(%d)\n", node.getSymbol().toString(), r);
+            while (!nodesHeap.isEmpty()) {
+                ConflictGraphNode node = nodesHeap.remove();
+                HashSet<Integer> availRegister = new HashSet<>(registers);
+                availRegister.removeAll(node.getConflictRegister());
+                for (Integer r : availRegister) {
                     node.setRegister(r);
                     symbolRegisterMap.put(node.getSymbol(), r);
                     break;
                 }
             }
+            break;
         }
     }
 
