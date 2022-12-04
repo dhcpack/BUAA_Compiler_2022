@@ -268,6 +268,9 @@ public class Symbol implements LeafNode, Operand, Cloneable {
     private static int tempPointerCount = 0;
 
     public static Symbol tempSymbol(SymbolType symbolType) {
+        if (tempIntCount == 86) {
+            System.out.println(1);
+        }
         if (symbolType == SymbolType.INT) {
             return new Symbol(symbolType, "tmp_int_" + tempIntCount++, false, Scope.TEMP);
         } else if (symbolType == SymbolType.POINTER) {

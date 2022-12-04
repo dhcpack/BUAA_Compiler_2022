@@ -55,6 +55,7 @@ public class Translator {
     private final static int LEVEL = 10;
     private final static int GRAPH = 1;
     private final static int LRU = 2;
+    private final static int OPT = 3;
     private int MODE = GRAPH;
 
     // 当前函数和当前函数栈空间
@@ -112,8 +113,8 @@ public class Translator {
                 sum += block.getContent().size();
             }
             if (sum / funcBlocks.size() >= LEVEL) {
-                MODE = LRU;
-                System.out.println("MODE IS LRU");
+                MODE = OPT;
+                System.out.println("MODE IS OPT");
                 currentConflictGraph = null;
                 Registers.globalRegisters = new ArrayList<>(Registers.registersGroup1);
                 Registers.localRegisters = new ArrayList<>(Registers.registersGroup2);
@@ -172,7 +173,7 @@ public class Translator {
     private final static int noLoad = 0;
 
     public int allocRegister(Symbol symbol, int mode) {
-        if (MODE == LRU) {
+        if (MODE == LRU || MODE == OPT) {
             if (tempRegisters.occupyingRegister(symbol)) {
                 tempRegisters.refreshCache(tempRegisters.getSymbolRegister(symbol));
                 // 检查Symbol是否占用local register
@@ -181,12 +182,15 @@ public class Translator {
             // 为该变量分配临时寄存器
             if (!tempRegisters.hasFreeRegister()) {
                 // TODO: LRU
-                // Symbol lruSymbol = tempRegisters.leastRecentlyUsed();
-                // System.out.println("Call LRU");
-                // freeSymbolRegister(lruSymbol, true);
-                System.out.println("Call OPT");
-                Symbol optSymbol = tempRegisters.OPTStrategy(currentBasicBlock, currentBlockNodeIndex);
-                freeSymbolRegister(optSymbol, true);
+                if (MODE == LRU) {
+                    Symbol lruSymbol = tempRegisters.leastRecentlyUsed();
+                    System.out.println("Call LRU");
+                    freeSymbolRegister(lruSymbol, true);
+                } else if (MODE == OPT) {
+                    System.out.println("Call OPT");
+                    Symbol optSymbol = tempRegisters.OPTStrategy(currentBasicBlock, currentBlockNodeIndex);
+                    freeSymbolRegister(optSymbol, true);
+                }
             }
             if (mode != noLoad) {
                 int register = tempRegisters.getFirstFreeRegister();
@@ -238,7 +242,7 @@ public class Translator {
     // TODO: 此函数的功能是直接将某个Symbol加载到特定的寄存器（如果某个Symbol正在占用寄存器，则使用move将其移动到target寄存器）
     // TODO: 目前loadSymbol主要用于特殊寄存器，allocRegister调用时也会保证symbol没有占用寄存器
     public void loadSymbol(Symbol symbol, int target) {
-        if (MODE == LRU) {
+        if (MODE == LRU || MODE == OPT) {
             if (tempRegisters.occupyingRegister(symbol)) {
                 int register = tempRegisters.getSymbolRegister(symbol);
                 if (register == target) {
@@ -276,7 +280,10 @@ public class Translator {
             if (symbol.getScope() == Symbol.Scope.GLOBAL) {
                 mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.lw, Registers.gp, symbol.getAddress(), target));
             } else {
-                assert symbol.hasAddress();  // temp Symbol要么占有寄存器，要么具有地址
+                if (!symbol.hasAddress()) {
+                    assert false;  // temp Symbol要么占有寄存器，要么具有地址
+                }
+                // assert symbol.hasAddress();
                 mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.lw, Registers.sp, -symbol.getAddress(), target));
             }
         }
@@ -292,7 +299,7 @@ public class Translator {
     // TODO: ABOUT REGISTERS!!!!
     // TODO: 保存Symbol并释放寄存器
     public void freeSymbolRegister(Symbol symbol, boolean save) {
-        if (MODE == LRU) {
+        if (MODE == LRU || MODE == OPT) {
             int register = 0;
             if (tempRegisters.occupyingRegister(symbol)) {
                 register = tempRegisters.getSymbolRegister(symbol);
@@ -356,7 +363,7 @@ public class Translator {
 
     public void freeAllRegisters(int type, boolean save) {
         HashSet<Symbol> symbols = new HashSet<>(tempRegisters.getSymbolToRegister().keySet());
-        if (MODE == LRU) {
+        if (MODE == LRU || MODE == OPT) {
             for (Symbol symbol : symbols) {
                 freeSymbolRegister(symbol, save);
             }
@@ -749,20 +756,32 @@ public class Translator {
                 instructions.add(new ALUTriple(ALUTriple.ALUTripleType.subu, resRegister, operandRegister, Registers.v0));
             }
         }
-        String start = "DIV_" + divLabel++, end = "DIV_END_" + divLabel++;
-        mipsCode.addInstr(new BranchInstr(BranchInstr.BranchType.bltz, operandRegister, Registers.zero, start));
-        mipsCode.addInstrs(instructions);
-        if (sign == -1) {  // 正负
+        if (!isMod) {
+            String start = "DIV_" + divLabel++, end = "DIV_END_" + divLabel++;
+            mipsCode.addInstr(new BranchInstr(BranchInstr.BranchType.bltz, operandRegister, start));
+            mipsCode.addInstrs(instructions);
+            if (sign == -1) {  // 正负
+                mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.subu, resRegister, Registers.zero, resRegister));
+            }
+            mipsCode.addInstr(new J(end));
+            mipsCode.addInstr(new Label(start));
+            mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.subu, operandRegister, Registers.zero, operandRegister));
+            mipsCode.addInstrs(instructions);
+            if (sign == 1) {  // 负正
+                mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.subu, resRegister, Registers.zero, resRegister));
+            }
+            mipsCode.addInstr(new Label(end));
+        } else {
+            String start = "DIV_" + divLabel++, end = "DIV_END_" + divLabel++;
+            mipsCode.addInstr(new BranchInstr(BranchInstr.BranchType.bltz, operandRegister, start));
+            mipsCode.addInstrs(instructions);
+            mipsCode.addInstr(new J(end));
+            mipsCode.addInstr(new Label(start));
+            mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.subu, operandRegister, Registers.zero, operandRegister));
+            mipsCode.addInstrs(instructions);
             mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.subu, resRegister, Registers.zero, resRegister));
+            mipsCode.addInstr(new Label(end));
         }
-        mipsCode.addInstr(new J(end));
-        mipsCode.addInstr(new Label(start));
-        mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.subu, operandRegister, Registers.zero, operandRegister));
-        mipsCode.addInstrs(instructions);
-        if (sign == 1) {  // 负正
-            mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.subu, resRegister, Registers.zero, resRegister));
-        }
-        mipsCode.addInstr(new Label(end));
     }
 
     // 优化mult
@@ -774,6 +793,23 @@ public class Translator {
                 mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, resRegister, 0));
             }
             return;
+        }
+        if (immediate < 0) {
+            if (instructions != null) {
+                instructions.add(new ALUTriple(ALUTriple.ALUTripleType.subu, operandRegister, Registers.zero, operandRegister));
+            } else {
+                mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.subu, operandRegister, Registers.zero, operandRegister));
+            }
+            immediate = -immediate;
+        }
+        if (immediate == 1) {
+            if (operandRegister != resRegister) {
+                if (instructions != null) {
+                    instructions.add(new ALUTriple(ALUTriple.ALUTripleType.addu, resRegister, Registers.zero, operandRegister));
+                } else {
+                    mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.addu, resRegister, Registers.zero, operandRegister));
+                }
+            }
         }
         long num = 1;
         int shiftTime = 0, newImm = immediate;

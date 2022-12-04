@@ -217,7 +217,9 @@ public class BasicBlock implements Comparable<BasicBlock> {
 
     @Override
     public int compareTo(BasicBlock o) {
-        assert hasIndex;
+        if (!hasIndex) {
+            assert false;
+        }
         return this.index - o.index;
     }
 }

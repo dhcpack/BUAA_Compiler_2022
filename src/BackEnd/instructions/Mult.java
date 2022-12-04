@@ -21,9 +21,9 @@ public class Mult implements Instruction {
     @Override
     public String toString() {
         if(isUnsigned){
-            return String.format("multu $%d $%d\n", rOperand1, rOperand2);
+            return String.format("multu $%d, $%d\n", rOperand1, rOperand2);
         } else {
-            return String.format("mult $%d $%d\n", rOperand1, rOperand2);
+            return String.format("mult $%d, $%d\n", rOperand1, rOperand2);
         }
     }
 }
