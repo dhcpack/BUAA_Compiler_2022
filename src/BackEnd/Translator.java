@@ -281,6 +281,7 @@ public class Translator {
                 mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.lw, Registers.gp, symbol.getAddress(), target));
             } else {
                 if (!symbol.hasAddress()) {
+                    mipsCode.output();
                     assert false;  // temp Symbol要么占有寄存器，要么具有地址
                 }
                 // assert symbol.hasAddress();
