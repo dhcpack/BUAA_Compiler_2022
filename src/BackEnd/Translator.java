@@ -52,6 +52,11 @@ public class Translator {
     private Registers tempRegisters = new Registers();
     private HashMap<Symbol, Integer> symbolUsageMap;
 
+    private final static int LEVEL = 10;
+    private final static int GRAPH = 1;
+    private final static int LRU = 2;
+    private int MODE = GRAPH;
+
     // 当前函数和当前函数栈空间
     private FuncBlock currentFunc = null;
     private int currentStackSize = 0;
@@ -101,12 +106,30 @@ public class Translator {
             currentFunc = funcAndBlock.getKey();
             currentStackSize = currentFunc.getStackSize();
             ArrayList<Symbol> params = currentFunc.getParams();
-            // 恢复默认registers
-            Registers.globalRegisters = new ArrayList<>(Registers.registersGroup2);
-            Registers.localRegisters = new ArrayList<>(Registers.registersGroup3);
-            currentConflictGraph = new ConflictGraph(currentFunc.getFuncName(), funcAndBlock.getValue(), params);
-            tempRegisters = new Registers();
             ArrayList<BasicBlock> funcBlocks = funcAndBlock.getValue();
+            int sum = 0;
+            for (BasicBlock block : funcBlocks) {
+                sum += block.getContent().size();
+            }
+            if (sum / funcBlocks.size() >= LEVEL) {
+                MODE = LRU;
+                System.out.println("MODE IS LRU");
+                currentConflictGraph = null;
+                Registers.globalRegisters = new ArrayList<>(Registers.registersGroup1);
+                Registers.localRegisters = new ArrayList<>(Registers.registersGroup2);
+                // System.out.println(Registers.globalRegisters.size());
+                // System.out.println(Registers.localRegisters.size());
+            } else {
+                MODE = GRAPH;
+                System.out.println("MODE IS GRAPH");
+                Registers.globalRegisters = new ArrayList<>(Registers.registersGroup3);
+                Registers.localRegisters = new ArrayList<>(Registers.registersGroup4);
+                // 这句话要放在设置global register的下面
+                currentConflictGraph = new ConflictGraph(currentFunc.getFuncName(), funcAndBlock.getValue(), params);
+                // System.out.println(Registers.globalRegisters.size());
+                // System.out.println(Registers.localRegisters.size());
+            }
+            tempRegisters = new Registers();
             for (int i = 0; i < funcBlocks.size(); i++) {
                 if (i == 0) {
                     translateBasicBlock(funcBlocks.get(0), params);
@@ -149,36 +172,65 @@ public class Translator {
     private final static int noLoad = 0;
 
     public int allocRegister(Symbol symbol, int mode) {
-        if (currentConflictGraph.occupyingGlobalRegister(symbol)) {
-            // 检查Symbol是否占用global register
-            return currentConflictGraph.getSymbolRegister(symbol);
-        }
-        if (currentConflictGraph.hasGlobalRegister(symbol)) {
-            int register = currentConflictGraph.allocGlobalRegister(symbol, tempRegisters);
-            if ((mode & loadGlobalRegister) != 0) {  // 如果是函数参数
-                mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.lw, Registers.sp, -symbol.getAddress(), register));
+        if (MODE == LRU) {
+            if (tempRegisters.occupyingRegister(symbol)) {
+                tempRegisters.refreshCache(tempRegisters.getSymbolRegister(symbol));
+                // 检查Symbol是否占用local register
+                return tempRegisters.getSymbolRegister(symbol);
             }
-            return register;
+            // 为该变量分配临时寄存器
+            if (!tempRegisters.hasFreeRegister()) {
+                // TODO: LRU
+                // Symbol lruSymbol = tempRegisters.leastRecentlyUsed();
+                // System.out.println("Call LRU");
+                // freeSymbolRegister(lruSymbol, true);
+                System.out.println("Call OPT");
+                Symbol optSymbol = tempRegisters.OPTStrategy(currentBasicBlock, currentBlockNodeIndex);
+                freeSymbolRegister(optSymbol, true);
+            }
+            if (mode != noLoad) {
+                int register = tempRegisters.getFirstFreeRegister();
+                loadSymbol(symbol, register);  // loadRegister要求先不占用该寄存器
+            }
+            return tempRegisters.allocRegister(symbol);
+        } else if (MODE == GRAPH) {
+            if (currentConflictGraph.occupyingGlobalRegister(symbol)) {
+                // 检查Symbol是否占用global register
+                return currentConflictGraph.getSymbolRegister(symbol);
+            }
+            if (currentConflictGraph.hasGlobalRegister(symbol)) {
+                int register = currentConflictGraph.allocGlobalRegister(symbol, tempRegisters);
+                if ((mode & loadGlobalRegister) != 0) {  // 如果是函数参数
+                    mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.lw, Registers.sp, -symbol.getAddress(), register));
+                }
+                return register;
+            }
+            if (tempRegisters.occupyingRegister(symbol)) {
+                tempRegisters.refreshCache(tempRegisters.getSymbolRegister(symbol));
+                // 检查Symbol是否占用local register
+                return tempRegisters.getSymbolRegister(symbol);
+            }
+            // 为该变量分配临时寄存器
+            if (!tempRegisters.hasFreeRegister()) {
+                // TODO: LRU
+                // Symbol lruSymbol = tempRegisters.leastRecentlyUsed();
+                // System.out.println("Call LRU");
+                // freeSymbolRegister(lruSymbol, true);
+                System.out.println("Call OPT");
+                Symbol optSymbol = tempRegisters.OPTStrategy(currentBasicBlock, currentBlockNodeIndex);
+                freeSymbolRegister(optSymbol, true);
+            }
+            int register = tempRegisters.getFirstFreeRegister();
+            if ((mode & loadTempRegister) != 0) {
+                loadSymbol(symbol, register);  // loadRegister要求先不占用该寄存器
+            }
+            if (symbol.getScope() == Symbol.Scope.LOCAL || symbol.getScope() == Symbol.Scope.PARAM) {
+                currentConflictGraph.settleOverflowSymbol(symbol, register);
+            }
+            return tempRegisters.allocRegister(symbol);
         }
-        if (tempRegisters.occupyingRegister(symbol)) {
-            // 检查Symbol是否占用local register
-            return tempRegisters.getSymbolRegister(symbol);
-        }
-        // 为该变量分配临时寄存器
-        if (!tempRegisters.hasFreeRegister()) {
-            // TODO: OPT
-            // System.out.println("Call OPT");
-            Symbol optSymbol = tempRegisters.OPTStrategy(currentBasicBlock, currentBlockNodeIndex);
-            freeSymbolRegister(optSymbol, true);
-        }
-        int register = tempRegisters.getFirstFreeRegister();
-        if ((mode & loadTempRegister) != 0) {
-            loadSymbol(symbol, register);  // loadRegister要求先不占用该寄存器
-        }
-        if (symbol.getScope() == Symbol.Scope.LOCAL || symbol.getScope() == Symbol.Scope.PARAM) {
-            currentConflictGraph.settleOverflowSymbol(symbol, register);
-        }
-        return tempRegisters.allocRegister(symbol);
+        assert false;
+        return -1;
     }
 
     // TODO: ABOUT REGISTERS!!!!
@@ -186,28 +238,47 @@ public class Translator {
     // TODO: 此函数的功能是直接将某个Symbol加载到特定的寄存器（如果某个Symbol正在占用寄存器，则使用move将其移动到target寄存器）
     // TODO: 目前loadSymbol主要用于特殊寄存器，allocRegister调用时也会保证symbol没有占用寄存器
     public void loadSymbol(Symbol symbol, int target) {
-        // 检查全局寄存器
-        if (currentConflictGraph.occupyingGlobalRegister(symbol)) {
-            int register = currentConflictGraph.getSymbolRegister(symbol);
-            if (register != target) {
-                mipsCode.addInstr(new MoveInstr(register, target));
+        if (MODE == LRU) {
+            if (tempRegisters.occupyingRegister(symbol)) {
+                int register = tempRegisters.getSymbolRegister(symbol);
+                if (register == target) {
+                    return;
+                }  // TODO: WARNING!!!即使占用了寄存器也会将Symbol load到target寄存器中
+                assert !tempRegisters.isOccupied(target);  // target寄存器没有被占用
+                mipsCode.addInstr(new MoveInstr(tempRegisters.getSymbolRegister(symbol), target));
+            } else {
+                assert !tempRegisters.isOccupied(target);  // target寄存器没有被占用
+                if (symbol.getScope() == Symbol.Scope.GLOBAL) {
+                    mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.lw, Registers.gp, symbol.getAddress(), target));
+                } else {
+                    assert symbol.hasAddress();  // temp Symbol要么占有寄存器，要么具有地址
+                    mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.lw, Registers.sp, -symbol.getAddress(), target));
+                }
             }
-            return;
-        }
-        // 检查临时寄存器
-        if (tempRegisters.occupyingRegister(symbol)) {
-            int register = tempRegisters.getSymbolRegister(symbol);
-            if (register != target) {
-                mipsCode.addInstr(new MoveInstr(register, target));
+        } else if (MODE == GRAPH) {
+            // 检查全局寄存器
+            if (currentConflictGraph.occupyingGlobalRegister(symbol)) {
+                int register = currentConflictGraph.getSymbolRegister(symbol);
+                if (register != target) {
+                    mipsCode.addInstr(new MoveInstr(register, target));
+                }
+                return;
             }
-            return;
-        }
-        // load Val
-        if (symbol.getScope() == Symbol.Scope.GLOBAL) {
-            mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.lw, Registers.gp, symbol.getAddress(), target));
-        } else {
-            assert symbol.hasAddress();  // temp Symbol要么占有寄存器，要么具有地址
-            mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.lw, Registers.sp, -symbol.getAddress(), target));
+            // 检查临时寄存器
+            if (tempRegisters.occupyingRegister(symbol)) {
+                int register = tempRegisters.getSymbolRegister(symbol);
+                if (register != target) {
+                    mipsCode.addInstr(new MoveInstr(register, target));
+                }
+                return;
+            }
+            // load Val
+            if (symbol.getScope() == Symbol.Scope.GLOBAL) {
+                mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.lw, Registers.gp, symbol.getAddress(), target));
+            } else {
+                assert symbol.hasAddress();  // temp Symbol要么占有寄存器，要么具有地址
+                mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.lw, Registers.sp, -symbol.getAddress(), target));
+            }
         }
     }
 
@@ -221,32 +292,56 @@ public class Translator {
     // TODO: ABOUT REGISTERS!!!!
     // TODO: 保存Symbol并释放寄存器
     public void freeSymbolRegister(Symbol symbol, boolean save) {
-        if (symbol.getScope() == Symbol.Scope.LOCAL || symbol.getScope() == Symbol.Scope.PARAM) {
-            if (currentConflictGraph.hasGlobalRegister(symbol)) {
-                return;
+        if (MODE == LRU) {
+            int register = 0;
+            if (tempRegisters.occupyingRegister(symbol)) {
+                register = tempRegisters.getSymbolRegister(symbol);
+                tempRegisters.freeRegister(register);
             } else {
-                currentConflictGraph.freeOverflowSymbol(symbol);  // 在冲突图中删除，并在下面做可能的保存
+                assert false : "Symbol没有占用寄存器";
             }
-        }
-        int register = 0;
-        if (tempRegisters.occupyingRegister(symbol)) {
-            register = tempRegisters.getSymbolRegister(symbol);
-            tempRegisters.freeRegister(register);
-        } else {
-            assert false : "Symbol没有占用寄存器";
-        }
-        if (save) {
-            if (symbol.getScope() == Symbol.Scope.GLOBAL) {
-                mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.gp, symbol.getAddress(), register));
-            } else if (symbol.getScope() == Symbol.Scope.LOCAL || symbol.getScope() == Symbol.Scope.PARAM) {
-                mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.sp, -symbol.getAddress(), register));
-            } else if (symbol.getScope() == Symbol.Scope.TEMP) {
-                if (!symbol.hasAddress()) {
-                    allocateSpAddress(symbol);
+            if (save) {
+                if (symbol.getScope() == Symbol.Scope.GLOBAL) {
+                    mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.gp, symbol.getAddress(), register));
+                } else if (symbol.getScope() == Symbol.Scope.LOCAL || symbol.getScope() == Symbol.Scope.PARAM) {
+                    mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.sp, -symbol.getAddress(), register));
+                } else if (symbol.getScope() == Symbol.Scope.TEMP) {
+                    if (!symbol.hasAddress()) {
+                        allocateSpAddress(symbol);
+                    }
+                    mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.sp, -symbol.getAddress(), register));
+                } else {
+                    assert false;
                 }
-                mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.sp, -symbol.getAddress(), register));
+            }
+        } else if (MODE == GRAPH) {
+            if (symbol.getScope() == Symbol.Scope.LOCAL || symbol.getScope() == Symbol.Scope.PARAM) {
+                if (currentConflictGraph.hasGlobalRegister(symbol)) {
+                    return;
+                } else {
+                    currentConflictGraph.freeOverflowSymbol(symbol);  // 在冲突图中删除，并在下面做可能的保存
+                }
+            }
+            int register = 0;
+            if (tempRegisters.occupyingRegister(symbol)) {
+                register = tempRegisters.getSymbolRegister(symbol);
+                tempRegisters.freeRegister(register);
             } else {
-                assert false;
+                assert false : "Symbol没有占用寄存器";
+            }
+            if (save) {
+                if (symbol.getScope() == Symbol.Scope.GLOBAL) {
+                    mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.gp, symbol.getAddress(), register));
+                } else if (symbol.getScope() == Symbol.Scope.LOCAL || symbol.getScope() == Symbol.Scope.PARAM) {
+                    mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.sp, -symbol.getAddress(), register));
+                } else if (symbol.getScope() == Symbol.Scope.TEMP) {
+                    if (!symbol.hasAddress()) {
+                        allocateSpAddress(symbol);
+                    }
+                    mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.sp, -symbol.getAddress(), register));
+                } else {
+                    assert false;
+                }
             }
         }
     }
@@ -261,23 +356,29 @@ public class Translator {
 
     public void freeAllRegisters(int type, boolean save) {
         HashSet<Symbol> symbols = new HashSet<>(tempRegisters.getSymbolToRegister().keySet());
-        for (Symbol symbol : symbols) {
-            if ((type & FREE_GLOBAL) != 0 && symbol.getScope() == Symbol.Scope.GLOBAL) {
-                freeSymbolRegister(symbol, save);
-            } else if ((type & FREE_LOCAL) != 0 && symbol.getScope() == Symbol.Scope.LOCAL && currentConflictGraph.hasGlobalRegister(
-                    symbol)) {
-                freeSymbolRegister(symbol, save);
-            } else if ((type & FREE_PARAM) != 0 && symbol.getScope() == Symbol.Scope.PARAM && currentConflictGraph.hasGlobalRegister(
-                    symbol)) {
-                freeSymbolRegister(symbol, save);
-            } else if ((type & FREE_TEMP) != 0 && (symbol.getScope() == Symbol.Scope.TEMP || ((symbol.getScope() == Symbol.Scope.LOCAL || symbol.getScope() == Symbol.Scope.PARAM) && !currentConflictGraph.hasGlobalRegister(
-                    symbol)))) {
+        if (MODE == LRU) {
+            for (Symbol symbol : symbols) {
                 freeSymbolRegister(symbol, save);
             }
-        }
-        if ((type & FREE_LOCAL) != 0 && (type & FREE_PARAM) != 0) {  // FREE_LOCAL和FREE_PARAM会同时出现
-            currentConflictGraph.freeAllGlobalRegisters(tempRegisters, mipsCode,
-                    currentBasicBlock.getContent().get(currentBlockNodeIndex));
+        } else if (MODE == GRAPH) {
+            for (Symbol symbol : symbols) {
+                if ((type & FREE_GLOBAL) != 0 && symbol.getScope() == Symbol.Scope.GLOBAL) {
+                    freeSymbolRegister(symbol, save);
+                } else if ((type & FREE_LOCAL) != 0 && symbol.getScope() == Symbol.Scope.LOCAL && currentConflictGraph.hasGlobalRegister(
+                        symbol)) {
+                    freeSymbolRegister(symbol, save);
+                } else if ((type & FREE_PARAM) != 0 && symbol.getScope() == Symbol.Scope.PARAM && currentConflictGraph.hasGlobalRegister(
+                        symbol)) {
+                    freeSymbolRegister(symbol, save);
+                } else if ((type & FREE_TEMP) != 0 && (symbol.getScope() == Symbol.Scope.TEMP || ((symbol.getScope() == Symbol.Scope.LOCAL || symbol.getScope() == Symbol.Scope.PARAM) && !currentConflictGraph.hasGlobalRegister(
+                        symbol)))) {
+                    freeSymbolRegister(symbol, save);
+                }
+            }
+            if ((type & FREE_LOCAL) != 0 && (type & FREE_PARAM) != 0) {  // FREE_LOCAL和FREE_PARAM会同时出现
+                currentConflictGraph.freeAllGlobalRegisters(tempRegisters, mipsCode,
+                        currentBasicBlock.getContent().get(currentBlockNodeIndex));
+            }
         }
     }
     // TODO: +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -299,23 +400,25 @@ public class Translator {
             currentBlockNodeIndex = i;
             // TODO: 死代码删除
             // TODO: 1121
-            if (blockNode instanceof FourExpr) {  // 四元式的计算结果不活跃
-                if (!currentConflictGraph.checkActive(((FourExpr) blockNode).getRes(), blockNode)) {
-                    continue;
-                }
-            } else if (blockNode instanceof Pointer && ((Pointer) blockNode).getOp() == Pointer.Op.LOAD) {  // load的结果不活跃
-                if (!currentConflictGraph.checkActive(((Pointer) blockNode).getLoad(), blockNode)) {
-                    continue;
-                }
-            } else if (blockNode instanceof GetInt) {
-                if (!currentConflictGraph.checkActive(((GetInt) blockNode).getTarget(), blockNode)) {  // getint的结果不活跃
-                    mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v0, Syscall.get_int));
-                    mipsCode.addInstr(new Syscall());
-                    continue;
-                }
-            } else if (blockNode instanceof Memory) {
-                if (!currentConflictGraph.checkActive(((Memory) blockNode).getRes(), blockNode)) {
-                    continue;
+            if (MODE == GRAPH) {
+                if (blockNode instanceof FourExpr) {  // 四元式的计算结果不活跃
+                    if (!currentConflictGraph.checkActive(((FourExpr) blockNode).getRes(), blockNode)) {
+                        continue;
+                    }
+                } else if (blockNode instanceof Pointer && ((Pointer) blockNode).getOp() == Pointer.Op.LOAD) {  // load的结果不活跃
+                    if (!currentConflictGraph.checkActive(((Pointer) blockNode).getLoad(), blockNode)) {
+                        continue;
+                    }
+                } else if (blockNode instanceof GetInt) {
+                    if (!currentConflictGraph.checkActive(((GetInt) blockNode).getTarget(), blockNode)) {  // getint的结果不活跃
+                        mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v0, Syscall.get_int));
+                        mipsCode.addInstr(new Syscall());
+                        continue;
+                    }
+                } else if (blockNode instanceof Memory) {
+                    if (!currentConflictGraph.checkActive(((Memory) blockNode).getRes(), blockNode)) {
+                        continue;
+                    }
                 }
             }
             mipsCode.addInstr(new Comment(blockNode.toString()));
@@ -769,8 +872,11 @@ public class Translator {
             }
             consumeUsage(param);
         }
-        HashSet<Symbol> formerGlobalSymbols = currentConflictGraph.getActiveGlobalSymbols(
-                currentBasicBlock.getContent().get(currentBlockNodeIndex));
+        HashSet<Symbol> formerGlobalSymbols = null;
+        if (MODE == GRAPH) {
+            formerGlobalSymbols = currentConflictGraph.getActiveGlobalSymbols(
+                    currentBasicBlock.getContent().get(currentBlockNodeIndex));
+        }
         freeAllRegisters(FREE_TEMP | FREE_LOCAL | FREE_PARAM | FREE_GLOBAL, true);
         mipsCode.addInstr(new MoveInstr(Registers.a0, Registers.sp));
         // freeAllRegisters(false);
@@ -785,9 +891,11 @@ public class Translator {
             int retRegister = allocRegister(ret, noLoad);
             mipsCode.addInstr(new MoveInstr(Registers.v0, retRegister));
         }
-        // 恢复局部变量
-        for (Symbol symbol : formerGlobalSymbols) {
-            allocRegister(symbol, loadTempRegister | loadGlobalRegister);
+        if (MODE == GRAPH) {
+            // 恢复局部变量
+            for (Symbol symbol : formerGlobalSymbols) {
+                allocRegister(symbol, loadTempRegister | loadGlobalRegister);
+            }
         }
     }
 

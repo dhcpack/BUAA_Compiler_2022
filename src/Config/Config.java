@@ -13,7 +13,9 @@ import Middle.MiddleCode;
 import Middle.type.BasicBlock;
 import Middle.type.FuncBlock;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
@@ -48,6 +50,6 @@ public class Config {
         DeleteUselessJump.optimize(mipsCode);
 
         // output mips code
-        mipsCode.output();  // through MipsWriter
+        mipsCode.output(new PrintStream(Config.mipsFile));  // through MipsWriter
     }
 }

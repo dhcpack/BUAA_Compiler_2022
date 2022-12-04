@@ -6,6 +6,7 @@ import Config.MipsWriter;
 import Config.Output;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -34,6 +35,34 @@ public class MipsCode implements Output {
 
     public ArrayList<Instruction> getInstructions() {
         return this.instructions;
+    }
+
+    public void output(PrintStream printStream) {
+        printStream.println("# Yuelin's Compiler");
+        printStream.println();
+        printStream.println(".data");
+        printStream.print("\tglobal:\n");
+        StringJoiner wordJoiner = new StringJoiner(" ");
+        for (Integer globalWord : globalWords) {
+            wordJoiner.add(String.valueOf(globalWord));
+        }
+        printStream.printf("\t" + wordJoiner + "\n");
+        printStream.print("\t.space 4\n");
+        for (Map.Entry<String, String> globalString : globalStrings.entrySet()) {
+            printStream.print("\t" + String.format("%s: .asciiz \"%s\"\n", globalString.getKey(), globalString.getValue()));
+        }
+        printStream.print(".text\n");
+        printStream.print("\tla $gp, global\n");
+        printStream.print("\tj FUNC_main\n");
+
+        for (Instruction instruction : instructions) {
+            if (instruction instanceof Label) {
+                printStream.print(instruction.toString() + "\n");
+            } else {
+                printStream.print("\t" + instruction.toString());
+            }
+        }
+
     }
 
     @Override

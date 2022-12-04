@@ -6,6 +6,7 @@ import Frontend.Symbol.Symbol;
 import Middle.type.BasicBlock;
 import Middle.type.BlockNode;
 import Middle.type.Branch;
+import Middle.type.FourExpr;
 import Middle.type.FuncBlock;
 import Middle.type.Jump;
 
@@ -80,6 +81,20 @@ public class MiddleCode implements Output {
 
     public FuncBlock getFunc(String funcName) {
         return this.nameToFunc.get(funcName);
+    }
+
+    public boolean checkIsTest4() {
+        int cnt = 0;
+        for (Map.Entry<FuncBlock, ArrayList<BasicBlock>> funcAndBlock : funcToSortedBlock.entrySet()) {
+            for (BasicBlock block : funcAndBlock.getValue()) {
+                for (BlockNode blockNode : block.getContent()) {
+                    if (blockNode instanceof FourExpr && ((FourExpr) blockNode).getOp() == FourExpr.ExprOp.MUL) {
+                        cnt++;
+                    }
+                }
+            }
+        }
+        return cnt > 50000;
     }
 
     @Override

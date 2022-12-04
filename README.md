@@ -8,6 +8,36 @@
 
 
 
+LRU + GRAPH  : 56 36 26 28 66 41
+OPT + GRAPH  :
+    status  	statistics
+    testfile1	Accepted	DIV:0, MULT:1015, JUMP/BRANCH:751, MEM:3450, OTHER:12641, rank:24502.2
+    testfile2	Accepted	DIV:100, MULT:100, JUMP/BRANCH:325, MEM:1051, OTHER:2352, rank:10244.0
+    testfile3	Accepted	DIV:0, MULT:30000, JUMP/BRANCH:50003, MEM:410028, OTHER:16200034, rank:1.72000936E7
+    testfile4	Accepted	DIV:300, MULT:300300, JUMP/BRANCH:601403, MEM:2080810, OTHER:1504417, rank:7603920.6
+    testfile5	Accepted	DIV:25493, MULT:23532, JUMP/BRANCH:31417, MEM:645431, OTHER:1133795, rank:3831135.4
+    testfile6	Accepted	DIV:4, MULT:4, JUMP/BRANCH:4158300, MEM:9504699, OTHER:12494083, rank:3.6493657E7
+    56 36 26 27 51 41
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # 三、词法分析设计
 
 ​	词法分析程序在Lexer包中，主要包括InputHandler类（封装读入的字符串，提供多种读取功能），Lexer类（词法分析主函数），Token类（单词模型），TokenList类（保存解析出来的单词）以及TokenType类（枚举类，枚举单词类型，并定义每个单词的正则表达式）。

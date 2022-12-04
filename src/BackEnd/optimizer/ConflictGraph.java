@@ -12,14 +12,11 @@ import Middle.type.FuncParamBlock;
 import Middle.type.Jump;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
-import java.util.Stack;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class ConflictGraph {
@@ -60,8 +57,18 @@ public class ConflictGraph {
         if (recuTimes != TOP) {
             getConflictMap();
             manageRegisters();
+        } else {
+            overflowSymbol.addAll(allSymbols);
+            Registers.localRegisters = new ArrayList<>(Registers.registersGroup1);
+            Registers.globalRegisters = new ArrayList<>(Registers.registersGroup2);
+            // Registers.globalRegisters.add(5);
+            for (int i = 0; i < blockNodes.size(); i++) {
+                BlockNode blockNode = blockNodes.get(i);
+                outSymbols.get(blockNode).addAll(allSymbols);
+                inSymbols.get(blockNode).addAll(allSymbols);
+            }
         }
-        System.err.printf("func %s: times %d\n", funcName, recuTimes);
+        // System.err.printf("func %s: times %d\n", funcName, recuTimes);
     }
 
     // 活跃变量数据流分析
@@ -74,15 +81,6 @@ public class ConflictGraph {
         while (flag) {
             flag = false;
             if (recuTimes == TOP) {
-                overflowSymbol.addAll(allSymbols);
-                Registers.localRegisters = new ArrayList<>(Registers.registersGroup1);
-                Registers.globalRegisters = new ArrayList<>();
-                Registers.globalRegisters.add(5);
-                for (int i = 0; i < blockNodes.size(); i++) {
-                    BlockNode blockNode = blockNodes.get(i);
-                    outSymbols.get(blockNode).addAll(allSymbols);
-                    inSymbols.get(blockNode).addAll(allSymbols);
-                }
                 return;
             }
             for (int i = 0; i < blockNodes.size(); i++) {
@@ -218,19 +216,19 @@ public class ConflictGraph {
         if (symbolRegisterMap.containsKey(symbol)) {
             int register = symbolRegisterMap.get(symbol);
             symbolToGlobalRegister.put(symbol, register);
-            System.out.printf("%s 1=> %d\n", symbol, register);
+            // System.out.printf("%s 1=> %d\n", symbol, register);
             return register;
         } else {
             int register = registers.get(0);
             symbolToGlobalRegister.put(symbol, register);
-            System.out.printf("%s 3=> %d\n", symbol, register);
+            // System.out.printf("%s 3=> %d\n", symbol, register);
             return register;
         }
     }
 
     public void settleOverflowSymbol(Symbol symbol, int register) {
         symbolToTempRegister.put(symbol, register);
-        System.out.printf("%s 2=> %d\n", symbol, register);
+        // System.out.printf("%s 2=> %d\n", symbol, register);
     }
 
     public void freeOverflowSymbol(Symbol symbol) {
