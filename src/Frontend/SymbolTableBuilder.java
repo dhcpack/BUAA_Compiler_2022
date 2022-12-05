@@ -1,8 +1,5 @@
 package Frontend;
 
-import BackEnd.instructions.ALUDouble;
-import BackEnd.instructions.ALUSingle;
-import BackEnd.instructions.J;
 import Config.SIPair;
 import Exceptions.IllegalBreakContinueException;
 import Exceptions.IllegalReturnException;
@@ -78,8 +75,6 @@ import Middle.type.PrintInt;
 import Middle.type.PrintStr;
 import Middle.type.Return;
 
-import javax.swing.*;
-import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Stack;

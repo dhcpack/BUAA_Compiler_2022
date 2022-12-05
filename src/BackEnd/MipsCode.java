@@ -51,7 +51,7 @@ public class MipsCode implements Output {
         for (Map.Entry<String, String> globalString : globalStrings.entrySet()) {
             printStream.print("\t" + String.format("%s: .asciiz \"%s\"\n", globalString.getKey(), globalString.getValue()));
         }
-        printStream.print(".text\n");
+        printStream.print("\n.text\n");
         printStream.print("\tla $gp, global\n");
         printStream.print("\tj FUNC_main\n");
 

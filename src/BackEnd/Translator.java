@@ -52,7 +52,7 @@ public class Translator {
     private Registers tempRegisters = new Registers();
     private HashMap<Symbol, Integer> symbolUsageMap;
 
-    private final static int LEVEL = 10;
+    private final static int LEVEL = 100;
     private final static int GRAPH = 1;
     private final static int LRU = 2;
     private final static int OPT = 3;
@@ -457,6 +457,7 @@ public class Translator {
     }
 
     private void translateBranch(Branch branch) {
+        HashMap<Symbol, Integer> tempSymbolRegisterMap = new HashMap<>(tempRegisters.getSymbolToRegister());
         freeAllRegisters(FREE_TEMP | FREE_GLOBAL, true);  // TODO: is it necessary? check
         Operand cond = branch.getCond();
         if (cond instanceof Immediate) {
@@ -464,8 +465,18 @@ public class Translator {
             mipsCode.addInstr(
                     new BranchInstr(BranchInstr.BranchType.bne, Registers.v1, Registers.zero, branch.getThenBlock().getLabel()));
         } else if (cond instanceof Symbol) {
+            // Symbol symbol = (Symbol) cond;
+            // int register = allocRegister(symbol, loadTempRegister);
+            // mipsCode.addInstr(
+            //         new BranchInstr(BranchInstr.BranchType.bne, register, Registers.zero, branch.getThenBlock().getLabel()));
+
             Symbol symbol = (Symbol) cond;
-            int register = allocRegister(symbol, loadTempRegister);
+            int register;
+            if (tempSymbolRegisterMap.containsKey(symbol)) {
+                register = tempSymbolRegisterMap.get(symbol);
+            } else {
+                register = allocRegister(symbol, loadTempRegister);
+            }
             mipsCode.addInstr(
                     new BranchInstr(BranchInstr.BranchType.bne, register, Registers.zero, branch.getThenBlock().getLabel()));
         }
@@ -570,7 +581,7 @@ public class Translator {
                 } else if (op == FourExpr.ExprOp.MUL) {
                     translateMult(rightVal, leftRegister, resRegister, null);
                     // mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v1, rightVal));
-                    // mipsCode.addInstr(new Mult(leftRegister, Registers.v1));
+                    // mipsCode.addInstr(new Mult(leftRegister, Registers.v1, false));
                     // mipsCode.addInstr(new Mflo(resRegister));
                 } else if (op == FourExpr.ExprOp.DIV) {
                     translateDivMod(rightVal, leftRegister, resRegister, false);
@@ -578,10 +589,10 @@ public class Translator {
                     // mipsCode.addInstr(new Div(leftRegister, Registers.v1));
                     // mipsCode.addInstr(new Mflo(resRegister));
                 } else if (op == FourExpr.ExprOp.MOD) {
-                    translateDivMod(rightVal, leftRegister, resRegister, true);
-                    // mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v1, rightVal));
-                    // mipsCode.addInstr(new Div(leftRegister, Registers.v1));
-                    // mipsCode.addInstr(new Mfhi(resRegister));
+                    // translateDivMod(rightVal, leftRegister, resRegister, true);
+                    mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v1, rightVal));
+                    mipsCode.addInstr(new Div(leftRegister, Registers.v1));
+                    mipsCode.addInstr(new Mfhi(resRegister));
                 } else if (op == FourExpr.ExprOp.GT) {
                     mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.sgt, resRegister, leftRegister, rightVal));
                 } else if (op == FourExpr.ExprOp.GE) {
