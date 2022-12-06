@@ -1,68 +1,36 @@
 # Yuelin's Compiler
-	
+
 .data
 	global:
-	
+	2 3 1 2 3
 	.space 4
-	STR_1: .asciiz "a = "
+	STR_1: .asciiz "aa[1] = "
 	STR_2: .asciiz "\n"
-	STR_3: .asciiz "i = "
+	STR_3: .asciiz "d = "
+
 .text
 	la $gp, global
 	j FUNC_main
 FUNC_main:
-	# DEF, INT(i[sp-0x4]), -50
-	li $17, -50
-	# DEF, INT(a[sp-0x8]), 0
-	li $5, 0
-	# JUMP WHILE_0
-	sw $17, -0x4($29)
-WHILE_0:
-	# JUMP L_OR_EXP_3
-L_OR_EXP_3:
-	# JUMP L_AND_EXP_4
-L_AND_EXP_4:
-	# LT, INT(tmp_int_0[temp]), INT(i[sp-0x4]), 200
-	lw $18, -0x4($29)
-	li $3, 200
-	slt $17, $18, $3
-	# JUMP AND_END_5
-	sw $18, -0x4($29)
-	sw $17, -0xc($29)
-AND_END_5:
-	# JUMP OR_END_6
-OR_END_6:
-	# Branch INT(tmp_int_0[sp-0xc]) ? WHILE_BODY_1 : WHILE_END_2
-	lw $18, -0xc($29)
-	bne $18, $0, WHILE_BODY_1
-	j WHILE_END_2
-WHILE_BODY_1:
-	# JUMP L_OR_EXP_7
-L_OR_EXP_7:
-	# JUMP L_AND_EXP_8
-L_AND_EXP_8:
-	# LT, INT(tmp_int_1[temp]), INT(i[sp-0x4]), 150
-	lw $17, -0x4($29)
-	li $3, 150
-	slt $18, $17, $3
-	# JUMP AND_END_9
-	sw $17, -0x4($29)
-	sw $18, -0x10($29)
-AND_END_9:
-	# JUMP OR_END_10
-OR_END_10:
-	# Branch INT(tmp_int_1[sp-0x10]) ? IF_BODY_11 : IF_END_12
-	lw $17, -0x10($29)
-	bne $17, $0, IF_BODY_11
-	j IF_END_12
-IF_BODY_11:
-	# JUMP B_13
-B_13:
+	# DEF, INT(d[sp-0x4]), 6
+	li $5, 6
 	# PRINT_STR STR_1
 	li $2, 4
 	la $4, STR_1
 	syscall
-	# PRINT_INT INT(a[sp-0x8])
+	# PRINT_INT 2
+	li $2, 1
+	li $4, 2
+	syscall
+	# PRINT_STR STR_2
+	li $2, 4
+	la $4, STR_2
+	syscall
+	# PRINT_STR STR_3
+	li $2, 4
+	la $4, STR_3
+	syscall
+	# PRINT_INT INT(d[sp-0x4])
 	li $2, 1
 	move $4, $5
 	syscall
@@ -70,203 +38,6 @@ B_13:
 	li $2, 4
 	la $4, STR_2
 	syscall
-	# JUMP B_14
-	j B_14
-	# JUMP B_60
-	j B_60
-B_14:
-	# JUMP B_15
-	j B_15
-	# JUMP B_59
-	j B_59
-B_15:
-	# JUMP WHILE_16
-	j WHILE_16
-	# JUMP B_58
-	j B_58
-WHILE_16:
-	# JUMP L_OR_EXP_19
-L_OR_EXP_19:
-	# JUMP L_AND_EXP_20
-L_AND_EXP_20:
-	# LT, INT(tmp_int_2[temp]), INT(a[sp-0x8]), 50
-	li $3, 50
-	slt $18, $5, $3
-	# JUMP AND_END_21
-	sw $18, -0x14($29)
-AND_END_21:
-	# JUMP OR_END_22
-OR_END_22:
-	# Branch INT(tmp_int_2[sp-0x14]) ? WHILE_BODY_17 : WHILE_END_18
-	lw $17, -0x14($29)
-	bne $17, $0, WHILE_BODY_17
-	j WHILE_END_18
-WHILE_BODY_17:
-	# JUMP WHILE_23
-WHILE_23:
-	# JUMP L_OR_EXP_26
-L_OR_EXP_26:
-	# JUMP L_AND_EXP_27
-L_AND_EXP_27:
-	# LT, INT(tmp_int_3[temp]), INT(i[sp-0x4]), INT(a[sp-0x8])
-	lw $18, -0x4($29)
-	slt $17, $18, $5
-	# JUMP AND_END_28
-	sw $18, -0x4($29)
-	sw $17, -0x18($29)
-AND_END_28:
-	# JUMP OR_END_29
-OR_END_29:
-	# Branch INT(tmp_int_3[sp-0x18]) ? WHILE_BODY_24 : WHILE_END_25
-	lw $18, -0x18($29)
-	bne $18, $0, WHILE_BODY_24
-	j WHILE_END_25
-WHILE_BODY_24:
-	# JUMP WHILE_30
-WHILE_30:
-	# JUMP L_OR_EXP_33
-L_OR_EXP_33:
-	# JUMP L_AND_EXP_34
-L_AND_EXP_34:
-	# LT, INT(tmp_int_4[temp]), INT(i[sp-0x4]), 100
-	lw $17, -0x4($29)
-	li $3, 100
-	slt $18, $17, $3
-	# JUMP AND_END_35
-	sw $17, -0x4($29)
-	sw $18, -0x1c($29)
-AND_END_35:
-	# JUMP OR_END_36
-OR_END_36:
-	# Branch INT(tmp_int_4[sp-0x1c]) ? WHILE_BODY_31 : WHILE_END_32
-	lw $17, -0x1c($29)
-	bne $17, $0, WHILE_BODY_31
-	j WHILE_END_32
-WHILE_BODY_31:
-	# JUMP L_OR_EXP_37
-L_OR_EXP_37:
-	# JUMP L_AND_EXP_38
-L_AND_EXP_38:
-	# NEG, INT(tmp_int_6[temp]), 100
-	li $18, -100
-	# GT, INT(tmp_int_5[temp]), INT(i[sp-0x4]), INT(tmp_int_6[temp])
-	lw $17, -0x4($29)
-	sw $17, -0x4($29)
-	sgt $17, $17, $18
-	# JUMP AND_END_39
-	sw $17, -0x20($29)
-AND_END_39:
-	# JUMP OR_END_40
-OR_END_40:
-	# Branch INT(tmp_int_5[sp-0x20]) ? IF_BODY_41 : IF_END_42
-	lw $18, -0x20($29)
-	bne $18, $0, IF_BODY_41
-	j IF_END_42
-IF_BODY_41:
-	# JUMP WHILE_43
-WHILE_43:
-	# JUMP L_OR_EXP_46
-L_OR_EXP_46:
-	# JUMP L_AND_EXP_47
-L_AND_EXP_47:
-	# LT, INT(tmp_int_7[temp]), INT(i[sp-0x4]), 10
-	lw $17, -0x4($29)
-	li $3, 10
-	slt $18, $17, $3
-	# JUMP AND_END_48
-	sw $18, -0x24($29)
-	sw $17, -0x4($29)
-AND_END_48:
-	# JUMP OR_END_49
-OR_END_49:
-	# Branch INT(tmp_int_7[sp-0x24]) ? WHILE_BODY_44 : WHILE_END_45
-	lw $18, -0x24($29)
-	bne $18, $0, WHILE_BODY_44
-	j WHILE_END_45
-WHILE_BODY_44:
-	# JUMP B_50
-B_50:
-	# ADD, INT(tmp_int_8[temp]), INT(i[sp-0x4]), 1
-	lw $17, -0x4($29)
-	addiu $18, $17, 1
-	# ASS, INT(i[sp-0x4]), INT(tmp_int_8[temp])
-	move $17, $18
-	# PRINT_STR STR_3
-	li $2, 4
-	la $4, STR_3
-	syscall
-	# PRINT_INT INT(i[sp-0x4])
-	li $2, 1
-	move $4, $17
-	syscall
-	# PRINT_STR STR_2
-	li $2, 4
-	la $4, STR_2
-	syscall
-	# ADD, INT(tmp_int_9[temp]), INT(a[sp-0x8]), 10
-	addiu $18, $5, 10
-	# ASS, INT(a[sp-0x8]), INT(tmp_int_9[temp])
-	move $5, $18
-	# JUMP B_51
-	sw $17, -0x4($29)
-B_51:
-	# JUMP WHILE_43
-	j WHILE_43
-WHILE_END_45:
-	# JUMP IF_END_42
-IF_END_42:
-	# JUMP WHILE_30
-	j WHILE_30
-WHILE_END_32:
-	# JUMP WHILE_23
-	j WHILE_23
-WHILE_END_25:
-	# JUMP WHILE_16
-	j WHILE_16
-WHILE_END_18:
-	# ADD, INT(tmp_int_10[temp]), INT(a[sp-0x8]), 1
-	addiu $18, $5, 1
-	# ASS, INT(a[sp-0x8]), INT(tmp_int_10[temp])
-	move $5, $18
-	# ADD, INT(tmp_int_11[temp]), INT(i[sp-0x4]), 2
-	lw $17, -0x4($29)
-	addiu $18, $17, 2
-	# ASS, INT(i[sp-0x4]), INT(tmp_int_11[temp])
-	move $17, $18
-	# JUMP L_OR_EXP_52
-	sw $17, -0x4($29)
-L_OR_EXP_52:
-	# JUMP L_AND_EXP_53
-L_AND_EXP_53:
-	# LE, INT(tmp_int_12[temp]), INT(a[sp-0x8]), INT(i[sp-0x4])
-	lw $18, -0x4($29)
-	sle $17, $5, $18
-	# JUMP AND_END_54
-	sw $18, -0x4($29)
-	sw $17, -0x28($29)
-AND_END_54:
-	# JUMP OR_END_55
-OR_END_55:
-	# Branch INT(tmp_int_12[sp-0x28]) ? IF_BODY_56 : IF_END_57
-	lw $18, -0x28($29)
-	bne $18, $0, IF_BODY_56
-	j IF_END_57
-IF_BODY_56:
-	# JUMP WHILE_END_2
-	j WHILE_END_2
-	# JUMP IF_END_57
-IF_END_57:
-	# JUMP B_58
-B_58:
-	# JUMP B_59
-B_59:
-	# JUMP B_60
-B_60:
-	# JUMP IF_END_12
-IF_END_12:
-	# JUMP WHILE_0
-	j WHILE_0
-WHILE_END_2:
 	# RETURN 0
 	li $2, 10
 	syscall

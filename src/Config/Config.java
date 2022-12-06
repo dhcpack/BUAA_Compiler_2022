@@ -36,7 +36,7 @@ public class Config {
         MiddleCode middleCode = symbolTableBuilder.getMiddleCode();
 
         // output middle code
-        // middleCode.output();  // through MiddleWriter
+        middleCode.output();  // through MiddleWriter
 
         MipsCode mipsCode = new Translator(middleCode).translate();
 
