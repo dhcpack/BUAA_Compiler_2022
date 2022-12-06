@@ -34,6 +34,22 @@ public class ALUDouble implements Instruction {
         this.immediate = immediate;
     }
 
+    public ALUDoubleType getAluDoubleType() {
+        return aluDoubleType;
+    }
+
+    public int getrResult() {
+        return rResult;
+    }
+
+    public int getrOperand() {
+        return rOperand;
+    }
+
+    public int getImmediate() {
+        return immediate;
+    }
+
     @Override
     public double getCost() {
         return this.type.getCost();

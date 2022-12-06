@@ -128,7 +128,6 @@ FUNC_main:
 	# MUL, INT(tmp_int_13[temp]), 1, 4
 	li $23, 4
 	# ADD, INT(tmp_int_13[temp]), INT(tmp_int_13[temp]), 0
-	addiu $23, $23, 0
 	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_13[temp]))->POINTER(tmp_pointer_0[temp])
 	addiu $3, $28, 4
 	addu $24, $3, $23
@@ -202,14 +201,12 @@ B_24:
 	# MUL, INT(tmp_int_24[temp]), 0, 4
 	li $26, 0
 	# ADD, INT(tmp_int_24[temp]), INT(tmp_int_24[temp]), 0
-	addiu $26, $26, 0
 	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_24[temp]))->POINTER(tmp_pointer_1[temp])
 	addiu $3, $28, 4
 	addu $27, $3, $26
 	# MUL, INT(tmp_int_25[temp]), 0, 4
 	li $17, 0
 	# ADD, INT(tmp_int_25[temp]), INT(tmp_int_25[temp]), 0
-	addiu $17, $17, 0
 	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_25[temp]))->POINTER(tmp_pointer_2[temp])
 	addiu $3, $28, 4
 	addu $18, $3, $17
@@ -225,14 +222,12 @@ B_24:
 	# MUL, INT(tmp_int_29[temp]), 1, 4
 	li $23, 4
 	# ADD, INT(tmp_int_29[temp]), INT(tmp_int_29[temp]), 0
-	addiu $23, $23, 0
 	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_29[temp]))->POINTER(tmp_pointer_3[temp])
 	addiu $3, $28, 4
 	addu $24, $3, $23
 	# MUL, INT(tmp_int_30[temp]), 1, 4
 	li $25, 4
 	# ADD, INT(tmp_int_30[temp]), INT(tmp_int_30[temp]), 0
-	addiu $25, $25, 0
 	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_30[temp]))->POINTER(tmp_pointer_4[temp])
 	addiu $3, $28, 4
 	addu $22, $3, $25
@@ -248,14 +243,12 @@ B_24:
 	# MUL, INT(tmp_int_34[temp]), 2, 4
 	li $20, 8
 	# ADD, INT(tmp_int_34[temp]), INT(tmp_int_34[temp]), 0
-	addiu $20, $20, 0
 	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_34[temp]))->POINTER(tmp_pointer_5[temp])
 	addiu $3, $28, 4
 	addu $19, $3, $20
 	# MUL, INT(tmp_int_35[temp]), 2, 4
 	li $27, 8
 	# ADD, INT(tmp_int_35[temp]), INT(tmp_int_35[temp]), 0
-	addiu $27, $27, 0
 	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_35[temp]))->POINTER(tmp_pointer_6[temp])
 	addiu $3, $28, 4
 	addu $21, $3, $27
@@ -271,14 +264,12 @@ B_24:
 	# MUL, INT(tmp_int_39[temp]), 3, 4
 	li $26, 12
 	# ADD, INT(tmp_int_39[temp]), INT(tmp_int_39[temp]), 0
-	addiu $26, $26, 0
 	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_39[temp]))->POINTER(tmp_pointer_7[temp])
 	addiu $3, $28, 4
 	addu $17, $3, $26
 	# MUL, INT(tmp_int_40[temp]), 3, 4
 	li $24, 12
 	# ADD, INT(tmp_int_40[temp]), INT(tmp_int_40[temp]), 0
-	addiu $24, $24, 0
 	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_40[temp]))->POINTER(tmp_pointer_8[temp])
 	addiu $3, $28, 4
 	addu $18, $3, $24
@@ -294,14 +285,12 @@ B_24:
 	# MUL, INT(tmp_int_44[temp]), 4, 4
 	li $23, 16
 	# ADD, INT(tmp_int_44[temp]), INT(tmp_int_44[temp]), 0
-	addiu $23, $23, 0
 	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_44[temp]))->POINTER(tmp_pointer_9[temp])
 	addiu $3, $28, 4
 	addu $25, $3, $23
 	# MUL, INT(tmp_int_45[temp]), 4, 4
 	li $19, 16
 	# ADD, INT(tmp_int_45[temp]), INT(tmp_int_45[temp]), 0
-	addiu $19, $19, 0
 	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_45[temp]))->POINTER(tmp_pointer_10[temp])
 	addiu $3, $28, 4
 	addu $22, $3, $19
@@ -317,14 +306,12 @@ B_24:
 	# MUL, INT(tmp_int_49[temp]), 5, 4
 	li $20, 20
 	# ADD, INT(tmp_int_49[temp]), INT(tmp_int_49[temp]), 0
-	addiu $20, $20, 0
 	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_49[temp]))->POINTER(tmp_pointer_11[temp])
 	addiu $3, $28, 4
 	addu $27, $3, $20
 	# MUL, INT(tmp_int_50[temp]), 5, 4
 	li $17, 20
 	# ADD, INT(tmp_int_50[temp]), INT(tmp_int_50[temp]), 0
-	addiu $17, $17, 0
 	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_50[temp]))->POINTER(tmp_pointer_12[temp])
 	addiu $3, $28, 4
 	addu $21, $3, $17
@@ -340,14 +327,12 @@ B_24:
 	# MUL, INT(tmp_int_54[temp]), 6, 4
 	li $26, 24
 	# ADD, INT(tmp_int_54[temp]), INT(tmp_int_54[temp]), 0
-	addiu $26, $26, 0
 	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_54[temp]))->POINTER(tmp_pointer_13[temp])
 	addiu $3, $28, 4
 	addu $24, $3, $26
 	# MUL, INT(tmp_int_55[temp]), 6, 4
 	li $25, 24
 	# ADD, INT(tmp_int_55[temp]), INT(tmp_int_55[temp]), 0
-	addiu $25, $25, 0
 	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_55[temp]))->POINTER(tmp_pointer_14[temp])
 	addiu $3, $28, 4
 	addu $18, $3, $25
@@ -363,14 +348,12 @@ B_24:
 	# MUL, INT(tmp_int_59[temp]), 7, 4
 	li $23, 28
 	# ADD, INT(tmp_int_59[temp]), INT(tmp_int_59[temp]), 0
-	addiu $23, $23, 0
 	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_59[temp]))->POINTER(tmp_pointer_15[temp])
 	addiu $3, $28, 4
 	addu $19, $3, $23
 	# MUL, INT(tmp_int_60[temp]), 7, 4
 	li $27, 28
 	# ADD, INT(tmp_int_60[temp]), INT(tmp_int_60[temp]), 0
-	addiu $27, $27, 0
 	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_60[temp]))->POINTER(tmp_pointer_16[temp])
 	addiu $3, $28, 4
 	addu $22, $3, $27
@@ -386,14 +369,12 @@ B_24:
 	# MUL, INT(tmp_int_64[temp]), 8, 4
 	li $20, 32
 	# ADD, INT(tmp_int_64[temp]), INT(tmp_int_64[temp]), 0
-	addiu $20, $20, 0
 	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_64[temp]))->POINTER(tmp_pointer_17[temp])
 	addiu $3, $28, 4
 	addu $17, $3, $20
 	# MUL, INT(tmp_int_65[temp]), 8, 4
 	li $24, 32
 	# ADD, INT(tmp_int_65[temp]), INT(tmp_int_65[temp]), 0
-	addiu $24, $24, 0
 	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_65[temp]))->POINTER(tmp_pointer_18[temp])
 	addiu $3, $28, 4
 	addu $21, $3, $24
@@ -409,14 +390,12 @@ B_24:
 	# MUL, INT(tmp_int_69[temp]), 9, 4
 	li $26, 36
 	# ADD, INT(tmp_int_69[temp]), INT(tmp_int_69[temp]), 0
-	addiu $26, $26, 0
 	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_69[temp]))->POINTER(tmp_pointer_19[temp])
 	addiu $3, $28, 4
 	addu $25, $3, $26
 	# MUL, INT(tmp_int_70[temp]), 9, 4
 	li $19, 36
 	# ADD, INT(tmp_int_70[temp]), INT(tmp_int_70[temp]), 0
-	addiu $19, $19, 0
 	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_70[temp]))->POINTER(tmp_pointer_20[temp])
 	addiu $3, $28, 4
 	addu $18, $3, $19
@@ -479,7 +458,6 @@ B_37:
 	# MUL, INT(tmp_int_77[temp]), INT(i[sp-0x4]), 4
 	sll $19, $6, 2
 	# ADD, INT(tmp_int_77[temp]), INT(tmp_int_77[temp]), 0
-	addiu $19, $19, 0
 	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_77[temp]))->POINTER(tmp_pointer_21[temp])
 	addiu $3, $28, 4
 	addu $18, $3, $19

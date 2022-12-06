@@ -3,6 +3,7 @@ package Config;
 import BackEnd.MipsCode;
 import BackEnd.Translator;
 import BackEnd.optimizer.DeleteUselessJump;
+import BackEnd.optimizer.DeleteUselessMips;
 import Frontend.Lexer.Lexer;
 import Frontend.Parser.CompUnit;
 import Frontend.Parser.Parser;
@@ -42,6 +43,7 @@ public class Config {
 
         // Mips Optimize
         DeleteUselessJump.optimize(mipsCode);
+        DeleteUselessMips.optimize(mipsCode);
 
         // output mips code
         mipsCode.output(new PrintStream(Config.mipsFile));  // through MipsWriter
