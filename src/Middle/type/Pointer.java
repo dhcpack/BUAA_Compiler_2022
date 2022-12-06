@@ -41,6 +41,14 @@ public class Pointer extends BlockNode {
         return pointer;
     }
 
+    public void setLoad(Symbol load) {
+        this.load = load;
+    }
+
+    public boolean isLoad(){
+        return this.load != null;
+    }
+
     @Override
     public String toString() {
         if (op == Op.LOAD) {

@@ -1,5 +1,6 @@
 // package Middle.optimizer;
 //
+// import Frontend.Symbol.Symbol;
 // import Middle.MiddleCode;
 // import Middle.type.BasicBlock;
 // import Middle.type.BlockNode;
@@ -16,8 +17,12 @@
 //         LinkedHashMap<FuncBlock, ArrayList<BasicBlock>> funcToSortedBlock = middleCode.getFuncToSortedBlock();
 //         for (ArrayList<BasicBlock> basicBlocks:funcToSortedBlock.values()){
 //             for (BasicBlock basicBlock:basicBlocks){
-//                 ArrayList<BlockNode> newContent = new ArrayList<>();
-//                 HashSet<FourExpr> formerExprs = new HashSet<>();
+//                 HashMap<Symbol, Symbol> replaceSymbols = new HashMap<>();  // 符号 -> 被替换的符号
+//                 /*
+//                 * ADD, t1, t2, 0  t2->t1
+//                 * SUB, t1, t2, 0  t2->t1
+//                 * MUL, t1, t2, 1  t2->t1
+//                 * */
 //                 for (BlockNode blockNode:basicBlock.getContent()){
 //                     if(!(blockNode instanceof FourExpr)){
 //                         newContent.add(blockNode);

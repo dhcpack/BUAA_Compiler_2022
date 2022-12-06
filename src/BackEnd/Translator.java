@@ -746,6 +746,7 @@ public class Translator {
                 instructions.add(new ALUDouble(ALUDouble.ALUDoubleType.andi, resRegister, operandRegister, immediate - 1));
             }
         } else {
+            // int i;
             int n = k + 32;  // k+32
             double f = Math.pow(2, n) / immediate;  // 2^n / b
             long upper = (long) f + 1;
@@ -754,15 +755,15 @@ public class Translator {
             double e_lower = f - (double) lower;
             double split = Math.pow(2, k) / immediate;
             if (e_upper < split) {
-                instructions.add(new ALUSingle(ALUSingle.ALUSingleType.li, resRegister, upper));
+                instructions.add(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.a0, upper));
             } else if (e_lower < split) {
-                instructions.add(new ALUSingle(ALUSingle.ALUSingleType.li, resRegister, lower));
+                instructions.add(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.a0, lower));
             } else {
                 assert false : "e_upper和e_lower中一定有一个小于split";
             }
-            instructions.add(new Mult(resRegister, operandRegister, true));
-            instructions.add(new Mfhi(resRegister));
-            instructions.add(new ALUDouble(ALUDouble.ALUDoubleType.srl, resRegister, resRegister, k));
+            instructions.add(new Mult(Registers.a0, operandRegister, true));
+            instructions.add(new Mfhi(Registers.a0));
+            instructions.add(new ALUDouble(ALUDouble.ALUDoubleType.srl, resRegister, Registers.a0, k));
             if (isMod) {
                 translateMult(immediate, resRegister, Registers.v0, instructions);  // translateMult里面会用到v0寄存器
                 instructions.add(new ALUTriple(ALUTriple.ALUTripleType.subu, resRegister, operandRegister, Registers.v0));
@@ -806,14 +807,6 @@ public class Translator {
             }
             return;
         }
-        if (immediate < 0) {
-            if (instructions != null) {
-                instructions.add(new ALUTriple(ALUTriple.ALUTripleType.subu, operandRegister, Registers.zero, operandRegister));
-            } else {
-                mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.subu, operandRegister, Registers.zero, operandRegister));
-            }
-            immediate = -immediate;
-        }
         if (immediate == 1) {
             if (operandRegister != resRegister) {
                 if (instructions != null) {
@@ -822,6 +815,23 @@ public class Translator {
                     mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.addu, resRegister, Registers.zero, operandRegister));
                 }
             }
+            return;
+        }
+        if(immediate == -1){
+            if (instructions != null) {
+                instructions.add(new ALUTriple(ALUTriple.ALUTripleType.subu, resRegister, Registers.zero, operandRegister));
+            } else {
+                mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.subu, resRegister, Registers.zero, operandRegister));
+            }
+        }
+
+        if (immediate < 0) {
+            if (instructions != null) {
+                instructions.add(new ALUTriple(ALUTriple.ALUTripleType.subu, operandRegister, Registers.zero, operandRegister));
+            } else {
+                mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.subu, operandRegister, Registers.zero, operandRegister));
+            }
+            immediate = -immediate;
         }
         long num = 1;
         int shiftTime = 0, newImm = immediate;
@@ -841,19 +851,22 @@ public class Translator {
 
         if (instructions == null) {
             if (shiftTimes.size() <= 3) {
-                mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.sll, resRegister, operandRegister, shiftTimes.get(0)));
-                if (shiftTimes.size() == 1) return;
+                if(shiftTimes.size() == 1){
+                    mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.sll, resRegister, operandRegister, shiftTimes.get(0)));
+                    return;
+                }
+                mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.sll, Registers.fp, operandRegister, shiftTimes.get(0)));
                 for (int i = 1; i < shiftTimes.size() - 1; i++) {
                     mipsCode.addInstr(
                             new ALUDouble(ALUDouble.ALUDoubleType.sll, Registers.v1, operandRegister, shiftTimes.get(i)));
-                    mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.addu, resRegister, resRegister, Registers.v1));
+                    mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.addu, Registers.fp, Registers.fp, Registers.v1));
                 }
                 int last = shiftTimes.get(shiftTimes.size() - 1);
                 if (last == 0) {
-                    mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.addu, resRegister, resRegister, operandRegister));
+                    mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.addu, resRegister, Registers.fp, operandRegister));
                 } else {
                     mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.sll, Registers.v1, operandRegister, last));
-                    mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.addu, resRegister, resRegister, Registers.v1));
+                    mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.addu, resRegister, Registers.fp, Registers.v1));
                 }
             } else {
                 mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v1, newImm));
@@ -862,19 +875,22 @@ public class Translator {
             }
         } else {
             if (shiftTimes.size() <= 3) {
-                instructions.add(new ALUDouble(ALUDouble.ALUDoubleType.sll, resRegister, operandRegister, shiftTimes.get(0)));
-                if (shiftTimes.size() == 1) return;
+                if(shiftTimes.size() == 1){
+                    instructions.add(new ALUDouble(ALUDouble.ALUDoubleType.sll, resRegister, operandRegister, shiftTimes.get(0)));
+                    return;
+                }
+                instructions.add(new ALUDouble(ALUDouble.ALUDoubleType.sll, Registers.fp, operandRegister, shiftTimes.get(0)));
                 for (int i = 1; i < shiftTimes.size() - 1; i++) {
                     instructions.add(
                             new ALUDouble(ALUDouble.ALUDoubleType.sll, Registers.v1, operandRegister, shiftTimes.get(i)));
-                    instructions.add(new ALUTriple(ALUTriple.ALUTripleType.addu, resRegister, resRegister, Registers.v1));
+                    instructions.add(new ALUTriple(ALUTriple.ALUTripleType.addu, Registers.fp, Registers.fp, Registers.v1));
                 }
                 int last = shiftTimes.get(shiftTimes.size() - 1);
                 if (last == 0) {
-                    instructions.add(new ALUTriple(ALUTriple.ALUTripleType.addu, resRegister, resRegister, operandRegister));
+                    instructions.add(new ALUTriple(ALUTriple.ALUTripleType.addu, resRegister, Registers.fp, operandRegister));
                 } else {
                     instructions.add(new ALUDouble(ALUDouble.ALUDoubleType.sll, Registers.v1, operandRegister, last));
-                    instructions.add(new ALUTriple(ALUTriple.ALUTripleType.addu, resRegister, resRegister, Registers.v1));
+                    instructions.add(new ALUTriple(ALUTriple.ALUTripleType.addu, resRegister, Registers.fp, Registers.v1));
                 }
             } else {
                 instructions.add(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v1, newImm));

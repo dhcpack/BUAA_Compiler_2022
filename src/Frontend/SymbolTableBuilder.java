@@ -76,6 +76,7 @@ import Middle.type.PrintStr;
 import Middle.type.Return;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -579,12 +580,30 @@ public class SymbolTableBuilder {
         if (lVal.getSymbolType() == SymbolType.POINTER) {  // 如果返回的是指针，直接存在内存里
             currBlock.addContent(new Pointer(Pointer.Op.STORE, lVal, operand));  // 数组存内存
         } else if (lVal.getSymbolType() == SymbolType.INT) {
-            currBlock.addContent(new FourExpr(operand, lVal, FourExpr.ExprOp.ASS));
+            // currBlock.addContent(new FourExpr(operand, lVal, FourExpr.ExprOp.ASS));
+            ArrayList<BlockNode> currContent = currBlock.getContent();
+            if(currContent.size() == 0){
+                currBlock.addContent(new FourExpr(operand, lVal, FourExpr.ExprOp.ASS));
+            } else {
+                BlockNode lastNode = currContent.get(currContent.size()-1);
+
+                if(lastNode instanceof FourExpr && ((FourExpr) lastNode).getRes() == operand && combinedOps.contains(((FourExpr) lastNode).getOp()) && !((FourExpr) lastNode).replaced()) {
+                    ((FourExpr) lastNode).setRes(lVal);
+                    ((FourExpr) lastNode).setReplaced();
+                } else if (lastNode instanceof Pointer && ((Pointer) lastNode).isLoad() && ((Pointer) lastNode).getLoad() == operand) {
+                    ((Pointer) lastNode).setLoad(lVal);
+                } else {
+                    currBlock.addContent(new FourExpr(operand, lVal, FourExpr.ExprOp.ASS));
+                }
+            }
         } else {
             assert false;
         }
         return;
     }
+
+    private HashSet<FourExpr.ExprOp> combinedOps = new HashSet<>(Arrays.asList(FourExpr.ExprOp.ADD, FourExpr.ExprOp.MUL, FourExpr.ExprOp.DIV, FourExpr.ExprOp.SUB));
+
 
     // Block → '{' { BlockItem } '}'
     public BasicBlock checkBlockStmt(BlockStmt blockStmt, boolean isFunc, String funcLabel) {

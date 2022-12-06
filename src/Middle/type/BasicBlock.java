@@ -83,6 +83,11 @@ public class BasicBlock implements Comparable<BasicBlock> {
     }
 
     public void addContent(BlockNode blockNode) {
+        if(blockNode instanceof FourExpr && ((FourExpr) blockNode).getOp() == FourExpr.ExprOp.ASS && ((FourExpr) blockNode).getLeft() instanceof Immediate && ((Immediate) ((FourExpr) blockNode).getLeft()).getNumber() == 4){
+            {
+                System.out.println(1);
+            }
+        }
         this.content.add(blockNode);
         if (blockNode instanceof Branch) {
             // "Branch " + cond + " ? " + thenBlock + " : " + elseBlock;

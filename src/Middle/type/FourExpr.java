@@ -30,7 +30,7 @@ public class FourExpr extends BlockNode {
 
     private  Operand left;
     private  Operand right;
-    private final Symbol res;
+    private Symbol res;
     private final ExprOp op;
 
     public FourExpr(Operand left, Symbol res, ExprOp op) {
@@ -47,6 +47,16 @@ public class FourExpr extends BlockNode {
         this.op = op;
     }
 
+    private boolean replaced = false;
+
+    public boolean replaced(){
+        return replaced;
+    }
+
+    public void setReplaced(){
+        this.replaced = true;
+    }
+
     public Operand getLeft() {
         return left;
     }
@@ -61,6 +71,10 @@ public class FourExpr extends BlockNode {
 
     public void setRight(Operand right) {
         this.right = right;
+    }
+
+    public void setRes(Symbol res) {
+        this.res = res;
     }
 
     public boolean isSingle() {
