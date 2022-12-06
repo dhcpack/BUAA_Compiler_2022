@@ -36,6 +36,9 @@ public class Config {
 
         MiddleCode middleCode = symbolTableBuilder.getMiddleCode();
 
+        // Middle Optimize
+        // ExtractCommonExpr.optimize(middleCode);
+
         // output middle code
         middleCode.output();  // through MiddleWriter
 

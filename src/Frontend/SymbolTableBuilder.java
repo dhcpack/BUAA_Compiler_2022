@@ -77,6 +77,8 @@ import Middle.type.Return;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
@@ -105,6 +107,10 @@ public class SymbolTableBuilder {
     // about loop
     private final Stack<BasicBlock> whileHead = new Stack<>();  // for continue
     private final Stack<BasicBlock> whileNext = new Stack<>();  // for break
+
+    // about Const
+    private final HashMap<Symbol, Integer> nonModifiedInt = new HashMap<>();  // 没有更改过的INT
+
     private int loopDepth = 0;
 
     public SymbolTableBuilder(CompUnit compUnit) {
@@ -141,6 +147,38 @@ public class SymbolTableBuilder {
         // check main func
         checkMainFunc(mainFunction);
 
+        replaceNonModified();
+    }
+
+    public void replaceNonModified(){
+        LinkedHashMap<FuncBlock, ArrayList<BasicBlock>> funcToSortedBlock = middleCode.getFuncToSortedBlock();
+        for (ArrayList<BasicBlock> basicBlocks:funcToSortedBlock.values()){
+            for (BasicBlock basicBlock:basicBlocks){
+                for (BlockNode blockNode:basicBlock.getContent()) {
+                    if(blockNode instanceof FourExpr){
+                        FourExpr fourExpr = (FourExpr) blockNode;
+                        if(fourExpr.isSingle()){
+                            if(nonModifiedInt.containsKey(fourExpr.getLeft())){
+                                fourExpr.setLeft(new Immediate(nonModifiedInt.get(fourExpr.getLeft())));
+                            }
+                        } else {
+                            if(nonModifiedInt.containsKey(fourExpr.getLeft())){
+                                fourExpr.setLeft(new Immediate(nonModifiedInt.get(fourExpr.getLeft())));
+                            }
+                            if(nonModifiedInt.containsKey(fourExpr.getRight())){
+                                fourExpr.setRight(new Immediate(nonModifiedInt.get(fourExpr.getRight())));
+                            }
+                        }
+                    } else if(blockNode instanceof PrintInt){
+                        PrintInt printInt = (PrintInt) blockNode;
+                        if(nonModifiedInt.containsKey(printInt.getVal())){
+                            printInt.setVal(new Immediate(nonModifiedInt.get(printInt.getVal())));
+                        }
+                    }
+                }
+            }
+
+        }
     }
 
     // Decl → ConstDecl | VarDecl
@@ -187,6 +225,7 @@ public class SymbolTableBuilder {
                         currBlock.addContent(new Middle.type.FourExpr(new Immediate(val), symbol, FourExpr.ExprOp.DEF));
                         symbol.setScope(Symbol.Scope.LOCAL);
                     }
+                    nonModifiedInt.put(symbol,val);
                 } else {  // 初始化数值不可以直接计算出结果，用FourExpr表示
                     Operand val;
                     if (initVal.isConst()) {
@@ -194,7 +233,9 @@ public class SymbolTableBuilder {
                     } else {
                         val = checkExp(initVal.getExp(), false);
                     }
-
+                    if(val instanceof Immediate){
+                        nonModifiedInt.put(symbol,((Immediate) val).getNumber());
+                    }
                     symbol.setAddress(currSymbolTable.getStackSize());
                     currBlock.addContent(new Middle.type.FourExpr(val, symbol, FourExpr.ExprOp.DEF));
                     symbol.setScope(Symbol.Scope.LOCAL);
@@ -274,8 +315,6 @@ public class SymbolTableBuilder {
                     // 函数中的局部变量，没有初始化
                 }
             }
-
-
         }
     }
 
@@ -534,6 +573,7 @@ public class SymbolTableBuilder {
         Operand lValRes = checkLVal(assignStmt.getLVal(), true, false);
         assert lValRes instanceof Symbol;
         Symbol lVal = (Symbol) lValRes;
+        nonModifiedInt.remove(lVal);
         // check right Val
         Operand operand = checkExp(assignStmt.getExp(), false);
         if (lVal.getSymbolType() == SymbolType.POINTER) {  // 如果返回的是指针，直接存在内存里
@@ -614,6 +654,7 @@ public class SymbolTableBuilder {
         }
         // check LVal, and LVal could not be const
         Operand symbol = checkLVal(getIntStmt.getLVal(), true, false);
+        nonModifiedInt.remove((Symbol) symbol);
         // TODO: WARNING!!! GetInt会根据global local temp来设计sw, lw指令，在translateGetInt
         currBlock.addContent(new GetInt((Symbol) symbol));
     }

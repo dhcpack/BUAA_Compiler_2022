@@ -2,524 +2,2108 @@
 
 .data
 	global:
-	10 0 1 2 3 4 5 6 7 8 9
+	1 2 2 3 3 0 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 	.space 4
-	STR_1: .asciiz ", "
+	STR_1: .asciiz "19373630\n"
 	STR_2: .asciiz "\n"
 
 .text
 	la $gp, global
 	j FUNC_main
-FUNC_fib:
-	lw $5, -0x4($29)
+FUNC_output_id:
 	# JUMP L_OR_EXP_0
 L_OR_EXP_0:
 	# JUMP L_AND_EXP_1
 L_AND_EXP_1:
-	# EQ, INT(tmp_int_0[temp]), INT(i[sp-0x4]), 1
-	seq $17, $5, 1
+	# ASS, INT(tmp_int_15440[temp]), 1
+	li $17, 1
+	# JUMP AND_3
+	sw $17, -0x4($29)
+AND_3:
+	# ASS, INT(tmp_int_15440[sp-0x4]), 0
+	li $18, 0
 	# JUMP AND_END_2
-	sw $17, -0x8($29)
+	sw $18, -0x4($29)
 AND_END_2:
-	# JUMP OR_END_3
-OR_END_3:
-	# Branch INT(tmp_int_0[sp-0x8]) ? IF_BODY_4 : IF_END_5
-	lw $18, -0x8($29)
-	bne $18, $0, IF_BODY_4
-	j IF_END_5
-IF_BODY_4:
-	# JUMP B_6
-B_6:
-	# RETURN 1
-	li $2, 1
-	jr $ra
-	# JUMP B_7
-B_7:
-	# JUMP IF_END_5
-IF_END_5:
-	# JUMP L_OR_EXP_8
-L_OR_EXP_8:
+	# ASS, INT(tmp_int_15441[temp]), INT(tmp_int_15440[sp-0x4])
+	lw $19, -0x4($29)
+	move $20, $19
+	# Branch INT(tmp_int_15440[sp-0x4]) ? OR_END_6 : OR_7
+	sw $19, -0x4($29)
+	sw $20, -0x8($29)
+	bne $19, $0, OR_END_6
+OR_7:
 	# JUMP L_AND_EXP_9
 L_AND_EXP_9:
-	# EQ, INT(tmp_int_1[temp]), INT(i[sp-0x4]), 2
-	seq $19, $5, 2
 	# JUMP AND_END_10
-	sw $19, -0xc($29)
 AND_END_10:
-	# JUMP OR_END_11
-OR_END_11:
-	# Branch INT(tmp_int_1[sp-0xc]) ? IF_BODY_12 : IF_END_13
-	lw $20, -0xc($29)
-	bne $20, $0, IF_BODY_12
+	# OR, INT(tmp_int_15441[sp-0x8]), INT(tmp_int_15441[sp-0x8]), 1
+	lw $21, -0x8($29)
+	li $21, 1
+	# Branch INT(tmp_int_15441[sp-0x8]) ? OR_END_6 : OR_8
+	sw $21, -0x8($29)
+	bne $21, $0, OR_END_6
+OR_8:
+	# JUMP OR_END_6
+OR_END_6:
+	# Branch INT(tmp_int_15441[sp-0x8]) ? IF_BODY_12 : IF_END_13
+	lw $22, -0x8($29)
+	bne $22, $0, IF_BODY_12
 	j IF_END_13
 IF_BODY_12:
 	# JUMP B_14
 B_14:
-	# RETURN 2
-	li $2, 2
-	jr $ra
+	# PRINT_STR STR_1
+	li $2, 4
+	la $4, STR_1
+	syscall
 	# JUMP B_15
 B_15:
 	# JUMP IF_END_13
 IF_END_13:
-	# SUB, INT(tmp_int_2[temp]), INT(i[sp-0x4]), 1
-	addiu $21, $5, -1
-	# Call FUNC_fib; Params: INT(tmp_int_2[temp]); RET INT(tmp_int_3[temp])
-	sw $31, 0x0($29)
-	addiu $4, $29, -20
-	sw $21, -0x4($4)
-	sw $5, -0x4($29)
-	move $29, $4
-	jal FUNC_fib
-	addiu $29, $29, 20
-	lw $31, 0x0($29)
-	move $22, $2
-	lw $5, -0x4($29)
-	# SUB, INT(tmp_int_4[temp]), INT(i[sp-0x4]), 2
-	addiu $23, $5, -2
-	# Call FUNC_fib; Params: INT(tmp_int_4[temp]); RET INT(tmp_int_5[temp])
-	sw $31, 0x0($29)
-	addiu $4, $29, -24
-	sw $23, -0x4($4)
-	sw $22, -0x10($29)
-	move $29, $4
-	jal FUNC_fib
-	addiu $29, $29, 24
-	lw $31, 0x0($29)
-	move $24, $2
-	# ADD, INT(tmp_int_6[temp]), INT(tmp_int_3[sp-0x10]), INT(tmp_int_5[temp])
-	lw $25, -0x10($29)
-	addu $26, $25, $24
-	# RETURN INT(tmp_int_6[temp])
-	move $2, $26
+	# RETURN VOID
 	jr $ra
 	
-FUNC_main:
-	# GETINT INT(i[sp-0x4])
-	li $2, 5
-	syscall
-	move $6, $2
-	# GETINT INT(j[sp-0x8])
-	li $2, 5
-	syscall
-	move $7, $2
-	# MUL, INT(tmp_int_7[temp]), INT(i[sp-0x4]), INT(j[sp-0x8])
-	mult $6, $7
-	mflo $17
-	# NEG, INT(tmp_int_8[temp]), INT(tmp_int_7[temp])
-	subu $18, $0, $17
-	# Call FUNC_fib; Params: 4; RET INT(tmp_int_9[temp])
-	sw $31, 0x0($29)
-	addiu $4, $29, -28
-	li $3, 4
-	sw $3, -0x4($4)
-	sw $18, -0x18($29)
-	move $29, $4
-	jal FUNC_fib
-	addiu $29, $29, 28
-	lw $31, 0x0($29)
-	move $19, $2
-	# MUL, INT(tmp_int_10[temp]), INT(tmp_int_8[sp-0x18]), INT(tmp_int_9[temp])
-	lw $20, -0x18($29)
-	mult $20, $19
-	mflo $21
-	# ADD, INT(tmp_int_11[temp]), INT(tmp_int_10[temp]), 0
-	addiu $22, $21, 0
-	# MUL, INT(tmp_int_13[temp]), 1, 4
-	li $23, 4
-	# ADD, INT(tmp_int_13[temp]), INT(tmp_int_13[temp]), 0
-	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_13[temp]))->POINTER(tmp_pointer_0[temp])
-	addiu $3, $28, 4
-	addu $24, $3, $23
-	# LOAD POINTER(tmp_pointer_0[temp]), INT(tmp_int_14[temp])
-	lw $25, 0x0($24)
-	# MUL, INT(tmp_int_15[temp]), INT(tmp_int_14[temp]), 1
-	addu $26, $0, $25
-	sll $26, $25, 0
-	# ADD, INT(tmp_int_12[temp]), INT(tmp_int_11[temp]), INT(tmp_int_15[temp])
-	addu $27, $22, $26
-	# SUB, INT(tmp_int_16[temp]), INT(tmp_int_12[temp]), 0
-	addiu $17, $27, 0
-	# MUL, INT(tmp_int_17[temp]), INT(tmp_int_16[temp]), 5
-	sll $18, $17, 2
-	addu $18, $18, $17
-	# ASS, INT(i[sp-0x4]), INT(tmp_int_17[temp])
-	move $6, $18
-	# Call FUNC_fib; Params: 5; RET INT(tmp_int_18[temp])
-	sw $31, 0x0($29)
-	addiu $4, $29, -28
-	li $3, 5
-	sw $3, -0x4($4)
-	sw $6, -0x4($29)
-	move $29, $4
-	jal FUNC_fib
-	addiu $29, $29, 28
-	lw $31, 0x0($29)
-	move $20, $2
+FUNC_output_a_plus_b:
 	lw $6, -0x4($29)
-	# ADD, INT(tmp_int_19[temp]), INT(tmp_int_18[temp]), 2
-	addiu $19, $20, 2
-	# Call FUNC_fib; Params: INT(tmp_int_19[temp]); RET INT(tmp_int_20[temp])
-	sw $31, 0x0($29)
-	addiu $4, $29, -32
-	sw $19, -0x4($4)
-	sw $6, -0x4($29)
-	move $29, $4
-	jal FUNC_fib
-	addiu $29, $29, 32
-	lw $31, 0x0($29)
-	move $21, $2
-	lw $6, -0x4($29)
-	# SUB, INT(tmp_int_21[temp]), 1197, INT(tmp_int_20[temp])
-	subu $3, $0, $21
-	addiu $23, $3, 1197
-	# ADD, INT(tmp_int_22[temp]), INT(tmp_int_21[temp]), -10091
-	addiu $24, $23, -10091
-	# ASS, INT(j[sp-0x8]), INT(tmp_int_22[temp])
-	move $7, $24
-	# DEF, INT(k[sp-0x14]), -6
-	li $5, -6
-	# JUMP L_OR_EXP_20
-L_OR_EXP_20:
-	# JUMP L_AND_EXP_21
-L_AND_EXP_21:
-	# LE, INT(tmp_int_23[temp]), INT(i[sp-0x4]), 100
-	sle $25, $6, 100
-	# JUMP AND_END_22
-	sw $25, -0x1c($29)
-AND_END_22:
-	# JUMP OR_END_23
-OR_END_23:
-	# Branch INT(tmp_int_23[sp-0x1c]) ? DO_BODY_17 : DO_END_19
-	lw $22, -0x1c($29)
-	bne $22, $0, DO_BODY_17
-	j DO_END_19
-	# JUMP DO_BODY_17
-DO_BODY_17:
-	# JUMP B_24
-B_24:
-	# MUL, INT(tmp_int_24[temp]), 0, 4
-	li $26, 0
-	# ADD, INT(tmp_int_24[temp]), INT(tmp_int_24[temp]), 0
-	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_24[temp]))->POINTER(tmp_pointer_1[temp])
-	addiu $3, $28, 4
-	addu $27, $3, $26
-	# MUL, INT(tmp_int_25[temp]), 0, 4
-	li $17, 0
-	# ADD, INT(tmp_int_25[temp]), INT(tmp_int_25[temp]), 0
-	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_25[temp]))->POINTER(tmp_pointer_2[temp])
-	addiu $3, $28, 4
-	addu $18, $3, $17
-	# LOAD POINTER(tmp_pointer_2[temp]), INT(tmp_int_26[temp])
-	lw $20, 0x0($18)
-	# MUL, INT(tmp_int_27[temp]), INT(k[sp-0x14]), INT(k[sp-0x14])
-	mult $5, $5
-	mflo $19
-	# ADD, INT(tmp_int_28[temp]), INT(tmp_int_26[temp]), INT(tmp_int_27[temp])
-	addu $21, $20, $19
-	# STORE POINTER(tmp_pointer_1[temp]), INT(tmp_int_28[temp])
-	sw $21, 0x0($27)
-	# MUL, INT(tmp_int_29[temp]), 1, 4
-	li $23, 4
-	# ADD, INT(tmp_int_29[temp]), INT(tmp_int_29[temp]), 0
-	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_29[temp]))->POINTER(tmp_pointer_3[temp])
-	addiu $3, $28, 4
-	addu $24, $3, $23
-	# MUL, INT(tmp_int_30[temp]), 1, 4
-	li $25, 4
-	# ADD, INT(tmp_int_30[temp]), INT(tmp_int_30[temp]), 0
-	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_30[temp]))->POINTER(tmp_pointer_4[temp])
-	addiu $3, $28, 4
-	addu $22, $3, $25
-	# LOAD POINTER(tmp_pointer_4[temp]), INT(tmp_int_31[temp])
-	lw $26, 0x0($22)
-	# MUL, INT(tmp_int_32[temp]), INT(k[sp-0x14]), INT(k[sp-0x14])
-	mult $5, $5
-	mflo $17
-	# ADD, INT(tmp_int_33[temp]), INT(tmp_int_31[temp]), INT(tmp_int_32[temp])
-	addu $18, $26, $17
-	# STORE POINTER(tmp_pointer_3[temp]), INT(tmp_int_33[temp])
-	sw $18, 0x0($24)
-	# MUL, INT(tmp_int_34[temp]), 2, 4
-	li $20, 8
-	# ADD, INT(tmp_int_34[temp]), INT(tmp_int_34[temp]), 0
-	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_34[temp]))->POINTER(tmp_pointer_5[temp])
-	addiu $3, $28, 4
-	addu $19, $3, $20
-	# MUL, INT(tmp_int_35[temp]), 2, 4
-	li $27, 8
-	# ADD, INT(tmp_int_35[temp]), INT(tmp_int_35[temp]), 0
-	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_35[temp]))->POINTER(tmp_pointer_6[temp])
-	addiu $3, $28, 4
-	addu $21, $3, $27
-	# LOAD POINTER(tmp_pointer_6[temp]), INT(tmp_int_36[temp])
-	lw $23, 0x0($21)
-	# MUL, INT(tmp_int_37[temp]), INT(k[sp-0x14]), INT(k[sp-0x14])
-	mult $5, $5
-	mflo $25
-	# ADD, INT(tmp_int_38[temp]), INT(tmp_int_36[temp]), INT(tmp_int_37[temp])
-	addu $22, $23, $25
-	# STORE POINTER(tmp_pointer_5[temp]), INT(tmp_int_38[temp])
-	sw $22, 0x0($19)
-	# MUL, INT(tmp_int_39[temp]), 3, 4
-	li $26, 12
-	# ADD, INT(tmp_int_39[temp]), INT(tmp_int_39[temp]), 0
-	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_39[temp]))->POINTER(tmp_pointer_7[temp])
-	addiu $3, $28, 4
-	addu $17, $3, $26
-	# MUL, INT(tmp_int_40[temp]), 3, 4
-	li $24, 12
-	# ADD, INT(tmp_int_40[temp]), INT(tmp_int_40[temp]), 0
-	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_40[temp]))->POINTER(tmp_pointer_8[temp])
-	addiu $3, $28, 4
-	addu $18, $3, $24
-	# LOAD POINTER(tmp_pointer_8[temp]), INT(tmp_int_41[temp])
-	lw $20, 0x0($18)
-	# MUL, INT(tmp_int_42[temp]), INT(k[sp-0x14]), INT(k[sp-0x14])
-	mult $5, $5
-	mflo $27
-	# ADD, INT(tmp_int_43[temp]), INT(tmp_int_41[temp]), INT(tmp_int_42[temp])
-	addu $21, $20, $27
-	# STORE POINTER(tmp_pointer_7[temp]), INT(tmp_int_43[temp])
-	sw $21, 0x0($17)
-	# MUL, INT(tmp_int_44[temp]), 4, 4
-	li $23, 16
-	# ADD, INT(tmp_int_44[temp]), INT(tmp_int_44[temp]), 0
-	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_44[temp]))->POINTER(tmp_pointer_9[temp])
-	addiu $3, $28, 4
-	addu $25, $3, $23
-	# MUL, INT(tmp_int_45[temp]), 4, 4
-	li $19, 16
-	# ADD, INT(tmp_int_45[temp]), INT(tmp_int_45[temp]), 0
-	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_45[temp]))->POINTER(tmp_pointer_10[temp])
-	addiu $3, $28, 4
-	addu $22, $3, $19
-	# LOAD POINTER(tmp_pointer_10[temp]), INT(tmp_int_46[temp])
-	lw $26, 0x0($22)
-	# MUL, INT(tmp_int_47[temp]), INT(k[sp-0x14]), INT(k[sp-0x14])
-	mult $5, $5
-	mflo $24
-	# ADD, INT(tmp_int_48[temp]), INT(tmp_int_46[temp]), INT(tmp_int_47[temp])
-	addu $18, $26, $24
-	# STORE POINTER(tmp_pointer_9[temp]), INT(tmp_int_48[temp])
-	sw $18, 0x0($25)
-	# MUL, INT(tmp_int_49[temp]), 5, 4
-	li $20, 20
-	# ADD, INT(tmp_int_49[temp]), INT(tmp_int_49[temp]), 0
-	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_49[temp]))->POINTER(tmp_pointer_11[temp])
-	addiu $3, $28, 4
-	addu $27, $3, $20
-	# MUL, INT(tmp_int_50[temp]), 5, 4
-	li $17, 20
-	# ADD, INT(tmp_int_50[temp]), INT(tmp_int_50[temp]), 0
-	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_50[temp]))->POINTER(tmp_pointer_12[temp])
-	addiu $3, $28, 4
-	addu $21, $3, $17
-	# LOAD POINTER(tmp_pointer_12[temp]), INT(tmp_int_51[temp])
-	lw $23, 0x0($21)
-	# MUL, INT(tmp_int_52[temp]), INT(k[sp-0x14]), INT(k[sp-0x14])
-	mult $5, $5
-	mflo $19
-	# ADD, INT(tmp_int_53[temp]), INT(tmp_int_51[temp]), INT(tmp_int_52[temp])
-	addu $22, $23, $19
-	# STORE POINTER(tmp_pointer_11[temp]), INT(tmp_int_53[temp])
-	sw $22, 0x0($27)
-	# MUL, INT(tmp_int_54[temp]), 6, 4
-	li $26, 24
-	# ADD, INT(tmp_int_54[temp]), INT(tmp_int_54[temp]), 0
-	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_54[temp]))->POINTER(tmp_pointer_13[temp])
-	addiu $3, $28, 4
-	addu $24, $3, $26
-	# MUL, INT(tmp_int_55[temp]), 6, 4
-	li $25, 24
-	# ADD, INT(tmp_int_55[temp]), INT(tmp_int_55[temp]), 0
-	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_55[temp]))->POINTER(tmp_pointer_14[temp])
-	addiu $3, $28, 4
-	addu $18, $3, $25
-	# LOAD POINTER(tmp_pointer_14[temp]), INT(tmp_int_56[temp])
-	lw $20, 0x0($18)
-	# MUL, INT(tmp_int_57[temp]), INT(k[sp-0x14]), INT(k[sp-0x14])
-	mult $5, $5
-	mflo $17
-	# ADD, INT(tmp_int_58[temp]), INT(tmp_int_56[temp]), INT(tmp_int_57[temp])
-	addu $21, $20, $17
-	# STORE POINTER(tmp_pointer_13[temp]), INT(tmp_int_58[temp])
-	sw $21, 0x0($24)
-	# MUL, INT(tmp_int_59[temp]), 7, 4
-	li $23, 28
-	# ADD, INT(tmp_int_59[temp]), INT(tmp_int_59[temp]), 0
-	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_59[temp]))->POINTER(tmp_pointer_15[temp])
-	addiu $3, $28, 4
-	addu $19, $3, $23
-	# MUL, INT(tmp_int_60[temp]), 7, 4
-	li $27, 28
-	# ADD, INT(tmp_int_60[temp]), INT(tmp_int_60[temp]), 0
-	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_60[temp]))->POINTER(tmp_pointer_16[temp])
-	addiu $3, $28, 4
-	addu $22, $3, $27
-	# LOAD POINTER(tmp_pointer_16[temp]), INT(tmp_int_61[temp])
-	lw $26, 0x0($22)
-	# MUL, INT(tmp_int_62[temp]), INT(k[sp-0x14]), INT(k[sp-0x14])
-	mult $5, $5
-	mflo $25
-	# ADD, INT(tmp_int_63[temp]), INT(tmp_int_61[temp]), INT(tmp_int_62[temp])
-	addu $18, $26, $25
-	# STORE POINTER(tmp_pointer_15[temp]), INT(tmp_int_63[temp])
-	sw $18, 0x0($19)
-	# MUL, INT(tmp_int_64[temp]), 8, 4
-	li $20, 32
-	# ADD, INT(tmp_int_64[temp]), INT(tmp_int_64[temp]), 0
-	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_64[temp]))->POINTER(tmp_pointer_17[temp])
-	addiu $3, $28, 4
-	addu $17, $3, $20
-	# MUL, INT(tmp_int_65[temp]), 8, 4
-	li $24, 32
-	# ADD, INT(tmp_int_65[temp]), INT(tmp_int_65[temp]), 0
-	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_65[temp]))->POINTER(tmp_pointer_18[temp])
-	addiu $3, $28, 4
-	addu $21, $3, $24
-	# LOAD POINTER(tmp_pointer_18[temp]), INT(tmp_int_66[temp])
-	lw $23, 0x0($21)
-	# MUL, INT(tmp_int_67[temp]), INT(k[sp-0x14]), INT(k[sp-0x14])
-	mult $5, $5
-	mflo $27
-	# ADD, INT(tmp_int_68[temp]), INT(tmp_int_66[temp]), INT(tmp_int_67[temp])
-	addu $22, $23, $27
-	# STORE POINTER(tmp_pointer_17[temp]), INT(tmp_int_68[temp])
-	sw $22, 0x0($17)
-	# MUL, INT(tmp_int_69[temp]), 9, 4
-	li $26, 36
-	# ADD, INT(tmp_int_69[temp]), INT(tmp_int_69[temp]), 0
-	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_69[temp]))->POINTER(tmp_pointer_19[temp])
-	addiu $3, $28, 4
-	addu $25, $3, $26
-	# MUL, INT(tmp_int_70[temp]), 9, 4
-	li $19, 36
-	# ADD, INT(tmp_int_70[temp]), INT(tmp_int_70[temp]), 0
-	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_70[temp]))->POINTER(tmp_pointer_20[temp])
-	addiu $3, $28, 4
-	addu $18, $3, $19
-	# LOAD POINTER(tmp_pointer_20[temp]), INT(tmp_int_71[temp])
-	lw $20, 0x0($18)
-	# MUL, INT(tmp_int_72[temp]), INT(k[sp-0x14]), INT(k[sp-0x14])
-	mult $5, $5
-	mflo $24
-	# ADD, INT(tmp_int_73[temp]), INT(tmp_int_71[temp]), INT(tmp_int_72[temp])
-	addu $21, $20, $24
-	# STORE POINTER(tmp_pointer_19[temp]), INT(tmp_int_73[temp])
-	sw $21, 0x0($25)
-	# ADD, INT(tmp_int_74[temp]), INT(i[sp-0x4]), 1
-	addiu $23, $6, 1
-	# ASS, INT(i[sp-0x4]), INT(tmp_int_74[temp])
-	move $6, $23
-	# JUMP B_25
-B_25:
-	# JUMP DO_CHECK_18
-DO_CHECK_18:
-	# JUMP L_OR_EXP_26
-L_OR_EXP_26:
-	# JUMP L_AND_EXP_27
-L_AND_EXP_27:
-	# LE, INT(tmp_int_75[temp]), INT(i[sp-0x4]), 100
-	sle $27, $6, 100
-	# JUMP AND_END_28
-	sw $27, -0x20($29)
-AND_END_28:
-	# JUMP OR_END_29
-OR_END_29:
-	# Branch INT(tmp_int_75[sp-0x20]) ? DO_BODY_17 : DO_END_19
-	lw $17, -0x20($29)
-	bne $17, $0, DO_BODY_17
-	j DO_END_19
-	# JUMP DO_END_19
-DO_END_19:
-	# ASS, INT(i[sp-0x4]), 0
-	li $6, 0
-	# JUMP L_OR_EXP_33
-L_OR_EXP_33:
-	# JUMP L_AND_EXP_34
-L_AND_EXP_34:
-	# LT, INT(tmp_int_76[temp]), INT(i[sp-0x4]), 10
-	li $3, 10
-	slt $22, $6, $3
-	# JUMP AND_END_35
-	sw $22, -0x24($29)
-AND_END_35:
-	# JUMP OR_END_36
-OR_END_36:
-	# Branch INT(tmp_int_76[sp-0x24]) ? DO_BODY_30 : DO_END_32
-	lw $26, -0x24($29)
-	bne $26, $0, DO_BODY_30
-	j DO_END_32
-	# JUMP DO_BODY_30
-DO_BODY_30:
-	# JUMP B_37
-B_37:
-	# MUL, INT(tmp_int_77[temp]), INT(i[sp-0x4]), 4
-	sll $19, $6, 2
-	# ADD, INT(tmp_int_77[temp]), INT(tmp_int_77[temp]), 0
-	# OFFSET (ARRAY(a[data+0x4])+INT(tmp_int_77[temp]))->POINTER(tmp_pointer_21[temp])
-	addiu $3, $28, 4
-	addu $18, $3, $19
-	# LOAD POINTER(tmp_pointer_21[temp]), INT(tmp_int_78[temp])
-	lw $20, 0x0($18)
-	# PRINT_INT INT(tmp_int_78[temp])
+	lw $5, -0x8($29)
+	# ADD, INT(tmp_int_15442[temp]), INT(a[sp-0x4]), INT(b[sp-0x8])
+	addu $17, $6, $5
+	# PRINT_INT INT(tmp_int_15442[temp])
 	li $2, 1
-	move $4, $20
+	move $4, $17
 	syscall
-	# PRINT_STR STR_1
-	li $2, 4
-	la $4, STR_1
-	syscall
-	# ADD, INT(tmp_int_79[temp]), INT(i[sp-0x4]), 1
-	addiu $24, $6, 1
-	# ASS, INT(i[sp-0x4]), INT(tmp_int_79[temp])
-	move $6, $24
-	# JUMP B_38
-B_38:
-	# JUMP DO_CHECK_31
-DO_CHECK_31:
-	# JUMP L_OR_EXP_39
-L_OR_EXP_39:
-	# JUMP L_AND_EXP_40
-L_AND_EXP_40:
-	# LT, INT(tmp_int_80[temp]), INT(i[sp-0x4]), 10
-	li $3, 10
-	slt $25, $6, $3
-	# JUMP AND_END_41
-	sw $25, -0x28($29)
-AND_END_41:
-	# JUMP OR_END_42
-OR_END_42:
-	# Branch INT(tmp_int_80[sp-0x28]) ? DO_BODY_30 : DO_END_32
-	lw $21, -0x28($29)
-	bne $21, $0, DO_BODY_30
-	j DO_END_32
-	# JUMP DO_END_32
-DO_END_32:
 	# PRINT_STR STR_2
 	li $2, 4
 	la $4, STR_2
 	syscall
-	# PRINT_INT INT(i[sp-0x4])
+	# RETURN VOID
+	jr $ra
+	
+FUNC_A_plus_B:
+	lw $5, -0x4($29)
+	lw $6, -0x8($29)
+	# ADD, INT(tmp_int_15443[temp]), INT(a[sp-0x4]), INT(b[sp-0x8])
+	addu $17, $5, $6
+	# RETURN INT(tmp_int_15443[temp])
+	move $2, $17
+	jr $ra
+	
+FUNC_return_one:
+	# RETURN 1
 	li $2, 1
-	move $4, $6
-	syscall
+	jr $ra
+	
+FUNC_factorial:
+	lw $5, -0x4($29)
+	# JUMP L_OR_EXP_20
+L_OR_EXP_20:
+	# JUMP L_AND_EXP_21
+L_AND_EXP_21:
+	# MUL, INT(tmp_int_15444[temp]), INT(n[sp-0x4]), 4
+	sll $17, $5, 2
+	# ADD, INT(tmp_int_15444[temp]), INT(tmp_int_15444[temp]), 0
+	# OFFSET (ARRAY(array[data+0x24])+INT(tmp_int_15444[temp]))->POINTER(tmp_pointer_4745[temp])
+	addiu $3, $28, 36
+	addu $18, $3, $17
+	# LOAD POINTER(tmp_pointer_4745[temp]), INT(tmp_int_15445[temp])
+	lw $19, 0x0($18)
+	# NEQ, INT(tmp_int_15446[temp]), INT(tmp_int_15445[temp]), 0
+	sne $20, $19, 0
+	# JUMP AND_END_22
+	sw $20, -0x8($29)
+AND_END_22:
+	# JUMP OR_END_23
+OR_END_23:
+	# Branch INT(tmp_int_15446[sp-0x8]) ? IF_BODY_24 : IF_ELSE_26
+	lw $21, -0x8($29)
+	bne $21, $0, IF_BODY_24
+	j IF_ELSE_26
+IF_BODY_24:
+	# JUMP B_27
+B_27:
+	# MUL, INT(tmp_int_15447[temp]), INT(n[sp-0x4]), 4
+	sll $22, $5, 2
+	# ADD, INT(tmp_int_15447[temp]), INT(tmp_int_15447[temp]), 0
+	# OFFSET (ARRAY(array[data+0x24])+INT(tmp_int_15447[temp]))->POINTER(tmp_pointer_4746[temp])
+	addiu $3, $28, 36
+	addu $23, $3, $22
+	# LOAD POINTER(tmp_pointer_4746[temp]), INT(tmp_int_15448[temp])
+	lw $24, 0x0($23)
+	# RETURN INT(tmp_int_15448[temp])
+	move $2, $24
+	jr $ra
+	# JUMP B_28
+B_28:
+	# JUMP IF_END_25
+	j IF_END_25
+IF_ELSE_26:
+	# JUMP B_29
+B_29:
+	# SUB, INT(tmp_int_15450[temp]), INT(n[sp-0x4]), 1
+	addiu $25, $5, -1
+	# MUL, INT(tmp_int_15449[temp]), INT(tmp_int_15450[temp]), 4
+	sll $26, $25, 2
+	# ADD, INT(tmp_int_15449[temp]), INT(tmp_int_15449[temp]), 0
+	# OFFSET (ARRAY(array[data+0x24])+INT(tmp_int_15449[temp]))->POINTER(tmp_pointer_4747[temp])
+	addiu $3, $28, 36
+	addu $27, $3, $26
+	# SUB, INT(tmp_int_15451[temp]), INT(n[sp-0x4]), 1
+	addiu $17, $5, -1
+	# Call FUNC_factorial; Params: INT(tmp_int_15451[temp]); RET INT(tmp_int_15452[temp])
+	sw $31, 0x0($29)
+	addiu $4, $29, -20
+	sw $17, -0x4($4)
+	sw $27, -0xc($29)
+	sw $5, -0x4($29)
+	move $29, $4
+	jal FUNC_factorial
+	addiu $29, $29, 20
+	lw $31, 0x0($29)
+	move $18, $2
+	lw $5, -0x4($29)
+	# STORE POINTER(tmp_pointer_4747[sp-0xc]), INT(tmp_int_15452[temp])
+	lw $19, -0xc($29)
+	sw $18, 0x0($19)
+	# MUL, INT(tmp_int_15453[temp]), INT(n[sp-0x4]), 4
+	sll $20, $5, 2
+	# ADD, INT(tmp_int_15453[temp]), INT(tmp_int_15453[temp]), 0
+	# OFFSET (ARRAY(array[data+0x24])+INT(tmp_int_15453[temp]))->POINTER(tmp_pointer_4748[temp])
+	addiu $3, $28, 36
+	addu $21, $3, $20
+	# SUB, INT(tmp_int_15455[temp]), INT(n[sp-0x4]), 1
+	addiu $22, $5, -1
+	# MUL, INT(tmp_int_15454[temp]), INT(tmp_int_15455[temp]), 4
+	sll $23, $22, 2
+	# ADD, INT(tmp_int_15454[temp]), INT(tmp_int_15454[temp]), 0
+	# OFFSET (ARRAY(array[data+0x24])+INT(tmp_int_15454[temp]))->POINTER(tmp_pointer_4749[temp])
+	addiu $3, $28, 36
+	addu $24, $3, $23
+	# LOAD POINTER(tmp_pointer_4749[temp]), INT(tmp_int_15456[temp])
+	lw $25, 0x0($24)
+	# MUL, INT(tmp_int_15457[temp]), INT(tmp_int_15456[temp]), INT(n[sp-0x4])
+	mult $25, $5
+	mflo $26
+	# STORE POINTER(tmp_pointer_4748[temp]), INT(tmp_int_15457[temp])
+	sw $26, 0x0($21)
+	# MUL, INT(tmp_int_15458[temp]), INT(n[sp-0x4]), 4
+	sll $17, $5, 2
+	# ADD, INT(tmp_int_15458[temp]), INT(tmp_int_15458[temp]), 0
+	# OFFSET (ARRAY(array[data+0x24])+INT(tmp_int_15458[temp]))->POINTER(tmp_pointer_4750[temp])
+	addiu $3, $28, 36
+	addu $27, $3, $17
+	# LOAD POINTER(tmp_pointer_4750[temp]), INT(tmp_int_15459[temp])
+	lw $19, 0x0($27)
+	# RETURN INT(tmp_int_15459[temp])
+	move $2, $19
+	jr $ra
+	# JUMP B_30
+B_30:
+	# JUMP IF_END_25
+IF_END_25:
+	# RETURN 0
+	li $2, 0
+	jr $ra
+	
+FUNC_isPrime:
+	lw $6, -0x4($29)
+	# DEF, INT(i[sp-0x8]), 3
+	li $5, 3
+	# JUMP L_OR_EXP_32
+L_OR_EXP_32:
+	# JUMP L_AND_EXP_33
+L_AND_EXP_33:
+	# LE, INT(tmp_int_15460[temp]), INT(n[sp-0x4]), 0
+	sle $17, $6, 0
+	# JUMP AND_END_34
+	sw $17, -0xc($29)
+AND_END_34:
+	# JUMP OR_END_35
+OR_END_35:
+	# Branch INT(tmp_int_15460[sp-0xc]) ? IF_BODY_36 : IF_END_37
+	lw $18, -0xc($29)
+	bne $18, $0, IF_BODY_36
+	j IF_END_37
+IF_BODY_36:
+	# JUMP B_38
+B_38:
+	# RETURN 0
+	li $2, 0
+	jr $ra
+	# JUMP B_39
+B_39:
+	# JUMP IF_END_37
+IF_END_37:
+	# JUMP L_OR_EXP_40
+L_OR_EXP_40:
+	# JUMP L_AND_EXP_41
+L_AND_EXP_41:
+	# MOD, INT(tmp_int_15461[temp]), INT(n[sp-0x4]), 2
+	bltz $6, DIV_883
+	andi $19, $6, 1
+	j DIV_END_884
+DIV_883:
+	subu $6, $0, $6
+	andi $19, $6, 1
+	subu $19, $0, $19
+DIV_END_884:
+	# EQ, INT(tmp_int_15462[temp]), INT(tmp_int_15461[temp]), 0
+	seq $20, $19, 0
+	# JUMP AND_END_42
+	sw $20, -0x10($29)
+AND_END_42:
+	# JUMP OR_END_43
+OR_END_43:
+	# Branch INT(tmp_int_15462[sp-0x10]) ? IF_BODY_44 : IF_END_45
+	lw $21, -0x10($29)
+	bne $21, $0, IF_BODY_44
+	j IF_END_45
+IF_BODY_44:
+	# JUMP B_46
+B_46:
+	# RETURN 0
+	li $2, 0
+	jr $ra
+	# JUMP B_47
+B_47:
+	# JUMP IF_END_45
+IF_END_45:
+	# JUMP L_OR_EXP_51
+L_OR_EXP_51:
+	# JUMP L_AND_EXP_52
+L_AND_EXP_52:
+	# DIV, INT(tmp_int_15463[temp]), INT(n[sp-0x4]), 2
+	bltz $6, DIV_885
+	srl $22, $6, 1
+	j DIV_END_886
+DIV_885:
+	subu $6, $0, $6
+	srl $22, $6, 1
+	subu $22, $0, $22
+DIV_END_886:
+	# LT, INT(tmp_int_15464[temp]), INT(i[sp-0x8]), INT(tmp_int_15463[temp])
+	slt $23, $5, $22
+	# JUMP AND_END_53
+	sw $23, -0x14($29)
+AND_END_53:
+	# JUMP OR_END_54
+OR_END_54:
+	# Branch INT(tmp_int_15464[sp-0x14]) ? DO_BODY_48 : DO_END_50
+	lw $24, -0x14($29)
+	bne $24, $0, DO_BODY_48
+	j DO_END_50
+	# JUMP DO_BODY_48
+DO_BODY_48:
+	# JUMP B_55
+B_55:
+	# JUMP L_OR_EXP_56
+	j L_OR_EXP_56
+	# JUMP B_64
+	j B_64
+L_OR_EXP_56:
+	# JUMP L_AND_EXP_57
+L_AND_EXP_57:
+	# MOD, INT(tmp_int_15465[temp]), INT(n[sp-0x4]), INT(i[sp-0x8])
+	div $6 $5
+	mfhi $25
+	# EQ, INT(tmp_int_15466[temp]), INT(tmp_int_15465[temp]), 0
+	seq $26, $25, 0
+	# JUMP AND_END_58
+	sw $26, -0x18($29)
+AND_END_58:
+	# JUMP OR_END_59
+OR_END_59:
+	# Branch INT(tmp_int_15466[sp-0x18]) ? IF_BODY_60 : IF_END_61
+	lw $27, -0x18($29)
+	bne $27, $0, IF_BODY_60
+	j IF_END_61
+IF_BODY_60:
+	# JUMP B_62
+B_62:
+	# RETURN 0
+	li $2, 0
+	jr $ra
+	# JUMP B_63
+B_63:
+	# JUMP IF_END_61
+IF_END_61:
+	# ADD, INT(tmp_int_15467[temp]), INT(i[sp-0x8]), 2
+	addiu $17, $5, 2
+	# ASS, INT(i[sp-0x8]), INT(tmp_int_15467[temp])
+	move $5, $17
+	# JUMP B_64
+B_64:
+	# JUMP DO_CHECK_49
+DO_CHECK_49:
+	# JUMP L_OR_EXP_65
+L_OR_EXP_65:
+	# JUMP L_AND_EXP_66
+L_AND_EXP_66:
+	# DIV, INT(tmp_int_15468[temp]), INT(n[sp-0x4]), 2
+	bltz $6, DIV_887
+	srl $18, $6, 1
+	j DIV_END_888
+DIV_887:
+	subu $6, $0, $6
+	srl $18, $6, 1
+	subu $18, $0, $18
+DIV_END_888:
+	# LT, INT(tmp_int_15469[temp]), INT(i[sp-0x8]), INT(tmp_int_15468[temp])
+	slt $19, $5, $18
+	# JUMP AND_END_67
+	sw $19, -0x1c($29)
+AND_END_67:
+	# JUMP OR_END_68
+OR_END_68:
+	# Branch INT(tmp_int_15469[sp-0x1c]) ? DO_BODY_48 : DO_END_50
+	lw $20, -0x1c($29)
+	bne $20, $0, DO_BODY_48
+	j DO_END_50
+	# JUMP DO_END_50
+DO_END_50:
+	# RETURN 1
+	li $2, 1
+	jr $ra
+	
+FUNC_sumMatrix:
+	lw $6, -0x4($29)
+	# DEF, INT(i[sp-0x8]), 0
+	li $5, 0
+	# DEF, INT(sum[sp-0x10]), 0
+	li $8, 0
+	# JUMP L_OR_EXP_73
+L_OR_EXP_73:
+	# JUMP L_AND_EXP_74
+L_AND_EXP_74:
+	# LT, INT(tmp_int_15470[temp]), INT(i[sp-0x8]), 10
+	li $3, 10
+	slt $17, $5, $3
+	# JUMP AND_END_75
+	sw $17, -0x14($29)
+AND_END_75:
+	# JUMP OR_END_76
+OR_END_76:
+	# Branch INT(tmp_int_15470[sp-0x14]) ? DO_BODY_70 : DO_END_72
+	lw $18, -0x14($29)
+	bne $18, $0, DO_BODY_70
+	j DO_END_72
+	# JUMP DO_BODY_70
+DO_BODY_70:
+	# JUMP B_77
+B_77:
+	# ASS, INT(j[sp-0xc]), 0
+	li $7, 0
+	# JUMP L_OR_EXP_81
+	j L_OR_EXP_81
+	# JUMP B_91
+	j B_91
+L_OR_EXP_81:
+	# JUMP L_AND_EXP_82
+L_AND_EXP_82:
+	# LT, INT(tmp_int_15471[temp]), INT(j[sp-0xc]), 10
+	li $3, 10
+	slt $19, $7, $3
+	# JUMP AND_END_83
+	sw $19, -0x18($29)
+AND_END_83:
+	# JUMP OR_END_84
+OR_END_84:
+	# Branch INT(tmp_int_15471[sp-0x18]) ? DO_BODY_78 : DO_END_80
+	lw $20, -0x18($29)
+	bne $20, $0, DO_BODY_78
+	j DO_END_80
+	# JUMP DO_BODY_78
+DO_BODY_78:
+	# JUMP B_85
+B_85:
+	# MUL, INT(tmp_int_15472[temp]), INT(j[sp-0xc]), 4
+	sll $21, $7, 2
+	# ADD, INT(tmp_int_15472[temp]), INT(tmp_int_15472[temp]), 0
+	# MUL, INT(tmp_int_15473[temp]), INT(i[sp-0x8]), 40
+	sll $22, $5, 5
+	sll $3, $5, 3
+	addu $22, $22, $3
+	# ADD, INT(tmp_int_15473[temp]), INT(tmp_int_15473[temp]), INT(tmp_int_15472[temp])
+	addu $22, $22, $21
+	# OFFSET (ARRAY(array_f[sp-0x4])+INT(tmp_int_15473[temp]))->POINTER(tmp_pointer_4751[temp])
+	addu $23, $6, $22
+	# LOAD POINTER(tmp_pointer_4751[temp]), INT(tmp_int_15474[temp])
+	lw $24, 0x0($23)
+	# ADD, INT(tmp_int_15475[temp]), INT(sum[sp-0x10]), INT(tmp_int_15474[temp])
+	addu $25, $8, $24
+	# ASS, INT(sum[sp-0x10]), INT(tmp_int_15475[temp])
+	move $8, $25
+	# ADD, INT(tmp_int_15476[temp]), INT(j[sp-0xc]), 1
+	addiu $26, $7, 1
+	# ASS, INT(j[sp-0xc]), INT(tmp_int_15476[temp])
+	move $7, $26
+	# JUMP B_86
+	sw $22, -0x1c($29)
+B_86:
+	# JUMP DO_CHECK_79
+DO_CHECK_79:
+	# JUMP L_OR_EXP_87
+L_OR_EXP_87:
+	# JUMP L_AND_EXP_88
+L_AND_EXP_88:
+	# LT, INT(tmp_int_15477[temp]), INT(j[sp-0xc]), 10
+	li $3, 10
+	slt $27, $7, $3
+	# JUMP AND_END_89
+	sw $27, -0x20($29)
+AND_END_89:
+	# JUMP OR_END_90
+OR_END_90:
+	# Branch INT(tmp_int_15477[sp-0x20]) ? DO_BODY_78 : DO_END_80
+	lw $17, -0x20($29)
+	bne $17, $0, DO_BODY_78
+	j DO_END_80
+	# JUMP DO_END_80
+DO_END_80:
+	# ADD, INT(tmp_int_15478[temp]), INT(i[sp-0x8]), 1
+	addiu $18, $5, 1
+	# ASS, INT(i[sp-0x8]), INT(tmp_int_15478[temp])
+	move $5, $18
+	# JUMP B_91
+B_91:
+	# JUMP DO_CHECK_71
+DO_CHECK_71:
+	# JUMP L_OR_EXP_92
+L_OR_EXP_92:
+	# JUMP L_AND_EXP_93
+L_AND_EXP_93:
+	# LT, INT(tmp_int_15479[temp]), INT(i[sp-0x8]), 10
+	li $3, 10
+	slt $19, $5, $3
+	# JUMP AND_END_94
+	sw $19, -0x24($29)
+AND_END_94:
+	# JUMP OR_END_95
+OR_END_95:
+	# Branch INT(tmp_int_15479[sp-0x24]) ? DO_BODY_70 : DO_END_72
+	lw $20, -0x24($29)
+	bne $20, $0, DO_BODY_70
+	j DO_END_72
+	# JUMP DO_END_72
+DO_END_72:
+	# RETURN INT(sum[sp-0x10])
+	move $2, $8
+	jr $ra
+	
+FUNC_matrixMulti:
+	lw $5, -0x4($29)
+	lw $6, -0x8($29)
+	lw $7, -0xc($29)
+	# DEF, INT(i[sp-0x1a0]), 0
+	li $9, 0
+	# JUMP L_OR_EXP_100
+L_OR_EXP_100:
+	# JUMP L_AND_EXP_101
+L_AND_EXP_101:
+	# LT, INT(tmp_int_15480[temp]), INT(i[sp-0x1a0]), 10
+	li $3, 10
+	slt $17, $9, $3
+	# JUMP AND_END_102
+	sw $17, -0x1bc($29)
+AND_END_102:
+	# JUMP OR_END_103
+OR_END_103:
+	# Branch INT(tmp_int_15480[sp-0x1bc]) ? DO_BODY_97 : DO_END_99
+	lw $18, -0x1bc($29)
+	bne $18, $0, DO_BODY_97
+	j DO_END_99
+	# JUMP DO_BODY_97
+DO_BODY_97:
+	# JUMP B_104
+B_104:
+	# ASS, INT(j[sp-0x1a4]), 0
+	li $7, 0
+	# JUMP L_OR_EXP_108
+	j L_OR_EXP_108
+	# JUMP B_131
+	j B_131
+L_OR_EXP_108:
+	# JUMP L_AND_EXP_109
+L_AND_EXP_109:
+	# LT, INT(tmp_int_15481[temp]), INT(j[sp-0x1a4]), 10
+	li $3, 10
+	slt $19, $7, $3
+	# JUMP AND_END_110
+	sw $19, -0x1c0($29)
+AND_END_110:
+	# JUMP OR_END_111
+OR_END_111:
+	# Branch INT(tmp_int_15481[sp-0x1c0]) ? DO_BODY_105 : DO_END_107
+	lw $20, -0x1c0($29)
+	bne $20, $0, DO_BODY_105
+	j DO_END_107
+	# JUMP DO_BODY_105
+DO_BODY_105:
+	# JUMP B_112
+B_112:
+	# ASS, INT(k[sp-0x1a8]), 0
+	li $8, 0
+	# MUL, INT(tmp_int_15482[temp]), INT(j[sp-0x1a4]), 4
+	sll $21, $7, 2
+	# ADD, INT(tmp_int_15482[temp]), INT(tmp_int_15482[temp]), 0
+	# MUL, INT(tmp_int_15483[temp]), INT(i[sp-0x1a0]), 40
+	sll $22, $9, 5
+	sll $3, $9, 3
+	addu $22, $22, $3
+	# ADD, INT(tmp_int_15483[temp]), INT(tmp_int_15483[temp]), INT(tmp_int_15482[temp])
+	addu $22, $22, $21
+	# OFFSET (ARRAY(matrix_c[sp-0x19c])+INT(tmp_int_15483[temp]))->POINTER(tmp_pointer_4752[temp])
+	addiu $3, $29, -412
+	addu $23, $3, $22
+	# STORE POINTER(tmp_pointer_4752[temp]), 0
+	li $3, 0
+	sw $3, 0x0($23)
+	# JUMP L_OR_EXP_116
+	j L_OR_EXP_116
+	# JUMP B_126
+	j B_126
+L_OR_EXP_116:
+	# JUMP L_AND_EXP_117
+L_AND_EXP_117:
+	# LT, INT(tmp_int_15484[temp]), INT(k[sp-0x1a8]), 10
+	li $3, 10
+	slt $24, $8, $3
+	# JUMP AND_END_118
+	sw $24, -0x1c4($29)
+AND_END_118:
+	# JUMP OR_END_119
+OR_END_119:
+	# Branch INT(tmp_int_15484[sp-0x1c4]) ? DO_BODY_113 : DO_END_115
+	lw $25, -0x1c4($29)
+	bne $25, $0, DO_BODY_113
+	j DO_END_115
+	# JUMP DO_BODY_113
+DO_BODY_113:
+	# JUMP B_120
+B_120:
+	# MUL, INT(tmp_int_15485[temp]), INT(j[sp-0x1a4]), 4
+	sll $26, $7, 2
+	# ADD, INT(tmp_int_15485[temp]), INT(tmp_int_15485[temp]), 0
+	# MUL, INT(tmp_int_15486[temp]), INT(i[sp-0x1a0]), 40
+	sll $27, $9, 5
+	sll $3, $9, 3
+	addu $27, $27, $3
+	# ADD, INT(tmp_int_15486[temp]), INT(tmp_int_15486[temp]), INT(tmp_int_15485[temp])
+	addu $27, $27, $26
+	# OFFSET (ARRAY(matrix_c[sp-0x19c])+INT(tmp_int_15486[temp]))->POINTER(tmp_pointer_4753[temp])
+	addiu $3, $29, -412
+	addu $17, $3, $27
+	# MUL, INT(tmp_int_15487[temp]), INT(j[sp-0x1a4]), 4
+	sll $18, $7, 2
+	# ADD, INT(tmp_int_15487[temp]), INT(tmp_int_15487[temp]), 0
+	# MUL, INT(tmp_int_15488[temp]), INT(i[sp-0x1a0]), 40
+	sll $19, $9, 5
+	sll $3, $9, 3
+	addu $19, $19, $3
+	# ADD, INT(tmp_int_15488[temp]), INT(tmp_int_15488[temp]), INT(tmp_int_15487[temp])
+	addu $19, $19, $18
+	# OFFSET (ARRAY(matrix_c[sp-0x19c])+INT(tmp_int_15488[temp]))->POINTER(tmp_pointer_4754[temp])
+	addiu $3, $29, -412
+	addu $20, $3, $19
+	# LOAD POINTER(tmp_pointer_4754[temp]), INT(tmp_int_15489[temp])
+	lw $21, 0x0($20)
+	# MUL, INT(tmp_int_15490[temp]), INT(k[sp-0x1a8]), 4
+	sll $22, $8, 2
+	# ADD, INT(tmp_int_15490[temp]), INT(tmp_int_15490[temp]), 0
+	# MUL, INT(tmp_int_15491[temp]), INT(i[sp-0x1a0]), 40
+	sll $23, $9, 5
+	sll $3, $9, 3
+	addu $23, $23, $3
+	# ADD, INT(tmp_int_15491[temp]), INT(tmp_int_15491[temp]), INT(tmp_int_15490[temp])
+	addu $23, $23, $22
+	# OFFSET (ARRAY(matrix_a[sp-0x4])+INT(tmp_int_15491[temp]))->POINTER(tmp_pointer_4755[temp])
+	addu $24, $5, $23
+	# LOAD POINTER(tmp_pointer_4755[temp]), INT(tmp_int_15492[temp])
+	lw $25, 0x0($24)
+	# MUL, INT(tmp_int_15493[temp]), INT(j[sp-0x1a4]), 4
+	sll $26, $7, 2
+	# ADD, INT(tmp_int_15493[temp]), INT(tmp_int_15493[temp]), 0
+	# MUL, INT(tmp_int_15494[temp]), INT(k[sp-0x1a8]), 40
+	sll $27, $8, 5
+	sll $3, $8, 3
+	addu $27, $27, $3
+	# ADD, INT(tmp_int_15494[temp]), INT(tmp_int_15494[temp]), INT(tmp_int_15493[temp])
+	addu $27, $27, $26
+	# OFFSET (ARRAY(matrix_b[sp-0x8])+INT(tmp_int_15494[temp]))->POINTER(tmp_pointer_4756[temp])
+	addu $18, $6, $27
+	# LOAD POINTER(tmp_pointer_4756[temp]), INT(tmp_int_15495[temp])
+	lw $19, 0x0($18)
+	# MUL, INT(tmp_int_15496[temp]), INT(tmp_int_15492[temp]), INT(tmp_int_15495[temp])
+	mult $25, $19
+	mflo $20
+	# ADD, INT(tmp_int_15497[temp]), INT(tmp_int_15489[temp]), INT(tmp_int_15496[temp])
+	addu $22, $21, $20
+	# STORE POINTER(tmp_pointer_4753[temp]), INT(tmp_int_15497[temp])
+	sw $22, 0x0($17)
+	# ADD, INT(tmp_int_15498[temp]), INT(k[sp-0x1a8]), 1
+	addiu $24, $8, 1
+	# ASS, INT(k[sp-0x1a8]), INT(tmp_int_15498[temp])
+	move $8, $24
+	# JUMP B_121
+	sw $23, -0x1c8($29)
+	sw $27, -0x1cc($29)
+B_121:
+	# JUMP DO_CHECK_114
+DO_CHECK_114:
+	# JUMP L_OR_EXP_122
+L_OR_EXP_122:
+	# JUMP L_AND_EXP_123
+L_AND_EXP_123:
+	# LT, INT(tmp_int_15499[temp]), INT(k[sp-0x1a8]), 10
+	li $3, 10
+	slt $26, $8, $3
+	# JUMP AND_END_124
+	sw $26, -0x1d0($29)
+AND_END_124:
+	# JUMP OR_END_125
+OR_END_125:
+	# Branch INT(tmp_int_15499[sp-0x1d0]) ? DO_BODY_113 : DO_END_115
+	lw $18, -0x1d0($29)
+	bne $18, $0, DO_BODY_113
+	j DO_END_115
+	# JUMP DO_END_115
+DO_END_115:
+	# ADD, INT(tmp_int_15500[temp]), INT(j[sp-0x1a4]), 1
+	addiu $25, $7, 1
+	# ASS, INT(j[sp-0x1a4]), INT(tmp_int_15500[temp])
+	move $7, $25
+	# JUMP B_126
+B_126:
+	# JUMP DO_CHECK_106
+DO_CHECK_106:
+	# JUMP L_OR_EXP_127
+L_OR_EXP_127:
+	# JUMP L_AND_EXP_128
+L_AND_EXP_128:
+	# LT, INT(tmp_int_15501[temp]), INT(j[sp-0x1a4]), 10
+	li $3, 10
+	slt $19, $7, $3
+	# JUMP AND_END_129
+	sw $19, -0x1d4($29)
+AND_END_129:
+	# JUMP OR_END_130
+OR_END_130:
+	# Branch INT(tmp_int_15501[sp-0x1d4]) ? DO_BODY_105 : DO_END_107
+	lw $21, -0x1d4($29)
+	bne $21, $0, DO_BODY_105
+	j DO_END_107
+	# JUMP DO_END_107
+DO_END_107:
+	# ADD, INT(tmp_int_15502[temp]), INT(i[sp-0x1a0]), 1
+	addiu $20, $9, 1
+	# ASS, INT(i[sp-0x1a0]), INT(tmp_int_15502[temp])
+	move $9, $20
+	# JUMP B_131
+B_131:
+	# JUMP DO_CHECK_98
+DO_CHECK_98:
+	# JUMP L_OR_EXP_132
+L_OR_EXP_132:
+	# JUMP L_AND_EXP_133
+L_AND_EXP_133:
+	# LT, INT(tmp_int_15503[temp]), INT(i[sp-0x1a0]), 10
+	li $3, 10
+	slt $17, $9, $3
+	# JUMP AND_END_134
+	sw $17, -0x1d8($29)
+AND_END_134:
+	# JUMP OR_END_135
+OR_END_135:
+	# Branch INT(tmp_int_15503[sp-0x1d8]) ? DO_BODY_97 : DO_END_99
+	lw $22, -0x1d8($29)
+	bne $22, $0, DO_BODY_97
+	j DO_END_99
+	# JUMP DO_END_99
+DO_END_99:
+	# OFFSET (ARRAY(matrix_c[sp-0x19c])+0)->POINTER(tmp_pointer_4757[temp])
+	addiu $24, $29, -412
+	# ASS, ARRAY(INLINE_array_f_1[sp-0x1ac]), POINTER(tmp_pointer_4757[temp])
+	move $6, $24
+	# OFFSET (INT(tmp_int_15504[temp])+428)->POINTER(tmp_pointer_4758[temp])
+	addiu $23, $29, -428
+	# STORE POINTER(tmp_pointer_4758[temp]), POINTER(tmp_pointer_4757[temp])
+	sw $24, 0x0($23)
+	# JUMP INLINE_sumMatrix_BEGIN_1
+INLINE_sumMatrix_BEGIN_1:
+	# DEF, INT(INLINE_i_1[sp-0x1b0]), 0
+	li $8, 0
+	# DEF, INT(INLINE_sum_1[sp-0x1b8]), 0
+	li $5, 0
+	# JUMP L_OR_EXP_139
+L_OR_EXP_139:
+	# JUMP L_AND_EXP_140
+L_AND_EXP_140:
+	# LT, INT(tmp_int_15506[temp]), INT(INLINE_i_1[sp-0x1b0]), 10
+	li $3, 10
+	slt $27, $8, $3
+	# JUMP AND_END_141
+	sw $27, -0x1dc($29)
+AND_END_141:
+	# JUMP OR_END_142
+OR_END_142:
+	# Branch INT(tmp_int_15506[sp-0x1dc]) ? DO_BODY_136 : DO_END_138
+	lw $26, -0x1dc($29)
+	bne $26, $0, DO_BODY_136
+	j DO_END_138
+	# JUMP DO_BODY_136
+DO_BODY_136:
+	# JUMP B_143
+B_143:
+	# ASS, INT(INLINE_j_1[sp-0x1b4]), 0
+	li $7, 0
+	# JUMP L_OR_EXP_147
+	j L_OR_EXP_147
+	# JUMP B_157
+	j B_157
+L_OR_EXP_147:
+	# JUMP L_AND_EXP_148
+L_AND_EXP_148:
+	# LT, INT(tmp_int_15507[temp]), INT(INLINE_j_1[sp-0x1b4]), 10
+	li $3, 10
+	slt $18, $7, $3
+	# JUMP AND_END_149
+	sw $18, -0x1e0($29)
+AND_END_149:
+	# JUMP OR_END_150
+OR_END_150:
+	# Branch INT(tmp_int_15507[sp-0x1e0]) ? DO_BODY_144 : DO_END_146
+	lw $25, -0x1e0($29)
+	bne $25, $0, DO_BODY_144
+	j DO_END_146
+	# JUMP DO_BODY_144
+DO_BODY_144:
+	# JUMP B_151
+B_151:
+	# MUL, INT(tmp_int_15508[temp]), INT(INLINE_j_1[sp-0x1b4]), 4
+	sll $19, $7, 2
+	# ADD, INT(tmp_int_15508[temp]), INT(tmp_int_15508[temp]), 0
+	# MUL, INT(tmp_int_15509[temp]), INT(INLINE_i_1[sp-0x1b0]), 40
+	sll $21, $8, 5
+	sll $3, $8, 3
+	addu $21, $21, $3
+	# ADD, INT(tmp_int_15509[temp]), INT(tmp_int_15509[temp]), INT(tmp_int_15508[temp])
+	addu $21, $21, $19
+	# OFFSET (ARRAY(INLINE_array_f_1[sp-0x1ac])+INT(tmp_int_15509[temp]))->POINTER(tmp_pointer_4759[temp])
+	addu $20, $6, $21
+	# LOAD POINTER(tmp_pointer_4759[temp]), INT(tmp_int_15510[temp])
+	lw $17, 0x0($20)
+	# ADD, INT(tmp_int_15511[temp]), INT(INLINE_sum_1[sp-0x1b8]), INT(tmp_int_15510[temp])
+	addu $22, $5, $17
+	# ASS, INT(INLINE_sum_1[sp-0x1b8]), INT(tmp_int_15511[temp])
+	move $5, $22
+	# ADD, INT(tmp_int_15512[temp]), INT(INLINE_j_1[sp-0x1b4]), 1
+	addiu $23, $7, 1
+	# ASS, INT(INLINE_j_1[sp-0x1b4]), INT(tmp_int_15512[temp])
+	move $7, $23
+	# JUMP B_152
+	sw $21, -0x1e4($29)
+B_152:
+	# JUMP DO_CHECK_145
+DO_CHECK_145:
+	# JUMP L_OR_EXP_153
+L_OR_EXP_153:
+	# JUMP L_AND_EXP_154
+L_AND_EXP_154:
+	# LT, INT(tmp_int_15513[temp]), INT(INLINE_j_1[sp-0x1b4]), 10
+	li $3, 10
+	slt $24, $7, $3
+	# JUMP AND_END_155
+	sw $24, -0x1e8($29)
+AND_END_155:
+	# JUMP OR_END_156
+OR_END_156:
+	# Branch INT(tmp_int_15513[sp-0x1e8]) ? DO_BODY_144 : DO_END_146
+	lw $27, -0x1e8($29)
+	bne $27, $0, DO_BODY_144
+	j DO_END_146
+	# JUMP DO_END_146
+DO_END_146:
+	# ADD, INT(tmp_int_15514[temp]), INT(INLINE_i_1[sp-0x1b0]), 1
+	addiu $26, $8, 1
+	# ASS, INT(INLINE_i_1[sp-0x1b0]), INT(tmp_int_15514[temp])
+	move $8, $26
+	# JUMP B_157
+B_157:
+	# JUMP DO_CHECK_137
+DO_CHECK_137:
+	# JUMP L_OR_EXP_158
+L_OR_EXP_158:
+	# JUMP L_AND_EXP_159
+L_AND_EXP_159:
+	# LT, INT(tmp_int_15515[temp]), INT(INLINE_i_1[sp-0x1b0]), 10
+	li $3, 10
+	slt $18, $8, $3
+	# JUMP AND_END_160
+	sw $18, -0x1ec($29)
+AND_END_160:
+	# JUMP OR_END_161
+OR_END_161:
+	# Branch INT(tmp_int_15515[sp-0x1ec]) ? DO_BODY_136 : DO_END_138
+	lw $25, -0x1ec($29)
+	bne $25, $0, DO_BODY_136
+	j DO_END_138
+	# JUMP DO_END_138
+DO_END_138:
+	# ASS, INT(tmp_int_15505[temp]), INT(INLINE_sum_1[sp-0x1b8])
+	move $19, $5
+	# JUMP INLINE_sumMatrix_END_1
+	sw $19, -0x1f0($29)
+INLINE_sumMatrix_END_1:
+	# RETURN INT(tmp_int_15505[sp-0x1f0])
+	lw $20, -0x1f0($29)
+	move $2, $20
+	jr $ra
+	
+FUNC_main:
+	# JUMP INLINE_output_id_BEGIN_2
+INLINE_output_id_BEGIN_2:
+	# JUMP L_OR_EXP_164
+L_OR_EXP_164:
+	# JUMP L_AND_EXP_165
+L_AND_EXP_165:
+	# ASS, INT(tmp_int_15516[temp]), 1
+	li $17, 1
+	# JUMP AND_167
+	sw $17, -0x1dc($29)
+AND_167:
+	# ASS, INT(tmp_int_15516[sp-0x1dc]), 0
+	li $18, 0
+	# JUMP AND_END_166
+	sw $18, -0x1dc($29)
+AND_END_166:
+	# ASS, INT(tmp_int_15517[temp]), INT(tmp_int_15516[sp-0x1dc])
+	lw $19, -0x1dc($29)
+	move $20, $19
+	# Branch INT(tmp_int_15516[sp-0x1dc]) ? OR_END_170 : OR_171
+	sw $20, -0x1e0($29)
+	sw $19, -0x1dc($29)
+	bne $19, $0, OR_END_170
+OR_171:
+	# JUMP L_AND_EXP_173
+L_AND_EXP_173:
+	# JUMP AND_END_174
+AND_END_174:
+	# OR, INT(tmp_int_15517[sp-0x1e0]), INT(tmp_int_15517[sp-0x1e0]), 1
+	lw $21, -0x1e0($29)
+	li $21, 1
+	# Branch INT(tmp_int_15517[sp-0x1e0]) ? OR_END_170 : OR_172
+	sw $21, -0x1e0($29)
+	bne $21, $0, OR_END_170
+OR_172:
+	# JUMP OR_END_170
+OR_END_170:
+	# Branch INT(tmp_int_15517[sp-0x1e0]) ? IF_BODY_176 : IF_END_177
+	lw $22, -0x1e0($29)
+	bne $22, $0, IF_BODY_176
+	j IF_END_177
+IF_BODY_176:
+	# JUMP B_178
+B_178:
 	# PRINT_STR STR_1
 	li $2, 4
 	la $4, STR_1
 	syscall
-	# PRINT_INT INT(j[sp-0x8])
+	# JUMP B_179
+B_179:
+	# JUMP IF_END_177
+IF_END_177:
+	# JUMP B_180
+B_180:
+	# JUMP INLINE_output_id_END_2
+INLINE_output_id_END_2:
+	# ASS, INT(INLINE_n_3[sp-0x4]), 89
+	li $5, 89
+	# JUMP INLINE_isPrime_BEGIN_3
+INLINE_isPrime_BEGIN_3:
+	# DEF, INT(INLINE_i_3[sp-0x8]), 3
+	li $6, 3
+	# JUMP L_OR_EXP_181
+L_OR_EXP_181:
+	# JUMP L_AND_EXP_182
+L_AND_EXP_182:
+	# LE, INT(tmp_int_15519[temp]), INT(INLINE_n_3[sp-0x4]), 0
+	sle $23, $5, 0
+	# JUMP AND_END_183
+	sw $23, -0x1e4($29)
+AND_END_183:
+	# JUMP OR_END_184
+OR_END_184:
+	# Branch INT(tmp_int_15519[sp-0x1e4]) ? IF_BODY_185 : IF_END_186
+	lw $24, -0x1e4($29)
+	bne $24, $0, IF_BODY_185
+	j IF_END_186
+IF_BODY_185:
+	# JUMP B_187
+B_187:
+	# ASS, INT(tmp_int_15518[temp]), 0
+	li $25, 0
+	# JUMP INLINE_isPrime_END_3
+	sw $25, -0x1e8($29)
+	j INLINE_isPrime_END_3
+	# JUMP B_188
+B_188:
+	# JUMP IF_END_186
+IF_END_186:
+	# JUMP L_OR_EXP_189
+L_OR_EXP_189:
+	# JUMP L_AND_EXP_190
+L_AND_EXP_190:
+	# MOD, INT(tmp_int_15520[temp]), INT(INLINE_n_3[sp-0x4]), 2
+	bltz $5, DIV_889
+	andi $26, $5, 1
+	j DIV_END_890
+DIV_889:
+	subu $5, $0, $5
+	andi $26, $5, 1
+	subu $26, $0, $26
+DIV_END_890:
+	# EQ, INT(tmp_int_15521[temp]), INT(tmp_int_15520[temp]), 0
+	seq $27, $26, 0
+	# JUMP AND_END_191
+	sw $27, -0x1ec($29)
+AND_END_191:
+	# JUMP OR_END_192
+OR_END_192:
+	# Branch INT(tmp_int_15521[sp-0x1ec]) ? IF_BODY_193 : IF_END_194
+	lw $17, -0x1ec($29)
+	bne $17, $0, IF_BODY_193
+	j IF_END_194
+IF_BODY_193:
+	# JUMP B_195
+B_195:
+	# ASS, INT(tmp_int_15518[sp-0x1e8]), 0
+	li $18, 0
+	# JUMP INLINE_isPrime_END_3
+	sw $18, -0x1e8($29)
+	j INLINE_isPrime_END_3
+	# JUMP B_196
+B_196:
+	# JUMP IF_END_194
+IF_END_194:
+	# JUMP L_OR_EXP_200
+L_OR_EXP_200:
+	# JUMP L_AND_EXP_201
+L_AND_EXP_201:
+	# DIV, INT(tmp_int_15522[temp]), INT(INLINE_n_3[sp-0x4]), 2
+	bltz $5, DIV_891
+	srl $20, $5, 1
+	j DIV_END_892
+DIV_891:
+	subu $5, $0, $5
+	srl $20, $5, 1
+	subu $20, $0, $20
+DIV_END_892:
+	# LT, INT(tmp_int_15523[temp]), INT(INLINE_i_3[sp-0x8]), INT(tmp_int_15522[temp])
+	slt $19, $6, $20
+	# JUMP AND_END_202
+	sw $19, -0x1f0($29)
+AND_END_202:
+	# JUMP OR_END_203
+OR_END_203:
+	# Branch INT(tmp_int_15523[sp-0x1f0]) ? DO_BODY_197 : DO_END_199
+	lw $21, -0x1f0($29)
+	bne $21, $0, DO_BODY_197
+	j DO_END_199
+	# JUMP DO_BODY_197
+DO_BODY_197:
+	# JUMP B_204
+B_204:
+	# JUMP L_OR_EXP_205
+	j L_OR_EXP_205
+	# JUMP B_213
+	j B_213
+L_OR_EXP_205:
+	# JUMP L_AND_EXP_206
+L_AND_EXP_206:
+	# MOD, INT(tmp_int_15524[temp]), INT(INLINE_n_3[sp-0x4]), INT(INLINE_i_3[sp-0x8])
+	div $5 $6
+	mfhi $22
+	# EQ, INT(tmp_int_15525[temp]), INT(tmp_int_15524[temp]), 0
+	seq $23, $22, 0
+	# JUMP AND_END_207
+	sw $23, -0x1f4($29)
+AND_END_207:
+	# JUMP OR_END_208
+OR_END_208:
+	# Branch INT(tmp_int_15525[sp-0x1f4]) ? IF_BODY_209 : IF_END_210
+	lw $24, -0x1f4($29)
+	bne $24, $0, IF_BODY_209
+	j IF_END_210
+IF_BODY_209:
+	# JUMP B_211
+B_211:
+	# ASS, INT(tmp_int_15518[sp-0x1e8]), 0
+	li $25, 0
+	# JUMP INLINE_isPrime_END_3
+	sw $25, -0x1e8($29)
+	j INLINE_isPrime_END_3
+	# JUMP B_212
+B_212:
+	# JUMP IF_END_210
+IF_END_210:
+	# ADD, INT(tmp_int_15526[temp]), INT(INLINE_i_3[sp-0x8]), 2
+	addiu $26, $6, 2
+	# ASS, INT(INLINE_i_3[sp-0x8]), INT(tmp_int_15526[temp])
+	move $6, $26
+	# JUMP B_213
+B_213:
+	# JUMP DO_CHECK_198
+DO_CHECK_198:
+	# JUMP L_OR_EXP_214
+L_OR_EXP_214:
+	# JUMP L_AND_EXP_215
+L_AND_EXP_215:
+	# DIV, INT(tmp_int_15527[temp]), INT(INLINE_n_3[sp-0x4]), 2
+	bltz $5, DIV_893
+	srl $27, $5, 1
+	j DIV_END_894
+DIV_893:
+	subu $5, $0, $5
+	srl $27, $5, 1
+	subu $27, $0, $27
+DIV_END_894:
+	# LT, INT(tmp_int_15528[temp]), INT(INLINE_i_3[sp-0x8]), INT(tmp_int_15527[temp])
+	slt $17, $6, $27
+	# JUMP AND_END_216
+	sw $17, -0x1f8($29)
+AND_END_216:
+	# JUMP OR_END_217
+OR_END_217:
+	# Branch INT(tmp_int_15528[sp-0x1f8]) ? DO_BODY_197 : DO_END_199
+	lw $18, -0x1f8($29)
+	bne $18, $0, DO_BODY_197
+	j DO_END_199
+	# JUMP DO_END_199
+DO_END_199:
+	# ASS, INT(tmp_int_15518[sp-0x1e8]), 1
+	li $20, 1
+	# JUMP INLINE_isPrime_END_3
+	sw $20, -0x1e8($29)
+INLINE_isPrime_END_3:
+	# PRINT_INT INT(tmp_int_15518[sp-0x1e8])
 	li $2, 1
-	move $4, $7
+	lw $19, -0x1e8($29)
+	move $4, $19
 	syscall
-	# PRINT_STR STR_1
+	# PRINT_STR STR_2
 	li $2, 4
-	la $4, STR_1
+	la $4, STR_2
 	syscall
-	# PRINT_INT INT(k[sp-0x14])
+	# JUMP L_OR_EXP_219
+L_OR_EXP_219:
+	# JUMP L_AND_EXP_220
+L_AND_EXP_220:
+	# GE, INT(tmp_int_15529[temp]), 2, INT(int_c[data+0x10])
+	lw $21, 0x10($28)
+	sle $22, $21, 2
+	# JUMP AND_END_221
+	sw $22, -0x1fc($29)
+	sw $21, 0x10($28)
+AND_END_221:
+	# JUMP OR_END_222
+OR_END_222:
+	# Branch INT(tmp_int_15529[sp-0x1fc]) ? IF_BODY_223 : IF_END_224
+	lw $23, -0x1fc($29)
+	bne $23, $0, IF_BODY_223
+	j IF_END_224
+IF_BODY_223:
+	# JUMP B_225
+B_225:
+	# ASS, INT(int_d[data+0x14]), 1
+	li $24, 1
+	# JUMP B_226
+	sw $24, 0x14($28)
+B_226:
+	# JUMP IF_END_224
+IF_END_224:
+	# JUMP L_OR_EXP_227
+L_OR_EXP_227:
+	# JUMP L_AND_EXP_228
+L_AND_EXP_228:
+	# EQ, INT(tmp_int_15530[temp]), 2, INT(int_d[data+0x14])
+	lw $25, 0x14($28)
+	seq $26, $25, 2
+	# JUMP AND_END_229
+	sw $25, 0x14($28)
+	sw $26, -0x200($29)
+AND_END_229:
+	# JUMP OR_END_230
+OR_END_230:
+	# Branch INT(tmp_int_15530[sp-0x200]) ? IF_BODY_231 : IF_END_232
+	lw $27, -0x200($29)
+	bne $27, $0, IF_BODY_231
+	j IF_END_232
+IF_BODY_231:
+	# JUMP B_233
+B_233:
+	# ASS, INT(int_e[data+0x18]), 0
+	li $17, 0
+	# JUMP B_234
+	sw $17, 0x18($28)
+B_234:
+	# JUMP IF_END_232
+IF_END_232:
+	# JUMP L_OR_EXP_235
+L_OR_EXP_235:
+	# JUMP L_AND_EXP_236
+L_AND_EXP_236:
+	# GT, INT(tmp_int_15531[temp]), 2, INT(int_e[data+0x18])
+	lw $18, 0x18($28)
+	li $3, 2
+	slt $20, $18, $3
+	# JUMP AND_END_237
+	sw $18, 0x18($28)
+	sw $20, -0x204($29)
+AND_END_237:
+	# JUMP OR_END_238
+OR_END_238:
+	# Branch INT(tmp_int_15531[sp-0x204]) ? IF_BODY_239 : IF_ELSE_241
+	lw $19, -0x204($29)
+	bne $19, $0, IF_BODY_239
+	j IF_ELSE_241
+IF_BODY_239:
+	# JUMP B_242
+B_242:
+	# ASS, INT(int_d[data+0x14]), 3
+	li $22, 3
+	# JUMP B_243
+	sw $22, 0x14($28)
+B_243:
+	# JUMP IF_END_240
+	j IF_END_240
+IF_ELSE_241:
+	# JUMP B_244
+B_244:
+	# ASS, INT(int_d[data+0x14]), 4
+	li $21, 4
+	# JUMP B_245
+	sw $21, 0x14($28)
+B_245:
+	# JUMP IF_END_240
+IF_END_240:
+	# DEF, INT(i[sp-0xc]), 5
+	li $5, 5
+	# ADD, INT(tmp_int_15532[temp]), INT(i[sp-0xc]), 3
+	addiu $23, $5, 3
+	# ASS, INT(int_c[data+0x10]), INT(tmp_int_15532[temp])
+	move $24, $23
+	# ASS, INT(i[sp-0xc]), 0
+	li $5, 0
+	# JUMP L_OR_EXP_249
+	sw $24, 0x10($28)
+L_OR_EXP_249:
+	# JUMP L_AND_EXP_250
+L_AND_EXP_250:
+	# LT, INT(tmp_int_15533[temp]), INT(i[sp-0xc]), 100
+	li $3, 100
+	slt $25, $5, $3
+	# JUMP AND_END_251
+	sw $25, -0x208($29)
+AND_END_251:
+	# JUMP OR_END_252
+OR_END_252:
+	# Branch INT(tmp_int_15533[sp-0x208]) ? DO_BODY_246 : DO_END_248
+	lw $26, -0x208($29)
+	bne $26, $0, DO_BODY_246
+	j DO_END_248
+	# JUMP DO_BODY_246
+DO_BODY_246:
+	# JUMP B_253
+B_253:
+	# JUMP L_OR_EXP_254
+	j L_OR_EXP_254
+	# JUMP B_270
+	j B_270
+L_OR_EXP_254:
+	# JUMP L_AND_EXP_255
+L_AND_EXP_255:
+	# EQ, INT(tmp_int_15534[temp]), INT(i[sp-0xc]), 0
+	seq $27, $5, 0
+	# JUMP AND_END_256
+	sw $27, -0x20c($29)
+AND_END_256:
+	# ASS, INT(tmp_int_15535[temp]), INT(tmp_int_15534[sp-0x20c])
+	lw $17, -0x20c($29)
+	move $18, $17
+	# Branch INT(tmp_int_15534[sp-0x20c]) ? OR_END_257 : OR_258
+	sw $17, -0x20c($29)
+	sw $18, -0x210($29)
+	bne $17, $0, OR_END_257
+OR_258:
+	# JUMP L_AND_EXP_260
+L_AND_EXP_260:
+	# EQ, INT(tmp_int_15536[temp]), INT(i[sp-0xc]), 1
+	seq $20, $5, 1
+	# JUMP AND_END_261
+	sw $20, -0x214($29)
+AND_END_261:
+	# OR, INT(tmp_int_15535[sp-0x210]), INT(tmp_int_15535[sp-0x210]), INT(tmp_int_15536[sp-0x214])
+	lw $19, -0x210($29)
+	lw $22, -0x214($29)
+	or $19, $19, $22
+	# Branch INT(tmp_int_15535[sp-0x210]) ? OR_END_257 : OR_259
+	sw $19, -0x210($29)
+	bne $19, $0, OR_END_257
+OR_259:
+	# JUMP OR_END_257
+OR_END_257:
+	# Branch INT(tmp_int_15535[sp-0x210]) ? IF_BODY_263 : IF_ELSE_265
+	lw $21, -0x210($29)
+	bne $21, $0, IF_BODY_263
+	j IF_ELSE_265
+IF_BODY_263:
+	# JUMP B_266
+B_266:
+	# MUL, INT(tmp_int_15537[temp]), INT(i[sp-0xc]), 4
+	sll $23, $5, 2
+	# ADD, INT(tmp_int_15537[temp]), INT(tmp_int_15537[temp]), 0
+	# OFFSET (ARRAY(array[data+0x24])+INT(tmp_int_15537[temp]))->POINTER(tmp_pointer_4760[temp])
+	addiu $3, $28, 36
+	addu $24, $3, $23
+	# STORE POINTER(tmp_pointer_4760[temp]), 1
+	li $3, 1
+	sw $3, 0x0($24)
+	# JUMP B_267
+B_267:
+	# JUMP IF_END_264
+	j IF_END_264
+IF_ELSE_265:
+	# JUMP B_268
+B_268:
+	# MUL, INT(tmp_int_15538[temp]), INT(i[sp-0xc]), 4
+	sll $25, $5, 2
+	# ADD, INT(tmp_int_15538[temp]), INT(tmp_int_15538[temp]), 0
+	# OFFSET (ARRAY(array[data+0x24])+INT(tmp_int_15538[temp]))->POINTER(tmp_pointer_4761[temp])
+	addiu $3, $28, 36
+	addu $26, $3, $25
+	# STORE POINTER(tmp_pointer_4761[temp]), 0
+	li $3, 0
+	sw $3, 0x0($26)
+	# JUMP B_269
+B_269:
+	# JUMP IF_END_264
+IF_END_264:
+	# ADD, INT(tmp_int_15539[temp]), INT(i[sp-0xc]), 1
+	addiu $27, $5, 1
+	# ASS, INT(i[sp-0xc]), INT(tmp_int_15539[temp])
+	move $5, $27
+	# JUMP B_270
+B_270:
+	# JUMP DO_CHECK_247
+DO_CHECK_247:
+	# JUMP L_OR_EXP_271
+L_OR_EXP_271:
+	# JUMP L_AND_EXP_272
+L_AND_EXP_272:
+	# LT, INT(tmp_int_15540[temp]), INT(i[sp-0xc]), 100
+	li $3, 100
+	slt $17, $5, $3
+	# JUMP AND_END_273
+	sw $17, -0x218($29)
+AND_END_273:
+	# JUMP OR_END_274
+OR_END_274:
+	# Branch INT(tmp_int_15540[sp-0x218]) ? DO_BODY_246 : DO_END_248
+	lw $18, -0x218($29)
+	bne $18, $0, DO_BODY_246
+	j DO_END_248
+	# JUMP DO_END_248
+DO_END_248:
+	# ASS, INT(i[sp-0xc]), 5
+	li $5, 5
+	# JUMP B_275
+B_275:
+	# JUMP B_276
+B_276:
+	# JUMP L_OR_EXP_280
+L_OR_EXP_280:
+	# JUMP L_AND_EXP_281
+L_AND_EXP_281:
+	# LT, INT(tmp_int_15541[temp]), INT(i[sp-0xc]), INT(int_c[data+0x10])
+	lw $20, 0x10($28)
+	slt $22, $5, $20
+	# JUMP AND_END_282
+	sw $22, -0x21c($29)
+	sw $20, 0x10($28)
+AND_END_282:
+	# ASS, INT(tmp_int_15542[temp]), INT(tmp_int_15541[sp-0x21c])
+	lw $19, -0x21c($29)
+	move $21, $19
+	# Branch INT(tmp_int_15541[sp-0x21c]) ? OR_END_283 : OR_284
+	sw $19, -0x21c($29)
+	sw $21, -0x220($29)
+	bne $19, $0, OR_END_283
+OR_284:
+	# JUMP L_AND_EXP_286
+L_AND_EXP_286:
+	# GT, INT(tmp_int_15543[temp]), INT(i[sp-0xc]), INT(int_c[data+0x10])
+	lw $23, 0x10($28)
+	sgt $24, $5, $23
+	# JUMP AND_END_287
+	sw $23, 0x10($28)
+	sw $24, -0x224($29)
+AND_END_287:
+	# OR, INT(tmp_int_15542[sp-0x220]), INT(tmp_int_15542[sp-0x220]), INT(tmp_int_15543[sp-0x224])
+	lw $25, -0x220($29)
+	lw $26, -0x224($29)
+	or $25, $25, $26
+	# Branch INT(tmp_int_15542[sp-0x220]) ? OR_END_283 : OR_285
+	sw $25, -0x220($29)
+	bne $25, $0, OR_END_283
+OR_285:
+	# JUMP OR_END_283
+OR_END_283:
+	# Branch INT(tmp_int_15542[sp-0x220]) ? DO_BODY_277 : DO_END_279
+	lw $27, -0x220($29)
+	bne $27, $0, DO_BODY_277
+	j DO_END_279
+	# JUMP DO_BODY_277
+DO_BODY_277:
+	# JUMP B_289
+B_289:
+	# Call FUNC_factorial; Params: INT(i[sp-0xc]); RET INT(tmp_int_15544[temp])
+	sw $31, 0x0($29)
+	addiu $4, $29, -552
+	sw $5, -0x4($4)
+	sw $5, -0xc($29)
+	move $29, $4
+	jal FUNC_factorial
+	addiu $29, $29, 552
+	lw $31, 0x0($29)
+	move $17, $2
+	lw $5, -0xc($29)
+	# PRINT_INT INT(tmp_int_15544[temp])
+	li $2, 1
+	move $4, $17
+	syscall
+	# PRINT_STR STR_2
+	li $2, 4
+	la $4, STR_2
+	syscall
+	# ADD, INT(tmp_int_15545[temp]), INT(i[sp-0xc]), 1
+	addiu $18, $5, 1
+	# ASS, INT(i[sp-0xc]), INT(tmp_int_15545[temp])
+	move $5, $18
+	# JUMP L_OR_EXP_290
+	j L_OR_EXP_290
+	# JUMP B_301
+	j B_301
+L_OR_EXP_290:
+	# JUMP L_AND_EXP_291
+L_AND_EXP_291:
+	# EQ, INT(tmp_int_15546[temp]), INT(i[sp-0xc]), INT(int_c[data+0x10])
+	lw $22, 0x10($28)
+	seq $20, $5, $22
+	# JUMP AND_END_292
+	sw $20, -0x228($29)
+	sw $22, 0x10($28)
+AND_END_292:
+	# JUMP OR_END_293
+OR_END_293:
+	# Branch INT(tmp_int_15546[sp-0x228]) ? IF_BODY_294 : IF_ELSE_296
+	lw $19, -0x228($29)
+	bne $19, $0, IF_BODY_294
+	j IF_ELSE_296
+IF_BODY_294:
+	# JUMP B_297
+B_297:
+	# JUMP DO_END_279
+	j DO_END_279
+	# JUMP B_298
+B_298:
+	# JUMP IF_END_295
+	j IF_END_295
+IF_ELSE_296:
+	# JUMP B_299
+B_299:
+	# JUMP DO_CHECK_278
+	j DO_CHECK_278
+	# JUMP B_300
+B_300:
+	# JUMP IF_END_295
+IF_END_295:
+	# JUMP B_301
+B_301:
+	# JUMP DO_CHECK_278
+DO_CHECK_278:
+	# JUMP L_OR_EXP_302
+L_OR_EXP_302:
+	# JUMP L_AND_EXP_303
+L_AND_EXP_303:
+	# LT, INT(tmp_int_15547[temp]), INT(i[sp-0xc]), INT(int_c[data+0x10])
+	lw $21, 0x10($28)
+	slt $23, $5, $21
+	# JUMP AND_END_304
+	sw $21, 0x10($28)
+	sw $23, -0x22c($29)
+AND_END_304:
+	# ASS, INT(tmp_int_15548[temp]), INT(tmp_int_15547[sp-0x22c])
+	lw $24, -0x22c($29)
+	move $26, $24
+	# Branch INT(tmp_int_15547[sp-0x22c]) ? OR_END_305 : OR_306
+	sw $26, -0x230($29)
+	sw $24, -0x22c($29)
+	bne $24, $0, OR_END_305
+OR_306:
+	# JUMP L_AND_EXP_308
+L_AND_EXP_308:
+	# GT, INT(tmp_int_15549[temp]), INT(i[sp-0xc]), INT(int_c[data+0x10])
+	lw $25, 0x10($28)
+	sgt $27, $5, $25
+	# JUMP AND_END_309
+	sw $27, -0x234($29)
+	sw $25, 0x10($28)
+AND_END_309:
+	# OR, INT(tmp_int_15548[sp-0x230]), INT(tmp_int_15548[sp-0x230]), INT(tmp_int_15549[sp-0x234])
+	lw $17, -0x230($29)
+	lw $18, -0x234($29)
+	or $17, $17, $18
+	# Branch INT(tmp_int_15548[sp-0x230]) ? OR_END_305 : OR_307
+	sw $17, -0x230($29)
+	bne $17, $0, OR_END_305
+OR_307:
+	# JUMP OR_END_305
+OR_END_305:
+	# Branch INT(tmp_int_15548[sp-0x230]) ? DO_BODY_277 : DO_END_279
+	lw $20, -0x230($29)
+	bne $20, $0, DO_BODY_277
+	j DO_END_279
+	# JUMP DO_END_279
+DO_END_279:
+	# JUMP L_OR_EXP_311
+L_OR_EXP_311:
+	# JUMP L_AND_EXP_312
+L_AND_EXP_312:
+	# EQ, INT(tmp_int_15550[temp]), INT(i[sp-0xc]), INT(int_c[data+0x10])
+	lw $22, 0x10($28)
+	seq $19, $5, $22
+	# JUMP AND_END_313
+	sw $19, -0x238($29)
+	sw $22, 0x10($28)
+AND_END_313:
+	# JUMP OR_END_314
+OR_END_314:
+	# Branch INT(tmp_int_15550[sp-0x238]) ? IF_BODY_315 : IF_END_316
+	lw $21, -0x238($29)
+	bne $21, $0, IF_BODY_315
+	j IF_END_316
+IF_BODY_315:
+	# JUMP B_317
+B_317:
+	# JUMP INLINE_return_one_BEGIN_4
+	j INLINE_return_one_BEGIN_4
+	# JUMP B_319
+	j B_319
+INLINE_return_one_BEGIN_4:
+	# ASS, INT(tmp_int_15551[temp]), 1
+	li $23, 1
+	# JUMP INLINE_return_one_END_4
+	sw $23, -0x23c($29)
+INLINE_return_one_END_4:
+	# PRINT_INT INT(tmp_int_15551[sp-0x23c])
+	li $2, 1
+	lw $26, -0x23c($29)
+	move $4, $26
+	syscall
+	# PRINT_STR STR_2
+	li $2, 4
+	la $4, STR_2
+	syscall
+	# JUMP B_319
+B_319:
+	# JUMP IF_END_316
+IF_END_316:
+	# ASS, INT(INLINE_a_5[sp-0x14]), 1
+	li $6, 1
+	# ASS, INT(INLINE_b_5[sp-0x18]), 1
+	li $5, 1
+	# JUMP INLINE_A_plus_B_BEGIN_5
+INLINE_A_plus_B_BEGIN_5:
+	# ADD, INT(tmp_int_15553[temp]), INT(INLINE_a_5[sp-0x14]), INT(INLINE_b_5[sp-0x18])
+	addu $24, $6, $5
+	# ASS, INT(tmp_int_15552[temp]), INT(tmp_int_15553[temp])
+	move $27, $24
+	# JUMP INLINE_A_plus_B_END_5
+	sw $27, -0x240($29)
+INLINE_A_plus_B_END_5:
+	# PRINT_INT INT(tmp_int_15552[sp-0x240])
+	li $2, 1
+	lw $25, -0x240($29)
+	move $4, $25
+	syscall
+	# PRINT_STR STR_2
+	li $2, 4
+	la $4, STR_2
+	syscall
+	# ASS, INT(INLINE_a_6[sp-0x1c]), 2
+	li $5, 2
+	# ASS, INT(INLINE_b_6[sp-0x20]), 2
+	li $6, 2
+	# JUMP INLINE_output_a_plus_b_BEGIN_6
+INLINE_output_a_plus_b_BEGIN_6:
+	# ADD, INT(tmp_int_15554[temp]), INT(INLINE_a_6[sp-0x1c]), INT(INLINE_b_6[sp-0x20])
+	addu $18, $5, $6
+	# PRINT_INT INT(tmp_int_15554[temp])
+	li $2, 1
+	move $4, $18
+	syscall
+	# PRINT_STR STR_2
+	li $2, 4
+	la $4, STR_2
+	syscall
+	# JUMP B_321
+B_321:
+	# JUMP INLINE_output_a_plus_b_END_6
+INLINE_output_a_plus_b_END_6:
+	# GETINT INT(i[sp-0xc])
+	li $2, 5
+	syscall
+	move $5, $2
+	# PRINT_INT INT(i[sp-0xc])
 	li $2, 1
 	move $4, $5
+	syscall
+	# PRINT_STR STR_2
+	li $2, 4
+	la $4, STR_2
+	syscall
+	# ASS, INT(i[sp-0xc]), 0
+	li $5, 0
+	# JUMP L_OR_EXP_325
+L_OR_EXP_325:
+	# JUMP L_AND_EXP_326
+L_AND_EXP_326:
+	# LT, INT(tmp_int_15555[temp]), INT(i[sp-0xc]), 10
+	li $3, 10
+	slt $17, $5, $3
+	# JUMP AND_END_327
+	sw $17, -0x244($29)
+AND_END_327:
+	# JUMP OR_END_328
+OR_END_328:
+	# Branch INT(tmp_int_15555[sp-0x244]) ? DO_BODY_322 : DO_END_324
+	lw $20, -0x244($29)
+	bne $20, $0, DO_BODY_322
+	j DO_END_324
+	# JUMP DO_BODY_322
+DO_BODY_322:
+	# JUMP B_329
+B_329:
+	# ASS, INT(j[sp-0x10]), 0
+	li $6, 0
+	# JUMP L_OR_EXP_333
+	j L_OR_EXP_333
+	# JUMP B_343
+	j B_343
+L_OR_EXP_333:
+	# JUMP L_AND_EXP_334
+L_AND_EXP_334:
+	# LT, INT(tmp_int_15556[temp]), INT(j[sp-0x10]), 10
+	li $3, 10
+	slt $19, $6, $3
+	# JUMP AND_END_335
+	sw $19, -0x248($29)
+AND_END_335:
+	# JUMP OR_END_336
+OR_END_336:
+	# Branch INT(tmp_int_15556[sp-0x248]) ? DO_BODY_330 : DO_END_332
+	lw $22, -0x248($29)
+	bne $22, $0, DO_BODY_330
+	j DO_END_332
+	# JUMP DO_BODY_330
+DO_BODY_330:
+	# JUMP B_337
+B_337:
+	# MUL, INT(tmp_int_15557[temp]), INT(j[sp-0x10]), 4
+	sll $21, $6, 2
+	# ADD, INT(tmp_int_15557[temp]), INT(tmp_int_15557[temp]), 0
+	# MUL, INT(tmp_int_15558[temp]), INT(i[sp-0xc]), 40
+	sll $23, $5, 5
+	sll $3, $5, 3
+	addu $23, $23, $3
+	# ADD, INT(tmp_int_15558[temp]), INT(tmp_int_15558[temp]), INT(tmp_int_15557[temp])
+	addu $23, $23, $21
+	# OFFSET (ARRAY(matrix_A[data+0x1b4])+INT(tmp_int_15558[temp]))->POINTER(tmp_pointer_4762[temp])
+	addiu $3, $28, 436
+	addu $26, $3, $23
+	# ADD, INT(tmp_int_15559[temp]), INT(i[sp-0xc]), 1
+	addiu $24, $5, 1
+	# STORE POINTER(tmp_pointer_4762[temp]), INT(tmp_int_15559[temp])
+	sw $24, 0x0($26)
+	# MUL, INT(tmp_int_15560[temp]), INT(j[sp-0x10]), 4
+	sll $27, $6, 2
+	# ADD, INT(tmp_int_15560[temp]), INT(tmp_int_15560[temp]), 0
+	# MUL, INT(tmp_int_15561[temp]), INT(i[sp-0xc]), 40
+	sll $25, $5, 5
+	sll $3, $5, 3
+	addu $25, $25, $3
+	# ADD, INT(tmp_int_15561[temp]), INT(tmp_int_15561[temp]), INT(tmp_int_15560[temp])
+	addu $25, $25, $27
+	# OFFSET (ARRAY(matrix_B[data+0x344])+INT(tmp_int_15561[temp]))->POINTER(tmp_pointer_4763[temp])
+	addiu $3, $28, 836
+	addu $18, $3, $25
+	# ADD, INT(tmp_int_15562[temp]), INT(j[sp-0x10]), 1
+	addiu $17, $6, 1
+	# STORE POINTER(tmp_pointer_4763[temp]), INT(tmp_int_15562[temp])
+	sw $17, 0x0($18)
+	# ADD, INT(tmp_int_15563[temp]), INT(j[sp-0x10]), 1
+	addiu $20, $6, 1
+	# ASS, INT(j[sp-0x10]), INT(tmp_int_15563[temp])
+	move $6, $20
+	# JUMP B_338
+B_338:
+	# JUMP DO_CHECK_331
+DO_CHECK_331:
+	# JUMP L_OR_EXP_339
+L_OR_EXP_339:
+	# JUMP L_AND_EXP_340
+L_AND_EXP_340:
+	# LT, INT(tmp_int_15564[temp]), INT(j[sp-0x10]), 10
+	li $3, 10
+	slt $19, $6, $3
+	# JUMP AND_END_341
+	sw $19, -0x24c($29)
+AND_END_341:
+	# JUMP OR_END_342
+OR_END_342:
+	# Branch INT(tmp_int_15564[sp-0x24c]) ? DO_BODY_330 : DO_END_332
+	lw $22, -0x24c($29)
+	bne $22, $0, DO_BODY_330
+	j DO_END_332
+	# JUMP DO_END_332
+DO_END_332:
+	# ADD, INT(tmp_int_15565[temp]), INT(i[sp-0xc]), 1
+	addiu $21, $5, 1
+	# ASS, INT(i[sp-0xc]), INT(tmp_int_15565[temp])
+	move $5, $21
+	# JUMP B_343
+B_343:
+	# JUMP DO_CHECK_323
+DO_CHECK_323:
+	# JUMP L_OR_EXP_344
+L_OR_EXP_344:
+	# JUMP L_AND_EXP_345
+L_AND_EXP_345:
+	# LT, INT(tmp_int_15566[temp]), INT(i[sp-0xc]), 10
+	li $3, 10
+	slt $23, $5, $3
+	# JUMP AND_END_346
+	sw $23, -0x250($29)
+AND_END_346:
+	# JUMP OR_END_347
+OR_END_347:
+	# Branch INT(tmp_int_15566[sp-0x250]) ? DO_BODY_322 : DO_END_324
+	lw $26, -0x250($29)
+	bne $26, $0, DO_BODY_322
+	j DO_END_324
+	# JUMP DO_END_324
+DO_END_324:
+	# OFFSET (ARRAY(matrix_A[data+0x1b4])+0)->POINTER(tmp_pointer_4764[temp])
+	addiu $24, $28, 436
+	# OFFSET (ARRAY(matrix_B[data+0x344])+0)->POINTER(tmp_pointer_4765[temp])
+	addiu $27, $28, 836
+	# MUL, INT(tmp_int_15567[temp]), 1, 4
+	li $25, 4
+	# ADD, INT(tmp_int_15567[temp]), INT(tmp_int_15567[temp]), 0
+	# MUL, INT(tmp_int_15568[temp]), 1, 40
+	li $18, 40
+	# ADD, INT(tmp_int_15568[temp]), INT(tmp_int_15568[temp]), INT(tmp_int_15567[temp])
+	addu $18, $18, $25
+	# OFFSET (ARRAY(matrix_A[data+0x1b4])+INT(tmp_int_15568[temp]))->POINTER(tmp_pointer_4766[temp])
+	addiu $3, $28, 436
+	addu $17, $3, $18
+	# LOAD POINTER(tmp_pointer_4766[temp]), INT(tmp_int_15569[temp])
+	lw $20, 0x0($17)
+	# ASS, ARRAY(INLINE_matrix_a_7[sp-0x24]), POINTER(tmp_pointer_4764[temp])
+	move $5, $24
+	# OFFSET (INT(tmp_int_15570[temp])+36)->POINTER(tmp_pointer_4767[temp])
+	addiu $19, $29, -36
+	# STORE POINTER(tmp_pointer_4767[temp]), POINTER(tmp_pointer_4764[temp])
+	sw $24, 0x0($19)
+	# ASS, ARRAY(INLINE_matrix_b_7[sp-0x28]), POINTER(tmp_pointer_4765[temp])
+	move $8, $27
+	# OFFSET (INT(tmp_int_15571[temp])+40)->POINTER(tmp_pointer_4768[temp])
+	addiu $22, $29, -40
+	# STORE POINTER(tmp_pointer_4768[temp]), POINTER(tmp_pointer_4765[temp])
+	sw $27, 0x0($22)
+	# JUMP INLINE_matrixMulti_BEGIN_7
+	sw $20, -0x254($29)
+INLINE_matrixMulti_BEGIN_7:
+	# DEF, INT(INLINE_i_7[sp-0x1c0]), 0
+	li $9, 0
+	# JUMP L_OR_EXP_351
+L_OR_EXP_351:
+	# JUMP L_AND_EXP_352
+L_AND_EXP_352:
+	# LT, INT(tmp_int_15573[temp]), INT(INLINE_i_7[sp-0x1c0]), 10
+	li $3, 10
+	slt $21, $9, $3
+	# JUMP AND_END_353
+	sw $21, -0x258($29)
+AND_END_353:
+	# JUMP OR_END_354
+OR_END_354:
+	# Branch INT(tmp_int_15573[sp-0x258]) ? DO_BODY_348 : DO_END_350
+	lw $23, -0x258($29)
+	bne $23, $0, DO_BODY_348
+	j DO_END_350
+	# JUMP DO_BODY_348
+DO_BODY_348:
+	# JUMP B_355
+B_355:
+	# ASS, INT(INLINE_j_7[sp-0x1c4]), 0
+	li $7, 0
+	# JUMP L_OR_EXP_359
+	j L_OR_EXP_359
+	# JUMP B_382
+	j B_382
+L_OR_EXP_359:
+	# JUMP L_AND_EXP_360
+L_AND_EXP_360:
+	# LT, INT(tmp_int_15574[temp]), INT(INLINE_j_7[sp-0x1c4]), 10
+	li $3, 10
+	slt $26, $7, $3
+	# JUMP AND_END_361
+	sw $26, -0x25c($29)
+AND_END_361:
+	# JUMP OR_END_362
+OR_END_362:
+	# Branch INT(tmp_int_15574[sp-0x25c]) ? DO_BODY_356 : DO_END_358
+	lw $25, -0x25c($29)
+	bne $25, $0, DO_BODY_356
+	j DO_END_358
+	# JUMP DO_BODY_356
+DO_BODY_356:
+	# JUMP B_363
+B_363:
+	# ASS, INT(INLINE_k_7[sp-0x1c8]), 0
+	li $6, 0
+	# MUL, INT(tmp_int_15575[temp]), INT(INLINE_j_7[sp-0x1c4]), 4
+	sll $18, $7, 2
+	# ADD, INT(tmp_int_15575[temp]), INT(tmp_int_15575[temp]), 0
+	# MUL, INT(tmp_int_15576[temp]), INT(INLINE_i_7[sp-0x1c0]), 40
+	sll $17, $9, 5
+	sll $3, $9, 3
+	addu $17, $17, $3
+	# ADD, INT(tmp_int_15576[temp]), INT(tmp_int_15576[temp]), INT(tmp_int_15575[temp])
+	addu $17, $17, $18
+	# OFFSET (ARRAY(INLINE_matrix_c_7[sp-0x1bc])+INT(tmp_int_15576[temp]))->POINTER(tmp_pointer_4769[temp])
+	addiu $3, $29, -444
+	addu $19, $3, $17
+	# STORE POINTER(tmp_pointer_4769[temp]), 0
+	li $3, 0
+	sw $3, 0x0($19)
+	# JUMP L_OR_EXP_367
+	j L_OR_EXP_367
+	# JUMP B_377
+	j B_377
+L_OR_EXP_367:
+	# JUMP L_AND_EXP_368
+L_AND_EXP_368:
+	# LT, INT(tmp_int_15577[temp]), INT(INLINE_k_7[sp-0x1c8]), 10
+	li $3, 10
+	slt $24, $6, $3
+	# JUMP AND_END_369
+	sw $24, -0x260($29)
+AND_END_369:
+	# JUMP OR_END_370
+OR_END_370:
+	# Branch INT(tmp_int_15577[sp-0x260]) ? DO_BODY_364 : DO_END_366
+	lw $22, -0x260($29)
+	bne $22, $0, DO_BODY_364
+	j DO_END_366
+	# JUMP DO_BODY_364
+DO_BODY_364:
+	# JUMP B_371
+B_371:
+	# MUL, INT(tmp_int_15578[temp]), INT(INLINE_j_7[sp-0x1c4]), 4
+	sll $27, $7, 2
+	# ADD, INT(tmp_int_15578[temp]), INT(tmp_int_15578[temp]), 0
+	# MUL, INT(tmp_int_15579[temp]), INT(INLINE_i_7[sp-0x1c0]), 40
+	sll $20, $9, 5
+	sll $3, $9, 3
+	addu $20, $20, $3
+	# ADD, INT(tmp_int_15579[temp]), INT(tmp_int_15579[temp]), INT(tmp_int_15578[temp])
+	addu $20, $20, $27
+	# OFFSET (ARRAY(INLINE_matrix_c_7[sp-0x1bc])+INT(tmp_int_15579[temp]))->POINTER(tmp_pointer_4770[temp])
+	addiu $3, $29, -444
+	addu $21, $3, $20
+	# MUL, INT(tmp_int_15580[temp]), INT(INLINE_j_7[sp-0x1c4]), 4
+	sll $23, $7, 2
+	# ADD, INT(tmp_int_15580[temp]), INT(tmp_int_15580[temp]), 0
+	# MUL, INT(tmp_int_15581[temp]), INT(INLINE_i_7[sp-0x1c0]), 40
+	sll $26, $9, 5
+	sll $3, $9, 3
+	addu $26, $26, $3
+	# ADD, INT(tmp_int_15581[temp]), INT(tmp_int_15581[temp]), INT(tmp_int_15580[temp])
+	addu $26, $26, $23
+	# OFFSET (ARRAY(INLINE_matrix_c_7[sp-0x1bc])+INT(tmp_int_15581[temp]))->POINTER(tmp_pointer_4771[temp])
+	addiu $3, $29, -444
+	addu $25, $3, $26
+	# LOAD POINTER(tmp_pointer_4771[temp]), INT(tmp_int_15582[temp])
+	lw $18, 0x0($25)
+	# MUL, INT(tmp_int_15583[temp]), INT(INLINE_k_7[sp-0x1c8]), 4
+	sll $17, $6, 2
+	# ADD, INT(tmp_int_15583[temp]), INT(tmp_int_15583[temp]), 0
+	# MUL, INT(tmp_int_15584[temp]), INT(INLINE_i_7[sp-0x1c0]), 40
+	sll $19, $9, 5
+	sll $3, $9, 3
+	addu $19, $19, $3
+	# ADD, INT(tmp_int_15584[temp]), INT(tmp_int_15584[temp]), INT(tmp_int_15583[temp])
+	addu $19, $19, $17
+	# OFFSET (ARRAY(INLINE_matrix_a_7[sp-0x24])+INT(tmp_int_15584[temp]))->POINTER(tmp_pointer_4772[temp])
+	addu $24, $5, $19
+	# LOAD POINTER(tmp_pointer_4772[temp]), INT(tmp_int_15585[temp])
+	lw $22, 0x0($24)
+	# MUL, INT(tmp_int_15586[temp]), INT(INLINE_j_7[sp-0x1c4]), 4
+	sll $27, $7, 2
+	# ADD, INT(tmp_int_15586[temp]), INT(tmp_int_15586[temp]), 0
+	# MUL, INT(tmp_int_15587[temp]), INT(INLINE_k_7[sp-0x1c8]), 40
+	sll $20, $6, 5
+	sll $3, $6, 3
+	addu $20, $20, $3
+	# ADD, INT(tmp_int_15587[temp]), INT(tmp_int_15587[temp]), INT(tmp_int_15586[temp])
+	addu $20, $20, $27
+	# OFFSET (ARRAY(INLINE_matrix_b_7[sp-0x28])+INT(tmp_int_15587[temp]))->POINTER(tmp_pointer_4773[temp])
+	addu $23, $8, $20
+	# LOAD POINTER(tmp_pointer_4773[temp]), INT(tmp_int_15588[temp])
+	lw $26, 0x0($23)
+	# MUL, INT(tmp_int_15589[temp]), INT(tmp_int_15585[temp]), INT(tmp_int_15588[temp])
+	mult $22, $26
+	mflo $25
+	# ADD, INT(tmp_int_15590[temp]), INT(tmp_int_15582[temp]), INT(tmp_int_15589[temp])
+	addu $17, $18, $25
+	# STORE POINTER(tmp_pointer_4770[temp]), INT(tmp_int_15590[temp])
+	sw $17, 0x0($21)
+	# ADD, INT(tmp_int_15591[temp]), INT(INLINE_k_7[sp-0x1c8]), 1
+	addiu $24, $6, 1
+	# ASS, INT(INLINE_k_7[sp-0x1c8]), INT(tmp_int_15591[temp])
+	move $6, $24
+	# JUMP B_372
+	sw $19, -0x264($29)
+	sw $20, -0x268($29)
+B_372:
+	# JUMP DO_CHECK_365
+DO_CHECK_365:
+	# JUMP L_OR_EXP_373
+L_OR_EXP_373:
+	# JUMP L_AND_EXP_374
+L_AND_EXP_374:
+	# LT, INT(tmp_int_15592[temp]), INT(INLINE_k_7[sp-0x1c8]), 10
+	li $3, 10
+	slt $27, $6, $3
+	# JUMP AND_END_375
+	sw $27, -0x26c($29)
+AND_END_375:
+	# JUMP OR_END_376
+OR_END_376:
+	# Branch INT(tmp_int_15592[sp-0x26c]) ? DO_BODY_364 : DO_END_366
+	lw $23, -0x26c($29)
+	bne $23, $0, DO_BODY_364
+	j DO_END_366
+	# JUMP DO_END_366
+DO_END_366:
+	# ADD, INT(tmp_int_15593[temp]), INT(INLINE_j_7[sp-0x1c4]), 1
+	addiu $22, $7, 1
+	# ASS, INT(INLINE_j_7[sp-0x1c4]), INT(tmp_int_15593[temp])
+	move $7, $22
+	# JUMP B_377
+B_377:
+	# JUMP DO_CHECK_357
+DO_CHECK_357:
+	# JUMP L_OR_EXP_378
+L_OR_EXP_378:
+	# JUMP L_AND_EXP_379
+L_AND_EXP_379:
+	# LT, INT(tmp_int_15594[temp]), INT(INLINE_j_7[sp-0x1c4]), 10
+	li $3, 10
+	slt $26, $7, $3
+	# JUMP AND_END_380
+	sw $26, -0x270($29)
+AND_END_380:
+	# JUMP OR_END_381
+OR_END_381:
+	# Branch INT(tmp_int_15594[sp-0x270]) ? DO_BODY_356 : DO_END_358
+	lw $18, -0x270($29)
+	bne $18, $0, DO_BODY_356
+	j DO_END_358
+	# JUMP DO_END_358
+DO_END_358:
+	# ADD, INT(tmp_int_15595[temp]), INT(INLINE_i_7[sp-0x1c0]), 1
+	addiu $25, $9, 1
+	# ASS, INT(INLINE_i_7[sp-0x1c0]), INT(tmp_int_15595[temp])
+	move $9, $25
+	# JUMP B_382
+B_382:
+	# JUMP DO_CHECK_349
+DO_CHECK_349:
+	# JUMP L_OR_EXP_383
+L_OR_EXP_383:
+	# JUMP L_AND_EXP_384
+L_AND_EXP_384:
+	# LT, INT(tmp_int_15596[temp]), INT(INLINE_i_7[sp-0x1c0]), 10
+	li $3, 10
+	slt $21, $9, $3
+	# JUMP AND_END_385
+	sw $21, -0x274($29)
+AND_END_385:
+	# JUMP OR_END_386
+OR_END_386:
+	# Branch INT(tmp_int_15596[sp-0x274]) ? DO_BODY_348 : DO_END_350
+	lw $17, -0x274($29)
+	bne $17, $0, DO_BODY_348
+	j DO_END_350
+	# JUMP DO_END_350
+DO_END_350:
+	# OFFSET (ARRAY(INLINE_matrix_c_7[sp-0x1bc])+0)->POINTER(tmp_pointer_4774[temp])
+	addiu $24, $29, -444
+	# ASS, ARRAY(INLINE_array_f_8[sp-0x1cc]), POINTER(tmp_pointer_4774[temp])
+	move $8, $24
+	# OFFSET (INT(tmp_int_15597[temp])+460)->POINTER(tmp_pointer_4775[temp])
+	addiu $19, $29, -460
+	# STORE POINTER(tmp_pointer_4775[temp]), POINTER(tmp_pointer_4774[temp])
+	sw $24, 0x0($19)
+	# JUMP INLINE_sumMatrix_BEGIN_8
+INLINE_sumMatrix_BEGIN_8:
+	# DEF, INT(INLINE_i_8[sp-0x1d0]), 0
+	li $5, 0
+	# DEF, INT(INLINE_sum_8[sp-0x1d8]), 0
+	li $7, 0
+	# JUMP L_OR_EXP_390
+L_OR_EXP_390:
+	# JUMP L_AND_EXP_391
+L_AND_EXP_391:
+	# LT, INT(tmp_int_15599[temp]), INT(INLINE_i_8[sp-0x1d0]), 10
+	li $3, 10
+	slt $20, $5, $3
+	# JUMP AND_END_392
+	sw $20, -0x278($29)
+AND_END_392:
+	# JUMP OR_END_393
+OR_END_393:
+	# Branch INT(tmp_int_15599[sp-0x278]) ? DO_BODY_387 : DO_END_389
+	lw $27, -0x278($29)
+	bne $27, $0, DO_BODY_387
+	j DO_END_389
+	# JUMP DO_BODY_387
+DO_BODY_387:
+	# JUMP B_394
+B_394:
+	# ASS, INT(INLINE_j_8[sp-0x1d4]), 0
+	li $6, 0
+	# JUMP L_OR_EXP_398
+	j L_OR_EXP_398
+	# JUMP B_408
+	j B_408
+L_OR_EXP_398:
+	# JUMP L_AND_EXP_399
+L_AND_EXP_399:
+	# LT, INT(tmp_int_15600[temp]), INT(INLINE_j_8[sp-0x1d4]), 10
+	li $3, 10
+	slt $23, $6, $3
+	# JUMP AND_END_400
+	sw $23, -0x27c($29)
+AND_END_400:
+	# JUMP OR_END_401
+OR_END_401:
+	# Branch INT(tmp_int_15600[sp-0x27c]) ? DO_BODY_395 : DO_END_397
+	lw $22, -0x27c($29)
+	bne $22, $0, DO_BODY_395
+	j DO_END_397
+	# JUMP DO_BODY_395
+DO_BODY_395:
+	# JUMP B_402
+B_402:
+	# MUL, INT(tmp_int_15601[temp]), INT(INLINE_j_8[sp-0x1d4]), 4
+	sll $26, $6, 2
+	# ADD, INT(tmp_int_15601[temp]), INT(tmp_int_15601[temp]), 0
+	# MUL, INT(tmp_int_15602[temp]), INT(INLINE_i_8[sp-0x1d0]), 40
+	sll $18, $5, 5
+	sll $3, $5, 3
+	addu $18, $18, $3
+	# ADD, INT(tmp_int_15602[temp]), INT(tmp_int_15602[temp]), INT(tmp_int_15601[temp])
+	addu $18, $18, $26
+	# OFFSET (ARRAY(INLINE_array_f_8[sp-0x1cc])+INT(tmp_int_15602[temp]))->POINTER(tmp_pointer_4776[temp])
+	addu $25, $8, $18
+	# LOAD POINTER(tmp_pointer_4776[temp]), INT(tmp_int_15603[temp])
+	lw $21, 0x0($25)
+	# ADD, INT(tmp_int_15604[temp]), INT(INLINE_sum_8[sp-0x1d8]), INT(tmp_int_15603[temp])
+	addu $17, $7, $21
+	# ASS, INT(INLINE_sum_8[sp-0x1d8]), INT(tmp_int_15604[temp])
+	move $7, $17
+	# ADD, INT(tmp_int_15605[temp]), INT(INLINE_j_8[sp-0x1d4]), 1
+	addiu $19, $6, 1
+	# ASS, INT(INLINE_j_8[sp-0x1d4]), INT(tmp_int_15605[temp])
+	move $6, $19
+	# JUMP B_403
+	sw $18, -0x280($29)
+B_403:
+	# JUMP DO_CHECK_396
+DO_CHECK_396:
+	# JUMP L_OR_EXP_404
+L_OR_EXP_404:
+	# JUMP L_AND_EXP_405
+L_AND_EXP_405:
+	# LT, INT(tmp_int_15606[temp]), INT(INLINE_j_8[sp-0x1d4]), 10
+	li $3, 10
+	slt $24, $6, $3
+	# JUMP AND_END_406
+	sw $24, -0x284($29)
+AND_END_406:
+	# JUMP OR_END_407
+OR_END_407:
+	# Branch INT(tmp_int_15606[sp-0x284]) ? DO_BODY_395 : DO_END_397
+	lw $20, -0x284($29)
+	bne $20, $0, DO_BODY_395
+	j DO_END_397
+	# JUMP DO_END_397
+DO_END_397:
+	# ADD, INT(tmp_int_15607[temp]), INT(INLINE_i_8[sp-0x1d0]), 1
+	addiu $27, $5, 1
+	# ASS, INT(INLINE_i_8[sp-0x1d0]), INT(tmp_int_15607[temp])
+	move $5, $27
+	# JUMP B_408
+B_408:
+	# JUMP DO_CHECK_388
+DO_CHECK_388:
+	# JUMP L_OR_EXP_409
+L_OR_EXP_409:
+	# JUMP L_AND_EXP_410
+L_AND_EXP_410:
+	# LT, INT(tmp_int_15608[temp]), INT(INLINE_i_8[sp-0x1d0]), 10
+	li $3, 10
+	slt $23, $5, $3
+	# JUMP AND_END_411
+	sw $23, -0x288($29)
+AND_END_411:
+	# JUMP OR_END_412
+OR_END_412:
+	# Branch INT(tmp_int_15608[sp-0x288]) ? DO_BODY_387 : DO_END_389
+	lw $22, -0x288($29)
+	bne $22, $0, DO_BODY_387
+	j DO_END_389
+	# JUMP DO_END_389
+DO_END_389:
+	# ASS, INT(tmp_int_15598[temp]), INT(INLINE_sum_8[sp-0x1d8])
+	move $26, $7
+	# JUMP INLINE_sumMatrix_END_8
+	sw $26, -0x28c($29)
+INLINE_sumMatrix_END_8:
+	# ASS, INT(tmp_int_15572[temp]), INT(tmp_int_15598[sp-0x28c])
+	lw $25, -0x28c($29)
+	move $21, $25
+	# JUMP INLINE_matrixMulti_END_7
+	sw $21, -0x290($29)
+INLINE_matrixMulti_END_7:
+	# PRINT_INT INT(tmp_int_15572[sp-0x290])
+	li $2, 1
+	lw $17, -0x290($29)
+	move $4, $17
 	syscall
 	# PRINT_STR STR_2
 	li $2, 4

@@ -24,13 +24,12 @@ public class FourExpr extends BlockNode {
         NOT,
         NEG,
 
-        // not used
         AND,  // 短路求值
         OR,  // 短路求值
     }
 
-    private final Operand left;
-    private final Operand right;
+    private  Operand left;
+    private  Operand right;
     private final Symbol res;
     private final ExprOp op;
 
@@ -54,6 +53,14 @@ public class FourExpr extends BlockNode {
 
     public Operand getRight() {
         return right;
+    }
+
+    public void setLeft(Operand left) {
+        this.left = left;
+    }
+
+    public void setRight(Operand right) {
+        this.right = right;
     }
 
     public boolean isSingle() {
