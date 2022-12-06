@@ -7,17 +7,11 @@ import Frontend.Lexer.Lexer;
 import Frontend.Parser.CompUnit;
 import Frontend.Parser.Parser;
 import Frontend.Parser.TokenHandler;
-import Frontend.Symbol.Errors;
 import Frontend.SymbolTableBuilder;
 import Middle.MiddleCode;
-import Middle.type.BasicBlock;
-import Middle.type.FuncBlock;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 
 public class Config {
     public static final boolean debugMode = false;

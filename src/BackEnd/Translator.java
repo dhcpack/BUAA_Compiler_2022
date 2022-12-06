@@ -589,10 +589,10 @@ public class Translator {
                     // mipsCode.addInstr(new Div(leftRegister, Registers.v1));
                     // mipsCode.addInstr(new Mflo(resRegister));
                 } else if (op == FourExpr.ExprOp.MOD) {
-                    // translateDivMod(rightVal, leftRegister, resRegister, true);
-                    mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v1, rightVal));
-                    mipsCode.addInstr(new Div(leftRegister, Registers.v1));
-                    mipsCode.addInstr(new Mfhi(resRegister));
+                    translateDivMod(rightVal, leftRegister, resRegister, true);
+                    // mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v1, rightVal));
+                    // mipsCode.addInstr(new Div(leftRegister, Registers.v1));
+                    // mipsCode.addInstr(new Mfhi(resRegister));
                 } else if (op == FourExpr.ExprOp.GT) {
                     mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.sgt, resRegister, leftRegister, rightVal));
                 } else if (op == FourExpr.ExprOp.GE) {
