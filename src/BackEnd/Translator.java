@@ -126,11 +126,12 @@ public class Translator {
                 Registers.globalRegisters = new ArrayList<>(Registers.registersGroup3);
                 Registers.localRegisters = new ArrayList<>(Registers.registersGroup4);
                 // 这句话要放在设置global register的下面
-                currentConflictGraph = new ConflictGraph(currentFunc.getFuncName(), funcAndBlock.getValue(), params);
+                currentConflictGraph = new ConflictGraph(currentFunc, funcAndBlock.getValue(), params);
                 // System.out.println(Registers.globalRegisters.size());
                 // System.out.println(Registers.localRegisters.size());
             }
             tempRegisters = new Registers();
+            symbolUsageMap = currentFunc.getSymbolUsageMap();
             for (int i = 0; i < funcBlocks.size(); i++) {
                 if (i == 0) {
                     translateBasicBlock(funcBlocks.get(0), params);
@@ -394,7 +395,7 @@ public class Translator {
     private void translateBasicBlock(BasicBlock basicBlock, ArrayList<Symbol> params) {
         // 更新当前基本块的SymbolUsageMap
         currentBasicBlock = basicBlock;
-        symbolUsageMap = basicBlock.getSymbolUsageMap();
+        // symbolUsageMap = basicBlock.getSymbolUsageMap();
         mipsCode.addInstr(new Label(basicBlock.getLabel()));
         // pay attention to label
         if (params != null) {

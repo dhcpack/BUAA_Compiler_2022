@@ -13,15 +13,8 @@ public class Jump extends BlockNode {
         return target;
     }
 
-    private HashSet<BlockNode> nextBlockNode = null;
-
     public HashSet<BlockNode> getNextBlockNode() {
-        if (nextBlockNode != null) {
-            return nextBlockNode;
-        }
-        nextBlockNode = new HashSet<>();
-        nextBlockNode.addAll(target.getFirstBlockNode());
-        return nextBlockNode;
+        return new HashSet<>(target.getFirstBlockNode());
     }
 
     @Override

@@ -31,13 +31,8 @@ public class Branch extends BlockNode {
         return elseBlock;
     }
 
-    private HashSet<BlockNode> nextBlockNode = null;
-
     public HashSet<BlockNode> getNextBlockNode() {
-        if (nextBlockNode != null) {
-            return nextBlockNode;
-        }
-        nextBlockNode = new HashSet<>();
+        HashSet<BlockNode> nextBlockNode = new HashSet<>();
         nextBlockNode.addAll(thenBlock.getFirstBlockNode());
         nextBlockNode.addAll(elseBlock.getFirstBlockNode());
         return nextBlockNode;

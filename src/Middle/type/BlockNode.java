@@ -25,4 +25,14 @@ public abstract class BlockNode {
     public void setUseSet(HashSet<Symbol> useSet) {
         this.useSet = useSet;
     }
+
+    private BasicBlock belongBlock = null;
+
+    public BasicBlock getBelongBlock(){
+        return belongBlock;
+    }
+
+    public void setBelongBlock(BasicBlock block){
+        this.belongBlock = block;
+    }
 }

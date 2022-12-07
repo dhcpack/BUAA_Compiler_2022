@@ -11,7 +11,7 @@ public class BasicBlock implements Comparable<BasicBlock> {
     private int index;
     private boolean hasIndex = false;
     private final String label;
-    private ArrayList<BlockNode> content = new ArrayList<>();
+    private final ArrayList<BlockNode> content = new ArrayList<>();
     private final ArrayList<Operand> operandUsage = new ArrayList<>();
 
     public BasicBlock(String label) {
@@ -83,12 +83,8 @@ public class BasicBlock implements Comparable<BasicBlock> {
     }
 
     public void addContent(BlockNode blockNode) {
-        if(blockNode instanceof FourExpr && ((FourExpr) blockNode).getOp() == FourExpr.ExprOp.ASS && ((FourExpr) blockNode).getLeft() instanceof Immediate && ((Immediate) ((FourExpr) blockNode).getLeft()).getNumber() == 4){
-            {
-                System.out.println(1);
-            }
-        }
         this.content.add(blockNode);
+        blockNode.setBelongBlock(this);
         if (blockNode instanceof Branch) {
             // "Branch " + cond + " ? " + thenBlock + " : " + elseBlock;
             operandUsage.add(((Branch) blockNode).getCond());
@@ -160,9 +156,14 @@ public class BasicBlock implements Comparable<BasicBlock> {
         }
     }
 
+    HashMap<Symbol, Integer> symbolUsageMap = null;
+
     // TODO: 记录临时变量被 ***使用*** 的次数
-    public HashMap<Symbol, Integer> getSymbolUsageMap() {
-        HashMap<Symbol, Integer> symbolUsageMap = new HashMap<>();
+    public HashMap<Symbol, Integer> getBlockSymUsageMap() {
+        if(symbolUsageMap != null){
+            return symbolUsageMap;
+        }
+        symbolUsageMap = new HashMap<>();
         for (Operand operand : operandUsage) {
             if (operand instanceof Symbol && ((Symbol) operand).getScope() == Symbol.Scope.TEMP) {
                 Symbol symbol = (Symbol) operand;
@@ -175,6 +176,7 @@ public class BasicBlock implements Comparable<BasicBlock> {
         }
         return symbolUsageMap;
     }
+
 
     // 定义或赋值先于使用
     public HashSet<Symbol> getDef() {
@@ -228,7 +230,7 @@ public class BasicBlock implements Comparable<BasicBlock> {
         return this.index - o.index;
     }
 
-    public void setContent(ArrayList<BlockNode> newContent){
-        this.content = newContent;
-    }
+    // public void setContent(ArrayList<BlockNode> newContent){
+    //     this.content = newContent;
+    // }
 }

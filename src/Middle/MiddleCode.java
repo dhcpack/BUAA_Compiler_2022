@@ -164,6 +164,7 @@ public class MiddleCode implements Output {
             dfsBlock(body, sortedBlock);
             sortedBlock.sort(BasicBlock::compareTo);
             funcToSortedBlock.put(funcBlock, sortedBlock);
+            funcBlock.setBlocks(sortedBlock);
         }
     }
 

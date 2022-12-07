@@ -2,14 +2,22 @@ package BackEnd.optimizer;
 
 import BackEnd.MipsCode;
 import BackEnd.Registers;
+import BackEnd.instructions.ALUSingle;
 import BackEnd.instructions.MemoryInstr;
+import BackEnd.instructions.Syscall;
 import Frontend.Symbol.Symbol;
 import Middle.optimizer.DefUseCalcUtil;
 import Middle.type.BasicBlock;
 import Middle.type.BlockNode;
 import Middle.type.Branch;
+import Middle.type.FourExpr;
+import Middle.type.FuncBlock;
 import Middle.type.FuncParamBlock;
+import Middle.type.GetInt;
+import Middle.type.Immediate;
 import Middle.type.Jump;
+import Middle.type.Memory;
+import Middle.type.Pointer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,22 +25,25 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class ConflictGraph {
     // private final ArrayList<BasicBlock> basicBlocks = new ArrayList<>();
-    private final String funcName;
+    private final FuncBlock funcBlock;
     private final ArrayList<Symbol> funcParams;
     private final ArrayList<BlockNode> blockNodes = new ArrayList<>();
-    private final LinkedHashMap<BlockNode, HashSet<Symbol>> inSymbols = new LinkedHashMap<>();
-    private final LinkedHashMap<BlockNode, HashSet<Symbol>> outSymbols = new LinkedHashMap<>();
+    private LinkedHashMap<BlockNode, HashSet<Symbol>> inSymbols = new LinkedHashMap<>();
+    private LinkedHashMap<BlockNode, HashSet<Symbol>> outSymbols = new LinkedHashMap<>();
+    private LinkedHashMap<BlockNode, HashSet<Symbol>> inSymbolsTemplate = new LinkedHashMap<>();
+    private LinkedHashMap<BlockNode, HashSet<Symbol>> outSymbolsTemplate = new LinkedHashMap<>();
     private final HashMap<Symbol, ConflictGraphNode> conflictNodes = new HashMap<>();
-    private final HashSet<Symbol> allSymbols = new HashSet<>();
     private static final int TOP = 5;
 
-    public ConflictGraph(String funcName, ArrayList<BasicBlock> basicBlocks, ArrayList<Symbol> params) {
-        this.funcName = funcName;
+    public ConflictGraph(FuncBlock funcBlock, ArrayList<BasicBlock> basicBlocks, ArrayList<Symbol> params) {
+        this.funcBlock = funcBlock;
         this.funcParams = params;
+        HashSet<Symbol> allSymbols = new HashSet<>();
         for (int i = basicBlocks.size() - 1; i >= 0; i--) {
             // this.basicBlocks.add(basicBlocks.get(i));
             BasicBlock block = basicBlocks.get(i);
@@ -41,16 +52,21 @@ public class ConflictGraph {
                 DefUseCalcUtil.calcDefUse(blockNodes.get(j));
                 this.blockNodes.add(blockNodes.get(j));
                 inSymbols.put(blockNodes.get(j), new HashSet<>());
+                inSymbolsTemplate.put(blockNodes.get(j), new HashSet<>());
                 outSymbols.put(blockNodes.get(j), new HashSet<>());
+                outSymbolsTemplate.put(blockNodes.get(j), new HashSet<>());
                 allSymbols.addAll(blockNodes.get(j).getDefSet());
                 allSymbols.addAll(blockNodes.get(j).getUseSet());
             }
+            // basicBlocks.get(i).getSymbolUsageMap().forEach((key, value) -> funcSymbolUsageMap.merge(key, value, Integer::sum));
         }
         HashSet<Symbol> paramSet = new HashSet<>(params);
         FuncParamBlock funcParamBlock = new FuncParamBlock(paramSet);
         this.blockNodes.add(funcParamBlock);
         inSymbols.put(funcParamBlock, new HashSet<>());
+        inSymbolsTemplate.put(funcParamBlock, new HashSet<>());
         outSymbols.put(funcParamBlock, new HashSet<>());
+        outSymbolsTemplate.put(funcParamBlock, new HashSet<>());
         allSymbols.addAll(paramSet);
         recuTimes = 0;
         getActiveVariableStream();
@@ -61,14 +77,12 @@ public class ConflictGraph {
             overflowSymbol.addAll(allSymbols);
             Registers.localRegisters = new ArrayList<>(Registers.registersGroup1);
             Registers.globalRegisters = new ArrayList<>(Registers.registersGroup2);
-            // Registers.globalRegisters.add(5);
             for (int i = 0; i < blockNodes.size(); i++) {
                 BlockNode blockNode = blockNodes.get(i);
                 outSymbols.get(blockNode).addAll(allSymbols);
                 inSymbols.get(blockNode).addAll(allSymbols);
             }
         }
-        // System.err.printf("func %s: times %d\n", funcName, recuTimes);
     }
 
     // 活跃变量数据流分析
@@ -108,14 +122,57 @@ public class ConflictGraph {
                 inSymbols.get(blockNode).addAll(blockNode.getUseSet());
                 if (outSize != outSymbols.get(blockNode).size() || inSize != inSymbols.get(blockNode).size()) {
                     flag = true;
-                    // System.out.printf("%d, %d\n", inSize, inSymbols.get(block).size());
-                    // System.out.printf("%d, %d\n", outSize, outSymbols.get(block).size());
                 }
             }
             // System.out.printf("%b", flag);
             recuTimes++;
         }
 
+        final boolean[] deleted = {false};
+        blockNodes.removeIf(new Predicate<BlockNode>() {
+            @Override
+            public boolean test(BlockNode blockNode) {
+                if (blockNode instanceof FourExpr && ((FourExpr) blockNode).getOp() == FourExpr.ExprOp.ASS && ((FourExpr) blockNode).getLeft() instanceof Immediate && ((Immediate) ((FourExpr) blockNode).getLeft()).getNumber() == 13) {
+                    System.out.println(1);
+                }
+                if (blockNode instanceof FourExpr) {  // 四元式的计算结果不活跃
+                    if (!checkActive(((FourExpr) blockNode).getRes(), blockNode)) {
+                        inSymbolsTemplate.remove(blockNode);
+                        outSymbolsTemplate.remove(blockNode);
+                        funcBlock.refreshSymUsageMap(blockNode);
+                        deleted[0] = true;
+                        System.out.printf("REMOVE %s\n", blockNode);
+                        return true;
+                    }
+                } else if (blockNode instanceof Pointer && ((Pointer) blockNode).getOp() == Pointer.Op.LOAD) {  // load的结果不活跃
+                    if (!checkActive(((Pointer) blockNode).getLoad(), blockNode)) {
+                        inSymbolsTemplate.remove(blockNode);
+                        outSymbolsTemplate.remove(blockNode);
+                        funcBlock.refreshSymUsageMap(blockNode);
+                        deleted[0] = true;
+                        System.out.printf("REMOVE %s\n", blockNode);
+                        return true;
+                    }
+                } else if (blockNode instanceof Memory) {
+                    if (!checkActive(((Memory) blockNode).getRes(), blockNode)) {
+                        inSymbolsTemplate.remove(blockNode);
+                        outSymbolsTemplate.remove(blockNode);
+                        funcBlock.refreshSymUsageMap(blockNode);
+                        deleted[0] = true;
+                        System.out.printf("REMOVE %s\n", blockNode);
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
+        if (deleted[0]) {
+            recuTimes = 0;
+            inSymbols = new LinkedHashMap<>(inSymbolsTemplate);
+            outSymbols = new LinkedHashMap<>(outSymbolsTemplate);
+
+            getActiveVariableStream();
+        }
     }
     /*
     func getActiveVariableStream(){
@@ -283,8 +340,13 @@ public class ConflictGraph {
 
     // 检查变量是否活跃，用于删除死代码
     public boolean checkActive(Symbol symbol, BlockNode blockNode) {
-        return (symbol.getScope() != Symbol.Scope.LOCAL && symbol.getScope() != Symbol.Scope.PARAM) || this.outSymbols.get(
-                blockNode).contains(symbol);
+        if (symbol.getScope() == Symbol.Scope.TEMP) {
+            return funcBlock.getSymbolUsageMap().containsKey(symbol);
+        } else if (symbol.getScope() == Symbol.Scope.LOCAL || symbol.getScope() == Symbol.Scope.PARAM) {
+            return this.outSymbols.get(blockNode).contains(symbol);
+        } else {
+            return true;
+        }
     }
 
     public HashSet<Symbol> memorizeGlobalRegisters() {
