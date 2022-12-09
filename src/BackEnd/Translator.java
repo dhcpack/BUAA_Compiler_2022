@@ -403,29 +403,6 @@ public class Translator {
         for (int i = 0; i < blockNodes.size(); i++) {
             BlockNode blockNode = blockNodes.get(i);
             currentBlockNodeIndex = i;
-            // TODO: 死代码删除
-            // TODO: 1121
-            if (MODE == GRAPH) {
-                if (blockNode instanceof FourExpr) {  // 四元式的计算结果不活跃
-                    if (!currentConflictGraph.checkActive(((FourExpr) blockNode).getRes(), blockNode)) {
-                        continue;
-                    }
-                } else if (blockNode instanceof Pointer && ((Pointer) blockNode).getOp() == Pointer.Op.LOAD) {  // load的结果不活跃
-                    if (!currentConflictGraph.checkActive(((Pointer) blockNode).getLoad(), blockNode)) {
-                        continue;
-                    }
-                } else if (blockNode instanceof GetInt) {
-                    if (!currentConflictGraph.checkActive(((GetInt) blockNode).getTarget(), blockNode)) {  // getint的结果不活跃
-                        mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v0, Syscall.get_int));
-                        mipsCode.addInstr(new Syscall());
-                        continue;
-                    }
-                } else if (blockNode instanceof Memory) {
-                    if (!currentConflictGraph.checkActive(((Memory) blockNode).getRes(), blockNode)) {
-                        continue;
-                    }
-                }
-            }
             mipsCode.addInstr(new Comment(blockNode.toString()));
             if (blockNode instanceof Branch) {
                 translateBranch((Branch) blockNode);
@@ -466,7 +443,8 @@ public class Translator {
             }
             // mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v1, ((Immediate) cond).getNumber()));
             // mipsCode.addInstr(
-            //         new BranchInstr(BranchInstr.BranchType.bne, Registers.v1, Registers.zero, branch.getThenBlock().getLabel()));
+            //         new BranchInstr(BranchInstr.BranchType.bne, Registers.v1, Registers.zero, branch.getThenBlock().getLabel
+            //         ()));
             consumeUsage(cond);
         } else if (cond instanceof Symbol) {
             // Symbol symbol = (Symbol) cond;
@@ -975,23 +953,61 @@ public class Translator {
     private void translateGetInt(GetInt getInt) {
         mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v0, Syscall.get_int));
         mipsCode.addInstr(new Syscall());
-        Symbol symbol = getInt.getTarget();
-        if (symbol.getSymbolType() == SymbolType.INT) {
-            int register = allocRegister(symbol, noLoad);
-            mipsCode.addInstr(new MoveInstr(Registers.v0, register));
-        } else if (symbol.getSymbolType() == SymbolType.POINTER) {  // 如果是pointer，直接存在内存里
-            int pointer = tempRegisters.getSymbolRegister(symbol);
-            mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, pointer, 0, Registers.v0));
-            consumeUsage(symbol);
+        if (getInt.isArray()) {
+            Symbol base = getInt.getBase();
+            Operand offset = getInt.getOffset();
+            if (offset instanceof Immediate) {
+                int off = ((Immediate) offset).getNumber();
+                if (base.isInlineVariable() && base.hasMappedSymbol()) {
+                    int mappedRegister = allocRegister(base.getMappedSymbol(), loadTempRegister | loadGlobalRegister);
+                    mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, mappedRegister, off, Registers.v0));
+                } else if (base.getScope() == Symbol.Scope.PARAM) {
+                    int baseRegister = allocRegister(base, loadTempRegister | loadGlobalRegister);
+                    mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, baseRegister, off, Registers.v0));
+                } else if (base.getScope() == Symbol.Scope.GLOBAL) {
+                    // gp
+                    off += base.getAddress();
+                    mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.gp, off, Registers.v0));
+                } else {
+                    // sp
+                    off -= base.getAddress();
+                    mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.sp, off, Registers.v0));
+                }
+            } else {
+                int offsetRegister = allocRegister((Symbol) offset, loadTempRegister | loadGlobalRegister);
+                if (base.isInlineVariable() && base.hasMappedSymbol()) {
+                    int mappedRegister = allocRegister(base.getMappedSymbol(), loadTempRegister | loadGlobalRegister);
+                    mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.addu, Registers.v1, mappedRegister, offsetRegister));
+                    mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.v1, 0, Registers.v0));
+                } else if (base.getScope() == Symbol.Scope.PARAM) {
+                    int baseRegister = allocRegister(base, loadTempRegister | loadGlobalRegister);
+                    mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.addu, Registers.v1, baseRegister, offsetRegister));
+                    mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.v1, 0, Registers.v0));
+                } else if (base.getScope() == Symbol.Scope.GLOBAL) {
+                    // gp
+                    mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.addu, Registers.v1, Registers.gp, offsetRegister));
+                    mipsCode.addInstr(
+                            new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.v1, base.getAddress(), Registers.v0));
+                } else {
+                    // sp
+                    mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.addu, Registers.v1, Registers.sp, offsetRegister));
+                    mipsCode.addInstr(
+                            new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.v1, -base.getAddress(), Registers.v0));
+                }
+            }
+            consumeUsage(base);
+            consumeUsage(offset);
         } else {
-            assert false;
+            Symbol symbol = getInt.getTarget();
+            int targetRegister = allocRegister(symbol, noLoad);
+            mipsCode.addInstr(new MoveInstr(Registers.v0, targetRegister));
+            consumeUsage(getInt.getOffset());
         }
     }
 
     private void translateJump(Jump jump) {
         freeAllRegisters(FREE_TEMP | FREE_GLOBAL, true);  // TODO: check
         mipsCode.addInstr(new J(jump.getTarget().getLabel()));
-        // queue.add(jump.getTarget());
     }
 
     private void translateMemory(Memory memory) {
@@ -1048,31 +1064,118 @@ public class Translator {
     }
 
     private void translatePointer(Pointer pointer) {
+        if (pointer.getBase().getSymbolType() == SymbolType.SPECIAL_SP) {
+            int rParamRegister = allocRegister((Symbol) pointer.getStore(), loadTempRegister | loadGlobalRegister);
+            mipsCode.addInstr(
+                    new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.sp, ((Immediate) pointer.getOffset()).getNumber(),
+                            rParamRegister));
+            consumeUsage(pointer.getBase());
+            consumeUsage(pointer.getOffset());
+            consumeUsage(pointer.getStore());
+            return;
+        }
         if (pointer.getOp() == Pointer.Op.LOAD) {
-            Symbol point = pointer.getPointer();
+            Symbol base = pointer.getBase();
             Symbol res = pointer.getLoad();
-            int baseRegister = allocRegister(point, loadTempRegister);
             int targetRegister = allocRegister(res, noLoad);
-            mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.lw, baseRegister, 0, targetRegister));
-            consumeUsage(point);
+            Operand offset = pointer.getOffset();
+            if (offset instanceof Immediate) {
+                int off = ((Immediate) offset).getNumber();
+                if (base.isInlineVariable() && base.hasMappedSymbol()) {
+                    int mappedRegister = allocRegister(base.getMappedSymbol(), loadTempRegister | loadGlobalRegister);
+                    mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.lw, mappedRegister, off, targetRegister));
+                } else if (base.getScope() == Symbol.Scope.PARAM) {
+                    int baseRegister = allocRegister(base, loadTempRegister | loadGlobalRegister);
+                    mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.lw, baseRegister, off, targetRegister));
+                } else if (base.getScope() == Symbol.Scope.GLOBAL) {
+                    // gp
+                    off += base.getAddress();
+                    mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.lw, Registers.gp, off, targetRegister));
+                } else {
+                    // sp
+                    off -= base.getAddress();
+                    mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.lw, Registers.sp, off, targetRegister));
+                }
+            } else {
+                int offRegister = allocRegister((Symbol) offset, loadTempRegister | loadGlobalRegister);
+                if (base.isInlineVariable() && base.hasMappedSymbol()) {
+                    int mappedRegister = allocRegister(base.getMappedSymbol(), loadTempRegister | loadGlobalRegister);
+                    mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.addu, Registers.v0, mappedRegister, offRegister));
+                    mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.lw, Registers.v0, 0, targetRegister));
+                } else if (base.getScope() == Symbol.Scope.PARAM) {
+                    int baseRegister = allocRegister(base, loadTempRegister | loadGlobalRegister);
+                    mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.addu, Registers.v0, baseRegister, offRegister));
+                    mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.lw, Registers.v0, 0, targetRegister));
+                } else if (base.getScope() == Symbol.Scope.GLOBAL) {
+                    // gp
+                    mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.addu, Registers.v0, Registers.gp, offRegister));
+                    mipsCode.addInstr(
+                            new MemoryInstr(MemoryInstr.MemoryType.lw, Registers.v0, base.getAddress(), targetRegister));
+                } else {
+                    // sp
+                    mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.addu, Registers.v0, Registers.sp, offRegister));
+                    mipsCode.addInstr(
+                            new MemoryInstr(MemoryInstr.MemoryType.lw, Registers.v0, -base.getAddress(), targetRegister));
+                }
+            }
+            consumeUsage(base);
+            consumeUsage(offset);
         } else if (pointer.getOp() == Pointer.Op.STORE) {
-            Symbol point = pointer.getPointer();
+            Symbol base = pointer.getBase();
             Operand store = pointer.getStore();
-            int baseRegister = allocRegister(point, loadTempRegister);
+            Operand offset = pointer.getOffset();
+            int storeRegister;
             if (store instanceof Immediate) {
                 mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v1, ((Immediate) store).getNumber()));
-                mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, baseRegister, 0, Registers.v1));
-            } else if (store instanceof Symbol) {
-                int storeRegister = allocRegister((Symbol) store, loadTempRegister);
-                mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, baseRegister, 0, storeRegister));
+                storeRegister = Registers.v1;
             } else {
-                assert false;
+                storeRegister = allocRegister((Symbol) store, loadTempRegister | loadGlobalRegister);
             }
-            consumeUsage(point);
+
+
+            if (offset instanceof Immediate) {
+                int off = ((Immediate) offset).getNumber();
+                if (base.isInlineVariable() && base.hasMappedSymbol()) {
+                    int mappedRegister = allocRegister(base.getMappedSymbol(), loadTempRegister | loadGlobalRegister);
+                    mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, mappedRegister, off, storeRegister));
+                } else if (base.getScope() == Symbol.Scope.PARAM) {
+                    int baseRegister = allocRegister(base, loadTempRegister | loadGlobalRegister);
+                    mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, baseRegister, off, storeRegister));
+                } else if (base.getScope() == Symbol.Scope.GLOBAL) {
+                    // gp
+                    off += base.getAddress();
+                    mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.gp, off, storeRegister));
+                } else {
+                    // sp
+                    off -= base.getAddress();
+                    mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.sp, off, storeRegister));
+                }
+            } else {
+                int offRegister = allocRegister((Symbol) offset, loadTempRegister | loadGlobalRegister);
+                if (base.isInlineVariable() && base.hasMappedSymbol()) {
+                    int mappedRegister = allocRegister(base.getMappedSymbol(), loadTempRegister | loadGlobalRegister);
+                    mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.addu, Registers.v0, mappedRegister, offRegister));
+                    mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.v0, 0, storeRegister));
+                } else if (base.getScope() == Symbol.Scope.PARAM) {
+                    int baseRegister = allocRegister(base, loadTempRegister | loadGlobalRegister);
+                    mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.addu, Registers.v0, baseRegister, offRegister));
+                    mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.v0, 0, storeRegister));
+                } else if (base.getScope() == Symbol.Scope.GLOBAL) {
+                    // gp
+                    mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.addu, Registers.v0, Registers.gp, offRegister));
+                    mipsCode.addInstr(new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.v0, base.getAddress(), storeRegister));
+                } else {
+                    // sp
+                    mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.addu, Registers.v0, Registers.sp, offRegister));
+                    mipsCode.addInstr(
+                            new MemoryInstr(MemoryInstr.MemoryType.sw, Registers.v0, -base.getAddress(), storeRegister));
+                }
+            }
+            consumeUsage(base);
+            consumeUsage(offset);
             consumeUsage(store);
-        } else {
-            assert false;
         }
+
     }
 
     private void translatePrintInt(PrintInt printInt) {
@@ -1084,11 +1187,6 @@ public class Translator {
             Symbol symbol = (Symbol) printInt.getVal();
             int register = allocRegister(symbol, loadTempRegister);
             mipsCode.addInstr(new MoveInstr(register, Registers.a0));  // 把Symbol加载到a0寄存器
-            // if (registers.occupyingRegister(symbol)) {
-            //     mipsCode.addInstr(new MoveInstr(registers.getSymbolRegister(symbol), Registers.a0));
-            // } else {
-            //     loadSymbol(symbol, Registers.a0);
-            // }
         }
         mipsCode.addInstr(new Syscall());
         consumeUsage(printInt.getVal());

@@ -72,6 +72,12 @@ public class DefUseCalcUtil {
         } else if (blockNode instanceof GetInt) {
             // "GETINT " + target;
             GetInt getInt = (GetInt) blockNode;
+            if(getInt.isArray()){
+                addToUseSet(getInt.getBase());
+                addToUseSet(getInt.getOffset());
+            } else {
+                addToUseSet(getInt.getOffset());
+            }
             addToDefSet(getInt.getTarget());
         } else if (blockNode instanceof Jump) {
             // add To nextBlock
@@ -83,7 +89,8 @@ public class DefUseCalcUtil {
             addToDefSet(((Memory) blockNode).getRes());
         } else if (blockNode instanceof Pointer) {
             Pointer pointer = (Pointer) blockNode;
-            addToUseSet(pointer.getPointer());
+            addToUseSet(pointer.getBase());
+            addToUseSet(pointer.getOffset());
             if (pointer.getOp() == Pointer.Op.LOAD) {
                 // "LOAD " + pointer + ", " + load;
                 addToDefSet(pointer.getLoad());

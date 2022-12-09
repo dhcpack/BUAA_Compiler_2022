@@ -136,6 +136,7 @@ public class ConflictGraph {
         while (deleted[0]) {
             deleted[0] = false;
             blockNodes.removeIf(new Predicate<BlockNode>() {
+                // 死代码删除
                 @Override
                 public boolean test(BlockNode blockNode) {
                     if (blockNode instanceof FourExpr) {  // 四元式的计算结果不活跃

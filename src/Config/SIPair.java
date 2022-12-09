@@ -1,5 +1,6 @@
 package Config;
 
+// String--Integer Pair
 public class SIPair implements Comparable<SIPair> {
     private final String string;
     private final Integer integer;

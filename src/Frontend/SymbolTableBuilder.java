@@ -1,6 +1,7 @@
 package Frontend;
 
 import Config.SIPair;
+import Config.SOPair;
 import Exceptions.IllegalBreakContinueException;
 import Exceptions.IllegalReturnException;
 import Exceptions.IllegalSymbolException;
@@ -277,9 +278,8 @@ public class SymbolTableBuilder {
                     } else {  // 局部变量
                         int offset = 0;
                         for (Integer num : initNum) {
-                            Symbol ptr = Symbol.tempSymbol(SymbolType.POINTER);
-                            currBlock.addContent(new Memory(symbol, new Immediate(offset * 4), ptr));  // 局部数组
-                            currBlock.addContent(new Pointer(Pointer.Op.STORE, ptr, new Immediate(num)));
+                            // 局部数组
+                            currBlock.addContent(new Pointer(Pointer.Op.STORE, symbol,new Immediate(offset * 4),  new Immediate(num)));
                             offset++;
                         }
                         symbol.setAddress(currSymbolTable.getStackSize());
@@ -290,8 +290,8 @@ public class SymbolTableBuilder {
                     for (AddExp addExp : initExp) {
                         Operand exp = checkAddExp(addExp, false);
                         Symbol ptr = Symbol.tempSymbol(SymbolType.POINTER);
-                        currBlock.addContent(new Memory(symbol, new Immediate(offset * 4), ptr));  // 局部数组
-                        currBlock.addContent(new Pointer(Pointer.Op.STORE, ptr, exp));
+                        // 局部数组
+                        currBlock.addContent(new Pointer(Pointer.Op.STORE, symbol, new Immediate(offset * 4), exp));
                         offset++;
                     }
                     symbol.setAddress(currSymbolTable.getStackSize());
@@ -571,22 +571,20 @@ public class SymbolTableBuilder {
     // TODO: check LVal using right or not（LVal是否正确使用，和Exp是否匹配int）
     public void checkAssignStmt(AssignStmt assignStmt) {
         // check LVal, and LVal could not be const
-        Operand lValRes = checkLVal(assignStmt.getLVal(), true, false);
-        assert lValRes instanceof Symbol;
-        Symbol lVal = (Symbol) lValRes;
-        nonModifiedInt.remove(lVal);
-        // check right Val
+        SOPair soPair = checkLVal(assignStmt.getLVal(), true, false);
         Operand operand = checkExp(assignStmt.getExp(), false);
-        if (lVal.getSymbolType() == SymbolType.POINTER) {  // 如果返回的是指针，直接存在内存里
-            currBlock.addContent(new Pointer(Pointer.Op.STORE, lVal, operand));  // 数组存内存
-        } else if (lVal.getSymbolType() == SymbolType.INT) {
+        if (soPair.isArray()) {  // 如果返回的是指针，直接存在内存里
+            currBlock.addContent(new Pointer(Pointer.Op.STORE, soPair.getBase(), soPair.getOffset(), operand));  // 数组存内存
+            nonModifiedInt.remove(soPair.getBase());
+        } else {  // int
+            assert soPair.getOffset() instanceof Symbol;
+            Symbol lVal = (Symbol) soPair.getOffset();
             // currBlock.addContent(new FourExpr(operand, lVal, FourExpr.ExprOp.ASS));
             ArrayList<BlockNode> currContent = currBlock.getContent();
             if(currContent.size() == 0){
                 currBlock.addContent(new FourExpr(operand, lVal, FourExpr.ExprOp.ASS));
             } else {
                 BlockNode lastNode = currContent.get(currContent.size()-1);
-
                 if(lastNode instanceof FourExpr && ((FourExpr) lastNode).getRes() == operand && combinedOps.contains(((FourExpr) lastNode).getOp()) && !((FourExpr) lastNode).replaced()) {
                     ((FourExpr) lastNode).setRes(lVal);
                     ((FourExpr) lastNode).setReplaced();
@@ -596,8 +594,7 @@ public class SymbolTableBuilder {
                     currBlock.addContent(new FourExpr(operand, lVal, FourExpr.ExprOp.ASS));
                 }
             }
-        } else {
-            assert false;
+            nonModifiedInt.remove(lVal);
         }
         return;
     }
@@ -672,10 +669,14 @@ public class SymbolTableBuilder {
             errors.add(new MissRparentException(getIntStmt.getLine()));
         }
         // check LVal, and LVal could not be const
-        Operand symbol = checkLVal(getIntStmt.getLVal(), true, false);
-        nonModifiedInt.remove((Symbol) symbol);
+        SOPair soPair = checkLVal(getIntStmt.getLVal(), true, false);
+        if(soPair.isArray()){
+            nonModifiedInt.remove(soPair.getBase());
+        } else {
+            nonModifiedInt.remove((Symbol) soPair.getOperand());
+        }
         // TODO: WARNING!!! GetInt会根据global local temp来设计sw, lw指令，在translateGetInt
-        currBlock.addContent(new GetInt((Symbol) symbol));
+        currBlock.addContent(new GetInt(soPair));
     }
 
     // 'if' '(' Cond ')' Stmt [ 'else' Stmt ]
@@ -1021,22 +1022,18 @@ public class SymbolTableBuilder {
             return checkBraceExp((BraceExp) primaryExpInterface, returnPointer);
         } else if (primaryExpInterface instanceof LVal) {
             // TODO: check LVal using right or not（LVal是否正确使用，和Exp是否匹配，int）
-            Operand lVal = checkLVal((LVal) primaryExpInterface, false, !returnPointer);  // 计算后的symbol
+            SOPair soPair = checkLVal((LVal) primaryExpInterface, false, returnPointer);  // 计算后的symbol
             if (returnPointer) {
-                return lVal;
+                Symbol ptr = Symbol.tempSymbol(SymbolType.POINTER);
+                currBlock.addContent(new Memory(soPair.getBase(), soPair.getOffset(), ptr));
+                return ptr;
             }
-            if (lVal instanceof Immediate) {
-                return lVal;
-            }
-            Symbol lValSymbol = (Symbol) lVal;
-            if (lValSymbol.getSymbolType() == SymbolType.POINTER) {
+            if(soPair.isArray()){
                 Symbol temp = Symbol.tempSymbol(SymbolType.INT);
-                currBlock.addContent(new Pointer(Pointer.Op.LOAD, lValSymbol, temp));  // 取出数值并返回
+                currBlock.addContent(new Pointer(Pointer.Op.LOAD, soPair.getBase(), soPair.getOffset(), temp));
                 return temp;
-            } else if (lValSymbol.getSymbolType() == SymbolType.INT) {
-                return lValSymbol;
             } else {
-                assert false;
+                return soPair.getOperand();
             }
         } else if (primaryExpInterface instanceof Number) {
             return checkNumber((Number) primaryExpInterface);
@@ -1059,7 +1056,7 @@ public class SymbolTableBuilder {
     // TODO: 会给LVal Symbol赋值
     // TODO: WARNING!!! 当不在符号表中存在时会返回null
     // checkConst represents check const or not
-    public Operand checkLVal(LVal lVal, boolean checkConst, boolean returnDirectConstInt) {
+    public SOPair checkLVal(LVal lVal, boolean checkConst, boolean returnPointer) {
         // 查符号表!!!
         Token ident = lVal.getIdent();
         SIPair siPair = transferIdent(ident.getContent());
@@ -1081,10 +1078,10 @@ public class SymbolTableBuilder {
          * translate to middle code
          * */
         if (symbol.getSymbolType() == SymbolType.INT) {  // int变量
-            if (returnDirectConstInt && symbol.isConst()) {
-                return new Immediate(symbol.getInitInt());
+            if (symbol.isConst()) {
+                return new SOPair(new Immediate(symbol.getInitInt()));
             }
-            return symbol;
+            return new SOPair(symbol);
         } else if (symbol.getSymbolType() == SymbolType.ARRAY) {  // 数组变量
             ArrayList<Integer> dimSize = symbol.getDimSize();
             ArrayList<Integer> suffix = new ArrayList<>();
@@ -1092,23 +1089,24 @@ public class SymbolTableBuilder {
             for (int i = dimSize.size() - 1; i > 0; i--) {
                 suffix.add(0, suffix.get(0) * dimSize.get(i));
             }
-            // ArrayList<Operand> place = lVal.getExps().stream().map(this::checkExp)  // 数组最多二维
-            //         .collect(Collectors.toCollection(ArrayList::new));  // 每一维的取值
             ArrayList<Exp> placeExp = lVal.getExps();
-            if (returnDirectConstInt && symbol.isConst()) {
-                try {
-                    ConstExpCalculator constExpCalculator = new ConstExpCalculator(currSymbolTable, errors, inlining,
-                            currentIndex, funcSymbolTableMap.get(inlineFunc), topSymbolTable);
-                    ArrayList<Integer> placeInteger = placeExp.stream().map(constExpCalculator::calcExp)
-                            .collect(Collectors.toCollection(ArrayList::new));
-                    int place = 0;
-                    for (int i = placeInteger.size() - 1; i >= 0; i--) {
-                        place += placeInteger.get(i) * suffix.get(i);
-                    }
-                    return new Immediate(symbol.getConstInitArray().get(place));
-                } catch (MyAssert ignored) {
 
+            try {
+                ConstExpCalculator constExpCalculator = new ConstExpCalculator(currSymbolTable, errors, inlining,
+                        currentIndex, funcSymbolTableMap.get(inlineFunc), topSymbolTable);
+                ArrayList<Integer> placeInteger = placeExp.stream().map(constExpCalculator::calcExp)
+                        .collect(Collectors.toCollection(ArrayList::new));
+                int place = 0;
+                for (int i = placeInteger.size() - 1; i >= 0; i--) {
+                    place += placeInteger.get(i) * suffix.get(i);
                 }
+                if(symbol.isConst() && returnPointer){
+                    return new SOPair(new Immediate(symbol.getConstInitArray().get(place)));
+                } else {
+                    return new SOPair(symbol, new Immediate(place * 4));
+                }
+            } catch (MyAssert ignored) {
+
             }
 
             Operand offset = new Immediate(0);
@@ -1121,10 +1119,10 @@ public class SymbolTableBuilder {
                 offset = mid;
             }
 
-            Symbol ptr = Symbol.tempSymbol(SymbolType.POINTER);  // 数组变量
-            // TODO: WARNING!!! 返回数组指针，在后续需要根据用途做处理
-            currBlock.addContent(new Memory(symbol, offset, ptr));  // return the pointer to array
-            return ptr;
+            // Symbol ptr = Symbol.tempSymbol(SymbolType.POINTER);  // 数组变量
+            // // TODO: WARNING!!! 返回数组指针，在后续需要根据用途做处理
+            // currBlock.addContent(new Memory(symbol, offset, ptr));  // return the pointer to array
+            return new SOPair(symbol, offset);
         }
         assert false;
         return null;
@@ -1159,7 +1157,7 @@ public class SymbolTableBuilder {
         } else {
             symbol = topSymbolTable.getSymbol(siPair.getString(), false);
         }
-        if (symbol == null && siPair.getInteger() == inlineLocal) {
+        if (symbol == null && siPair.getInteger() == inlineLocal) {  // important再找一次
             symbol = topSymbolTable.getSymbol(ident.getContent(), false);
         }
         assert symbol != null;
@@ -1231,10 +1229,13 @@ public class SymbolTableBuilder {
                 mappedSymbol.setAddress(currSymbolTable.getStackSize());
                 if (fparam.getSymbolType() == SymbolType.ARRAY) {
                     currBlock.addContent(new FourExpr(rParam, mappedSymbol, FourExpr.ExprOp.ASS));
-                    Symbol ptr = Symbol.tempSymbol(SymbolType.POINTER);
-                    currBlock.addContent(
-                            new Memory(Symbol.tempSymbol(SymbolType.INT), new Immediate(mappedSymbol.getAddress()), ptr));
-                    currBlock.addContent(new Pointer(Pointer.Op.STORE, ptr, rParam));
+                    ((Symbol)rParam).setAddress(mappedSymbol.getAddress());
+                    currBlock.addContent(new Pointer(Pointer.Op.STORE, Symbol.tempSymbol(SymbolType.SPECIAL_SP),new Immediate(-mappedSymbol.getAddress()), rParam));
+                    mappedSymbol.setMappedSymbol((Symbol) rParam);
+                    // Symbol ptr = Symbol.tempSymbol(SymbolType.POINTER);
+                    // currBlock.addContent(
+                    //         new Memory(Symbol.tempSymbol(SymbolType.INT), new Immediate(mappedSymbol.getAddress()), ptr));
+                    // currBlock.addContent(new Pointer(Pointer.Op.STORE, ptr,new Immediate(0), rParam));
                 } else {
                     currBlock.addContent(new FourExpr(rParam, mappedSymbol, FourExpr.ExprOp.ASS));
                 }

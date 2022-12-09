@@ -126,6 +126,20 @@ public class Symbol implements LeafNode, Operand, Cloneable {
         }
     }
 
+    private Symbol mappedSymbol = null;
+
+    public void setMappedSymbol(Symbol mappedSymbol){
+        this.mappedSymbol = mappedSymbol;
+    }
+
+    public Symbol getMappedSymbol(){
+        return this.mappedSymbol;
+    }
+
+    public boolean hasMappedSymbol(){
+        return this.mappedSymbol != null;
+    }
+
     // function
     public Symbol(SymbolType symbolType, SymbolType returnType, ArrayList<Symbol> params, Token ident) {
         this.symbolType = symbolType;
@@ -268,13 +282,12 @@ public class Symbol implements LeafNode, Operand, Cloneable {
     private static int tempPointerCount = 0;
 
     public static Symbol tempSymbol(SymbolType symbolType) {
-        if (tempIntCount == 86) {
-            System.out.println(1);
-        }
         if (symbolType == SymbolType.INT) {
-            return new Symbol(symbolType, "tmp_int_" + tempIntCount++, false, Scope.TEMP);
+            return new Symbol(symbolType, "ti_" + tempIntCount++, false, Scope.TEMP);
         } else if (symbolType == SymbolType.POINTER) {
-            return new Symbol(symbolType, "tmp_pointer_" + tempPointerCount++, false, Scope.TEMP);
+            return new Symbol(symbolType, "tp_" + tempPointerCount++, false, Scope.TEMP);
+        } else if(symbolType == SymbolType.SPECIAL_SP){
+            return new Symbol(symbolType, "ts_" + tempPointerCount++, false, Scope.TEMP);
         }
         assert false;
         return null;

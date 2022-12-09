@@ -153,6 +153,10 @@ public class Registers {
                         currPlace = i;
                         break;
                     }
+                    if(((GetInt) blockNode).isArray() && ((GetInt) blockNode).getBase() == currSymbol){
+                        currPlace = i;
+                        break;
+                    }
                 } else if (blockNode instanceof Jump) {
                     // add To nextBlock
                     continue;
@@ -165,7 +169,7 @@ public class Registers {
                     }
                 } else if (blockNode instanceof Pointer) {
                     Pointer pointer = (Pointer) blockNode;
-                    if (pointer.getPointer() == currSymbol) {
+                    if (pointer.getBase() == currSymbol) {
                         currPlace = i;
                         break;
                     }

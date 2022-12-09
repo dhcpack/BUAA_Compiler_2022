@@ -11,18 +11,21 @@ public class Pointer extends BlockNode {
     private Symbol load;
     private Operand store;
     private final Op op;
-    private Symbol pointer;
+    private Symbol base;
+    private Operand offset;
 
-    public Pointer(Op op, Symbol pointer, Symbol load) {
+    public Pointer(Op op, Symbol base, Operand offset, Symbol load) {
         this.op = op;
-        this.pointer = pointer;
+        this.base = base;
         this.load = load;
+        this.offset = offset;
     }
 
-    public Pointer(Op op, Symbol pointer, Operand store) {
+    public Pointer(Op op, Symbol base, Operand offset, Operand store) {
         this.op = op;
-        this.pointer = pointer;
+        this.base = base;
         this.store = store;
+        this.offset = offset;
     }
 
     public Symbol getLoad() {
@@ -37,16 +40,24 @@ public class Pointer extends BlockNode {
         return op;
     }
 
-    public Symbol getPointer() {
-        return pointer;
+    public Symbol getBase() {
+        return base;
     }
 
     public void setStore(Operand store) {
         this.store = store;
     }
 
-    public void setPointer(Symbol pointer) {
-        this.pointer = pointer;
+    public void setBase(Symbol base) {
+        this.base = base;
+    }
+
+    public Operand getOffset() {
+        return offset;
+    }
+
+    public void setOffset(Operand offset) {
+        this.offset = offset;
     }
 
     public void setLoad(Symbol load) {
@@ -60,9 +71,9 @@ public class Pointer extends BlockNode {
     @Override
     public String toString() {
         if (op == Op.LOAD) {
-            return "LOAD " + pointer + ", " + load;
+            return "LOAD " + load +", "+ offset +"[" + base+"]";
         } else {
-            return "STORE " + pointer + ", " + store;
+            return "STORE " + store +", "+ offset +"[" + base+"]";
         }
     }
 }

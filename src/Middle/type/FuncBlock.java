@@ -140,7 +140,7 @@ public class FuncBlock extends BlockNode {
             refresh(((Memory) blockNode).getBase());
         } else if (blockNode instanceof Pointer) {
             Pointer pointer = (Pointer) blockNode;
-            refresh(pointer.getPointer());
+            refresh(pointer.getBase());
             if (pointer.getOp() == Pointer.Op.STORE) {
                 // "STORE " + pointer + ", " + store;
                 refresh(pointer.getStore());

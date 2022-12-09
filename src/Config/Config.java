@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 
 public class Config {
-    public static final boolean debugMode = false;
+    public static final boolean debugMode = true;
 
     public static final String inputFile = "testfile.txt";
     public static final String syntaxFile = "syntax.txt";

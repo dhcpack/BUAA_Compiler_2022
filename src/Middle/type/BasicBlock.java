@@ -127,8 +127,11 @@ public class BasicBlock implements Comparable<BasicBlock> {
             } else if (blockNode instanceof GetInt) {
                 // "GETINT " + target;
                 GetInt getInt = (GetInt) blockNode;
-                if (getInt.getTarget().getSymbolType() == SymbolType.POINTER) {  // TODO: CHECK!!!
-                    operandUsage.add(getInt.getTarget());
+                if(getInt.isArray()){
+                    operandUsage.add(getInt.getBase());
+                    operandUsage.add(getInt.getOffset());
+                } else {
+                    operandUsage.add(getInt.getOffset());
                 }
                 // addToDefSet(getInt.getTarget());
             } else if (blockNode instanceof Jump) {
@@ -143,7 +146,8 @@ public class BasicBlock implements Comparable<BasicBlock> {
                 // addToDefSet(((Memory) blockNode).getRes());
             } else if (blockNode instanceof Pointer) {
                 Pointer pointer = (Pointer) blockNode;
-                operandUsage.add(pointer.getPointer());
+                operandUsage.add(pointer.getBase());
+                operandUsage.add(pointer.getOffset());
                 // addToUseSet(pointer.getPointer());
                 if (pointer.getOp() == Pointer.Op.LOAD) {
                     // "LOAD " + pointer + ", " + load;

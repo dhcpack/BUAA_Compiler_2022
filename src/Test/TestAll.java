@@ -28,7 +28,7 @@ public class TestAll {
         // 2022-C
         for (int i = 1; i <= 30; i++) {
             // TODO: check
-            if (i == 11 || i == 6) continue;
+            if (i == 11) continue;
             MipsTest mipsTest = new MipsTest(2022, "C", i);
             if (mipsTest.run()) {
                 System.out.printf("\033[1;32;40mAccepted: 2022-C-%d \033[0m\n", i);

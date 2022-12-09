@@ -108,7 +108,8 @@ public class ExtractCommonExpr {
                         newContent.add(blockNode);
                     } else if (blockNode instanceof Pointer) {
                         Pointer pointer = (Pointer) blockNode;
-                        pointer.setPointer((Symbol) refreshRead(pointer.getPointer()));
+                        pointer.setBase((Symbol) refreshRead(pointer.getBase()));
+                        pointer.setOffset(refreshRead(pointer.getOffset()));
                         if (pointer.getOp() == Pointer.Op.LOAD) {
                             // "LOAD " + pointer + ", " + load;
                             refreshWrite(pointer.getLoad());
