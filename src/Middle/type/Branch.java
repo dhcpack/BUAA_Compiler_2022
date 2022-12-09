@@ -3,7 +3,7 @@ package Middle.type;
 import java.util.HashSet;
 
 public class Branch extends BlockNode {
-    private final Operand cond;
+    private Operand cond;
     private final BasicBlock thenBlock;
     private final BasicBlock elseBlock;
     private final boolean thenFirst;
@@ -21,6 +21,10 @@ public class Branch extends BlockNode {
 
     public Operand getCond() {
         return cond;
+    }
+
+    public void setCond(Operand cond) {
+        this.cond = cond;
     }
 
     public BasicBlock getThenBlock() {

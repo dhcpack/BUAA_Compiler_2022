@@ -1,7 +1,7 @@
 package Middle.type;
 
 public class Return extends BlockNode {
-    private final Operand returnVal;
+    private Operand returnVal;
 
     // return int
     public Return(Operand returnVal) {
@@ -15,6 +15,10 @@ public class Return extends BlockNode {
 
     public Operand getReturnVal() {
         return returnVal;
+    }
+
+    public void setReturnVal(Operand returnVal) {
+        this.returnVal = returnVal;
     }
 
     public boolean hasReturnVal() {

@@ -2,9 +2,7 @@ package BackEnd.optimizer;
 
 import BackEnd.MipsCode;
 import BackEnd.Registers;
-import BackEnd.instructions.ALUSingle;
 import BackEnd.instructions.MemoryInstr;
-import BackEnd.instructions.Syscall;
 import Frontend.Symbol.Symbol;
 import Middle.optimizer.DefUseCalcUtil;
 import Middle.type.BasicBlock;
@@ -13,8 +11,6 @@ import Middle.type.Branch;
 import Middle.type.FourExpr;
 import Middle.type.FuncBlock;
 import Middle.type.FuncParamBlock;
-import Middle.type.GetInt;
-import Middle.type.Immediate;
 import Middle.type.Jump;
 import Middle.type.Memory;
 import Middle.type.Pointer;
@@ -38,11 +34,13 @@ public class ConflictGraph {
     private LinkedHashMap<BlockNode, HashSet<Symbol>> inSymbolsTemplate = new LinkedHashMap<>();
     private LinkedHashMap<BlockNode, HashSet<Symbol>> outSymbolsTemplate = new LinkedHashMap<>();
     private final HashMap<Symbol, ConflictGraphNode> conflictNodes = new HashMap<>();
-    private static final int TOP = 5;
+    private final boolean settleRegisters;
+    // private static final int TOP = 5;  // USELESS
 
-    public ConflictGraph(FuncBlock funcBlock, ArrayList<BasicBlock> basicBlocks, ArrayList<Symbol> params) {
+    public ConflictGraph(FuncBlock funcBlock, ArrayList<BasicBlock> basicBlocks, ArrayList<Symbol> params, boolean settleRegisters) {
         this.funcBlock = funcBlock;
         this.funcParams = params;
+        this.settleRegisters = settleRegisters;
         HashSet<Symbol> allSymbols = new HashSet<>();
         for (int i = basicBlocks.size() - 1; i >= 0; i--) {
             // this.basicBlocks.add(basicBlocks.get(i));
@@ -70,19 +68,24 @@ public class ConflictGraph {
         allSymbols.addAll(paramSet);
         recuTimes = 0;
         getActiveVariableStream();
-        if (recuTimes != TOP) {
+        if(settleRegisters){
+            deleteDeadCode();
             getConflictMap();
             manageRegisters();
-        } else {
-            overflowSymbol.addAll(allSymbols);
-            Registers.localRegisters = new ArrayList<>(Registers.registersGroup1);
-            Registers.globalRegisters = new ArrayList<>(Registers.registersGroup2);
-            for (int i = 0; i < blockNodes.size(); i++) {
-                BlockNode blockNode = blockNodes.get(i);
-                outSymbols.get(blockNode).addAll(allSymbols);
-                inSymbols.get(blockNode).addAll(allSymbols);
-            }
         }
+        // if (recuTimes != TOP) {
+        //     getConflictMap();
+        //     manageRegisters();
+        // } else {
+        //     overflowSymbol.addAll(allSymbols);
+        //     Registers.localRegisters = new ArrayList<>(Registers.registersGroup1);
+        //     Registers.globalRegisters = new ArrayList<>(Registers.registersGroup2);
+        //     for (int i = 0; i < blockNodes.size(); i++) {
+        //         BlockNode blockNode = blockNodes.get(i);
+        //         outSymbols.get(blockNode).addAll(allSymbols);
+        //         inSymbols.get(blockNode).addAll(allSymbols);
+        //     }
+        // }
     }
 
     // 活跃变量数据流分析
@@ -94,9 +97,9 @@ public class ConflictGraph {
         boolean flag = true;
         while (flag) {
             flag = false;
-            if (recuTimes == TOP) {
-                return;
-            }
+            // if (recuTimes == TOP) {
+            //     return;
+            // }
             for (int i = 0; i < blockNodes.size(); i++) {
                 BlockNode blockNode = blockNodes.get(i);
                 int outSize = outSymbols.get(blockNode).size();
@@ -124,63 +127,55 @@ public class ConflictGraph {
                     flag = true;
                 }
             }
-            // System.out.printf("%b", flag);
             recuTimes++;
         }
+    }
 
-        final boolean[] deleted = {false};
-        blockNodes.removeIf(new Predicate<BlockNode>() {
-            @Override
-            public boolean test(BlockNode blockNode) {
-                if (blockNode instanceof FourExpr && ((FourExpr) blockNode).getOp() == FourExpr.ExprOp.ASS && ((FourExpr) blockNode).getLeft() instanceof Immediate && ((Immediate) ((FourExpr) blockNode).getLeft()).getNumber() == 13) {
-                    System.out.println(1);
+    private void deleteDeadCode(){
+        final boolean[] deleted = {true};
+        while (deleted[0]) {
+            deleted[0] = false;
+            blockNodes.removeIf(new Predicate<BlockNode>() {
+                @Override
+                public boolean test(BlockNode blockNode) {
+                    if (blockNode instanceof FourExpr) {  // 四元式的计算结果不活跃
+                        if (!checkActive(((FourExpr) blockNode).getRes(), blockNode)) {
+                            inSymbolsTemplate.remove(blockNode);
+                            outSymbolsTemplate.remove(blockNode);
+                            funcBlock.refreshSymUsageMap(blockNode);
+                            deleted[0] = true;
+                            // System.out.printf("REMOVE %s\n", blockNode);
+                            return true;
+                        }
+                    } else if (blockNode instanceof Pointer && ((Pointer) blockNode).getOp() == Pointer.Op.LOAD) {  // load的结果不活跃
+                        if (!checkActive(((Pointer) blockNode).getLoad(), blockNode)) {
+                            inSymbolsTemplate.remove(blockNode);
+                            outSymbolsTemplate.remove(blockNode);
+                            funcBlock.refreshSymUsageMap(blockNode);
+                            deleted[0] = true;
+                            // System.out.printf("REMOVE %s\n", blockNode);
+                            return true;
+                        }
+                    } else if (blockNode instanceof Memory) {
+                        if (!checkActive(((Memory) blockNode).getRes(), blockNode)) {
+                            inSymbolsTemplate.remove(blockNode);
+                            outSymbolsTemplate.remove(blockNode);
+                            funcBlock.refreshSymUsageMap(blockNode);
+                            deleted[0] = true;
+                            // System.out.printf("REMOVE %s\n", blockNode);
+                            return true;
+                        }
+                    }
+                    return false;
                 }
-                if (blockNode instanceof FourExpr) {  // 四元式的计算结果不活跃
-                    if (!checkActive(((FourExpr) blockNode).getRes(), blockNode)) {
-                        inSymbolsTemplate.remove(blockNode);
-                        outSymbolsTemplate.remove(blockNode);
-                        funcBlock.refreshSymUsageMap(blockNode);
-                        deleted[0] = true;
-                        System.out.printf("REMOVE %s\n", blockNode);
-                        return true;
-                    }
-                } else if (blockNode instanceof Pointer && ((Pointer) blockNode).getOp() == Pointer.Op.LOAD) {  // load的结果不活跃
-                    if (!checkActive(((Pointer) blockNode).getLoad(), blockNode)) {
-                        inSymbolsTemplate.remove(blockNode);
-                        outSymbolsTemplate.remove(blockNode);
-                        funcBlock.refreshSymUsageMap(blockNode);
-                        deleted[0] = true;
-                        System.out.printf("REMOVE %s\n", blockNode);
-                        return true;
-                    }
-                } else if (blockNode instanceof Memory) {
-                    if (!checkActive(((Memory) blockNode).getRes(), blockNode)) {
-                        inSymbolsTemplate.remove(blockNode);
-                        outSymbolsTemplate.remove(blockNode);
-                        funcBlock.refreshSymUsageMap(blockNode);
-                        deleted[0] = true;
-                        System.out.printf("REMOVE %s\n", blockNode);
-                        return true;
-                    }
-                }
-                return false;
+            });
+            if (deleted[0]) {
+                inSymbols = new LinkedHashMap<>(inSymbolsTemplate);
+                outSymbols = new LinkedHashMap<>(outSymbolsTemplate);
+                getActiveVariableStream();
             }
-        });
-        if (deleted[0]) {
-            recuTimes = 0;
-            inSymbols = new LinkedHashMap<>(inSymbolsTemplate);
-            outSymbols = new LinkedHashMap<>(outSymbolsTemplate);
-
-            getActiveVariableStream();
         }
     }
-    /*
-    func getActiveVariableStream(){
-        // 计算一次
-        if(change)
-            getActiveVariableStream
-    }
-    */
 
     private ConflictGraphNode getConflictNode(Symbol symbol) {
         if (conflictNodes.containsKey(symbol)) {

@@ -10,6 +10,7 @@ import Frontend.Parser.Parser;
 import Frontend.Parser.TokenHandler;
 import Frontend.SymbolTableBuilder;
 import Middle.MiddleCode;
+import Middle.optimizer.ExtractCommonExpr;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -37,7 +38,7 @@ public class Config {
         MiddleCode middleCode = symbolTableBuilder.getMiddleCode();
 
         // Middle Optimize
-        // ExtractCommonExpr.optimize(middleCode);
+        ExtractCommonExpr.optimize(middleCode);
 
         // output middle code
         middleCode.output();  // through MiddleWriter

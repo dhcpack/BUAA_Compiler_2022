@@ -5,7 +5,6 @@ import Frontend.Symbol.SymbolTable;
 import Frontend.Symbol.SymbolType;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 public class FuncBlock extends BlockNode {
@@ -80,23 +79,33 @@ public class FuncBlock extends BlockNode {
 
     private ArrayList<BasicBlock> funcBlocks;
 
-    public void setBlocks(ArrayList<BasicBlock>  funcBlocks){
+    public void setBlocks(ArrayList<BasicBlock> funcBlocks) {
         this.funcBlocks = funcBlocks;
     }
 
     private HashMap<Symbol, Integer> symbolUsageMap = null;
-    public HashMap<Symbol, Integer> getSymbolUsageMap(){
+
+    public HashMap<Symbol, Integer> getSymbolUsageMap() {
+        // System.out.println(this.funcName);
         if (symbolUsageMap == null) {
             symbolUsageMap = new HashMap<>();
             for (BasicBlock block : funcBlocks) {
                 block.getBlockSymUsageMap().forEach((key, value) -> symbolUsageMap.merge(key, value, Integer::sum));
             }
+            // System.out.printf("symbolUsage Map size = %d\n", symbolUsageMap.size());
         }
         return symbolUsageMap;
     }
 
-    public void refreshSymUsageMap(BlockNode blockNode){
-        if(symbolUsageMap == null){
+    public void refreshBasicBlock(){
+        symbolUsageMap = new HashMap<>();
+        for (BasicBlock block : funcBlocks) {
+            block.getBlockSymUsageMap().forEach((key, value) -> symbolUsageMap.merge(key, value, Integer::sum));
+        }
+    }
+
+    public void refreshSymUsageMap(BlockNode blockNode) {
+        if (symbolUsageMap == null) {
             getSymbolUsageMap();
         }
         blockNode.getBelongBlock().getContent().remove(blockNode);
@@ -113,7 +122,7 @@ public class FuncBlock extends BlockNode {
             return;
         } else if (blockNode instanceof FuncCall) {
             // "Call %s; Params: %s"
-            for (Operand operand:((FuncCall) blockNode).getrParams()){
+            for (Operand operand : ((FuncCall) blockNode).getrParams()) {
                 refresh(operand);
             }
         } else if (blockNode instanceof GetInt) {
@@ -151,19 +160,23 @@ public class FuncBlock extends BlockNode {
         }
     }
 
-    public void refresh(Operand operand){
+    public void refresh(Operand operand) {
         if (operand instanceof Symbol && ((Symbol) operand).getScope() == Symbol.Scope.TEMP) {
             Symbol symbol = (Symbol) operand;
+            // if(symbol.getName().equals("tmp_pointer_14")){
+            //     System.out.println(1);
+            // }
             if (symbolUsageMap.containsKey(symbol)) {
-                if(symbolUsageMap.get(symbol) == 1){
+                // System.out.printf("\nSYMBOL %s: %d\n\n", symbol, symbolUsageMap.get(symbol));
+                if (symbolUsageMap.get(symbol) == 1) {
                     symbolUsageMap.remove(symbol);
-                } else{
+                    // System.err.printf("REMOVE TEMP SYMBOL %s\n", symbol);
+                } else {
                     symbolUsageMap.put(symbol, symbolUsageMap.get(symbol) - 1);
                 }
             } else {
                 System.out.println("WARNING: TEMP SYMBOL NOT EXIST");
             }
         }
-        return;
     }
 }

@@ -118,17 +118,13 @@ public class Translator {
                 currentConflictGraph = null;
                 Registers.globalRegisters = new ArrayList<>(Registers.registersGroup1);
                 Registers.localRegisters = new ArrayList<>(Registers.registersGroup2);
-                // System.out.println(Registers.globalRegisters.size());
-                // System.out.println(Registers.localRegisters.size());
             } else {
                 MODE = GRAPH;
                 System.out.println("MODE IS GRAPH");
                 Registers.globalRegisters = new ArrayList<>(Registers.registersGroup3);
                 Registers.localRegisters = new ArrayList<>(Registers.registersGroup4);
                 // 这句话要放在设置global register的下面
-                currentConflictGraph = new ConflictGraph(currentFunc, funcAndBlock.getValue(), params);
-                // System.out.println(Registers.globalRegisters.size());
-                // System.out.println(Registers.localRegisters.size());
+                currentConflictGraph = new ConflictGraph(currentFunc, funcAndBlock.getValue(), params, true);
             }
             tempRegisters = new Registers();
             symbolUsageMap = currentFunc.getSymbolUsageMap();
@@ -459,12 +455,19 @@ public class Translator {
 
     private void translateBranch(Branch branch) {
         HashMap<Symbol, Integer> tempSymbolRegisterMap = new HashMap<>(tempRegisters.getSymbolToRegister());
-        freeAllRegisters(FREE_TEMP | FREE_GLOBAL, true);  // TODO: is it necessary? check
         Operand cond = branch.getCond();
         if (cond instanceof Immediate) {
-            mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v1, ((Immediate) cond).getNumber()));
-            mipsCode.addInstr(
-                    new BranchInstr(BranchInstr.BranchType.bne, Registers.v1, Registers.zero, branch.getThenBlock().getLabel()));
+            freeAllRegisters(FREE_TEMP | FREE_GLOBAL, true);
+            int imm = ((Immediate) cond).getNumber();
+            if (imm == 0) {
+                mipsCode.addInstr(new J(branch.getElseBlock().getLabel()));
+            } else {
+                mipsCode.addInstr(new J(branch.getThenBlock().getLabel()));
+            }
+            // mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v1, ((Immediate) cond).getNumber()));
+            // mipsCode.addInstr(
+            //         new BranchInstr(BranchInstr.BranchType.bne, Registers.v1, Registers.zero, branch.getThenBlock().getLabel()));
+            consumeUsage(cond);
         } else if (cond instanceof Symbol) {
             // Symbol symbol = (Symbol) cond;
             // int register = allocRegister(symbol, loadTempRegister);
@@ -474,16 +477,20 @@ public class Translator {
             Symbol symbol = (Symbol) cond;
             int register;
             if (tempSymbolRegisterMap.containsKey(symbol)) {
+                consumeUsage(cond);
+                freeAllRegisters(FREE_TEMP | FREE_GLOBAL, true);
                 register = tempSymbolRegisterMap.get(symbol);
             } else {
+                freeAllRegisters(FREE_TEMP | FREE_GLOBAL, true);
                 register = allocRegister(symbol, loadTempRegister);
+                consumeUsage(cond);
+
             }
             mipsCode.addInstr(
                     new BranchInstr(BranchInstr.BranchType.bne, register, Registers.zero, branch.getThenBlock().getLabel()));
         }
 
         mipsCode.addInstr(new J(branch.getElseBlock().getLabel()));
-        consumeUsage(cond);
         // queue.add(branch.getThenBlock());
         // queue.add(branch.getElseBlock());
         // consumeUsage(cond);
@@ -818,7 +825,7 @@ public class Translator {
             }
             return;
         }
-        if(immediate == -1){
+        if (immediate == -1) {
             if (instructions != null) {
                 instructions.add(new ALUTriple(ALUTriple.ALUTripleType.subu, resRegister, Registers.zero, operandRegister));
             } else {
@@ -852,8 +859,9 @@ public class Translator {
 
         if (instructions == null) {
             if (shiftTimes.size() <= 3) {
-                if(shiftTimes.size() == 1){
-                    mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.sll, resRegister, operandRegister, shiftTimes.get(0)));
+                if (shiftTimes.size() == 1) {
+                    mipsCode.addInstr(
+                            new ALUDouble(ALUDouble.ALUDoubleType.sll, resRegister, operandRegister, shiftTimes.get(0)));
                     return;
                 }
                 mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.sll, Registers.fp, operandRegister, shiftTimes.get(0)));
@@ -876,7 +884,7 @@ public class Translator {
             }
         } else {
             if (shiftTimes.size() <= 3) {
-                if(shiftTimes.size() == 1){
+                if (shiftTimes.size() == 1) {
                     instructions.add(new ALUDouble(ALUDouble.ALUDoubleType.sll, resRegister, operandRegister, shiftTimes.get(0)));
                     return;
                 }

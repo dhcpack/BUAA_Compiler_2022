@@ -11,7 +11,7 @@ public class Pointer extends BlockNode {
     private Symbol load;
     private Operand store;
     private final Op op;
-    private final Symbol pointer;
+    private Symbol pointer;
 
     public Pointer(Op op, Symbol pointer, Symbol load) {
         this.op = op;
@@ -39,6 +39,14 @@ public class Pointer extends BlockNode {
 
     public Symbol getPointer() {
         return pointer;
+    }
+
+    public void setStore(Operand store) {
+        this.store = store;
+    }
+
+    public void setPointer(Symbol pointer) {
+        this.pointer = pointer;
     }
 
     public void setLoad(Symbol load) {

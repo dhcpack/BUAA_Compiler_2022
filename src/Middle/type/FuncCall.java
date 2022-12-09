@@ -7,7 +7,7 @@ import java.util.StringJoiner;
 
 public class FuncCall extends BlockNode {
     private final FuncBlock funcBlock;
-    private final ArrayList<Operand> rParams;
+    private ArrayList<Operand> rParams;
     private final Symbol ret;
     private final boolean saveRet;
 
@@ -29,6 +29,10 @@ public class FuncCall extends BlockNode {
 
     public ArrayList<Operand> getrParams() {
         return rParams;
+    }
+
+    public void setrParams(ArrayList<Operand> rParams) {
+        this.rParams = rParams;
     }
 
     public String getTargetLabel() {
