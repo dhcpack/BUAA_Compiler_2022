@@ -50,37 +50,8 @@ public class BasicBlock implements Comparable<BasicBlock> {
         this.hasIndex = true;
     }
 
-    // 定义或赋值先于使用
-    // private HashSet<Symbol> defSet = new HashSet<>();
-    // // 使用先于定义
-    // private HashSet<Symbol> useSet = new HashSet<>();
     // 可以跳转到的基本块
     private final HashSet<BasicBlock> nextBlock = new HashSet<>();
-
-    // // 记录全局变量（LOCAL变量）
-    // // DEF
-    // private void addToDefSet(Operand operand) {
-    //     if (!(operand instanceof Symbol && ((Symbol) operand).getScope() == Symbol.Scope.LOCAL)) {
-    //         return;
-    //     }
-    //     Symbol localSymbol = (Symbol) operand;
-    //     if (useSet.contains(localSymbol)) {
-    //         return;
-    //     }
-    //     defSet.add(localSymbol);
-    // }
-    //
-    // // USE
-    // private void addToUseSet(Operand operand) {
-    //     if (!(operand instanceof Symbol && ((Symbol) operand).getScope() == Symbol.Scope.LOCAL)) {
-    //         return;
-    //     }
-    //     Symbol localSymbol = (Symbol) operand;
-    //     if (defSet.contains(localSymbol)) {
-    //         return;
-    //     }
-    //     useSet.add(localSymbol);
-    // }
 
     public void addContent(BlockNode blockNode) {
         this.content.add(blockNode);
@@ -92,16 +63,12 @@ public class BasicBlock implements Comparable<BasicBlock> {
     }
 
     public void getOperandUsage() {
-        // this.defSet = new HashSet<>();
-        // this.useSet = new HashSet<>();
         this.operandUsage = new ArrayList<>();
 
         for (BlockNode blockNode : getContent()) {
-            // System.out.printf("refresh: %s\n", blockNode);
             if (blockNode instanceof Branch) {
                 // "Branch " + cond + " ? " + thenBlock + " : " + elseBlock;
                 operandUsage.add(((Branch) blockNode).getCond());
-                // addToUseSet(((Branch) blockNode).getCond());
                 // add to next block
                 nextBlock.add(((Branch) blockNode).getElseBlock());
                 nextBlock.add(((Branch) blockNode).getThenBlock());
@@ -110,20 +77,11 @@ public class BasicBlock implements Comparable<BasicBlock> {
                 // this.op.name() + ", " + this.res + ", " + this.left;
                 operandUsage.add(((FourExpr) blockNode).getLeft());
                 operandUsage.add(((FourExpr) blockNode).getRight());
-                // addToUseSet(((FourExpr) blockNode).getLeft());
-                // addToUseSet(((FourExpr) blockNode).getRight());
-                // addToDefSet(((FourExpr) blockNode).getRes());
             } else if (blockNode instanceof FuncBlock) {
                 assert false : "不会出现FuncBlock";
             } else if (blockNode instanceof FuncCall) {
                 // "Call %s; Params: %s"
                 operandUsage.addAll(((FuncCall) blockNode).getrParams());
-                // for (Operand operand : ((FuncCall) blockNode).getrParams()) {
-                //     addToUseSet(operand);
-                // }
-                // if (((FuncCall) blockNode).saveRet()) {
-                //     addToDefSet(((FuncCall) blockNode).getRet());
-                // }
             } else if (blockNode instanceof GetInt) {
                 // "GETINT " + target;
                 GetInt getInt = (GetInt) blockNode;
@@ -133,7 +91,6 @@ public class BasicBlock implements Comparable<BasicBlock> {
                 } else {
                     operandUsage.add(getInt.getOffset());
                 }
-                // addToDefSet(getInt.getTarget());
             } else if (blockNode instanceof Jump) {
                 // add To nextBlock
                 nextBlock.add(((Jump) blockNode).getTarget());
@@ -141,35 +98,25 @@ public class BasicBlock implements Comparable<BasicBlock> {
                 // "OFFSET (" + base + "+" + offset + ")->" + res;
                 operandUsage.add(((Memory) blockNode).getOffset());
                 operandUsage.add(((Memory) blockNode).getBase());
-                // addToUseSet(((Memory) blockNode).getOffset());
-                // addToUseSet(((Memory) blockNode).getBase());
-                // addToDefSet(((Memory) blockNode).getRes());
             } else if (blockNode instanceof Pointer) {
                 Pointer pointer = (Pointer) blockNode;
                 operandUsage.add(pointer.getBase());
                 operandUsage.add(pointer.getOffset());
-                // addToUseSet(pointer.getPointer());
                 if (pointer.getOp() == Pointer.Op.LOAD) {
                     // "LOAD " + pointer + ", " + load;
-                    // addToDefSet(pointer.getLoad());
                 } else if (pointer.getOp() == Pointer.Op.STORE) {
                     // "STORE " + pointer + ", " + store;
-                    // System.err.println(pointer);
-                    // System.err.println(pointer.getStore());
                     operandUsage.add(pointer.getStore());
-                    // addToUseSet(pointer.getStore());
                 }
             } else if (blockNode instanceof PrintInt) {
                 // "PRINT_INT " + val;
                 operandUsage.add(((PrintInt) blockNode).getVal());
-                // addToUseSet(((PrintInt) blockNode).getVal());
             } else if (blockNode instanceof PrintStr) {
                 continue;
             } else if (blockNode instanceof Return) {
                 // "RETURN " + returnVal;
                 if (((Return) blockNode).hasReturnVal()) {
                     operandUsage.add(((Return) blockNode).getReturnVal());
-                    // addToUseSet(((Return) blockNode).getReturnVal());
                 }
             } else {
                 assert false;
@@ -193,28 +140,6 @@ public class BasicBlock implements Comparable<BasicBlock> {
         }
         return symbolUsageMap;
     }
-
-
-    // // 定义或赋值先于使用
-    // public HashSet<Symbol> getDef() {
-    //     getOperandUsage();
-    //     return this.defSet;
-    // }
-    //
-    // // 使用先于定义
-    // public HashSet<Symbol> getUse() {
-    //     getOperandUsage();
-    //     return this.useSet;
-    // }
-
-    // // 可以跳转到的基本块
-    // public HashSet<BasicBlock> getNextBlock() {
-    //     return this.nextBlock;
-    // }
-    //
-    // public ArrayList<Operand> getOperandUsage() {
-    //     return operandUsage;
-    // }
 
     public BlockNode getFirst() {
         return this.content.get(0);
@@ -249,7 +174,14 @@ public class BasicBlock implements Comparable<BasicBlock> {
         return this.index - o.index;
     }
 
-    // public void setContent(ArrayList<BlockNode> newContent){
-    //     this.content = newContent;
-    // }
+    // jump 记录多少个跳转语句会跳到该基本块，如果只有一个j，就可以不保存临时变量和全局变量
+    private int totalJumps = 0;
+
+    public int getTotalJumps() {
+        return totalJumps;
+    }
+
+    public void addJump(){
+        this.totalJumps++;
+    }
 }

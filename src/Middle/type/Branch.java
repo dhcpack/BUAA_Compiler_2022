@@ -20,6 +20,9 @@ public class Branch extends BlockNode {
         this.thenBlock = thenBlock;
         this.elseBlock = elseBlock;
         this.thenFirst = thenFirst;
+        // 记录被跳转到的次数
+        this.thenBlock.addJump();
+        this.elseBlock.addJump();
     }
 
     // public BranchType getBranchType() {

@@ -7,6 +7,8 @@ public class Jump extends BlockNode {
 
     public Jump(BasicBlock target) {
         this.target = target;
+        // 记录被跳转到的次数
+        this.target.addJump();
     }
 
     public BasicBlock getTarget() {

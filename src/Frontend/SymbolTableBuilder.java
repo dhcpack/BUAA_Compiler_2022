@@ -1,5 +1,6 @@
 package Frontend;
 
+import BackEnd.instructions.J;
 import Config.SIPair;
 import Config.SOPair;
 import Exceptions.IllegalBreakContinueException;
@@ -1302,6 +1303,12 @@ public class SymbolTableBuilder {
         return checkLOrExp(cond.getLOrExp());
     }
 
+    private void shortCutReturn(BasicBlock endBlock){
+        currBlock.addContent(new Jump(endBlock));
+        currBlock = endBlock;
+        currBlock.setIndex(blockId++);
+    }
+
     // LOrExp → LAndExp {'||' LAndExp}
     // 短路求值
     // return Symbol
@@ -1315,9 +1322,7 @@ public class SymbolTableBuilder {
 
         BasicBlock orEnd = new BasicBlock("OR_END_" + blockCount++);
         if (andExps.size() == 0) {
-            currBlock.addContent(new Jump(orEnd));
-            currBlock = orEnd;
-            currBlock.setIndex(blockId++);
+            shortCutReturn(orEnd);
             return orLeft;
         }
 
@@ -1328,11 +1333,13 @@ public class SymbolTableBuilder {
 
         if (orLeft instanceof Immediate) {
             if (((Immediate) orLeft).getNumber() == 0) {
-                currBlock.addContent(new FourExpr(orLeft, tempSymbol, FourExpr.ExprOp.ASS));
+                // currBlock.addContent(new FourExpr(orLeft, tempSymbol, FourExpr.ExprOp.ASS));
+                currBlock.addContent(new FourExpr(new Immediate(0), tempSymbol,  FourExpr.ExprOp.ASS));
                 currBlock.addContent(new Jump(falseBlock));
             } else {
-                currBlock.addContent(new FourExpr(orLeft, tempSymbol, FourExpr.ExprOp.ASS));
-                currBlock.addContent(new Jump(orEnd));
+                currBlock.addContent(new FourExpr(new Immediate(1), tempSymbol,  FourExpr.ExprOp.ASS));
+                shortCutReturn(orEnd);
+                return tempSymbol;
             }
         } else {
             currBlock.addContent(new FourExpr(orLeft, tempSymbol, FourExpr.ExprOp.ASS));
@@ -1350,12 +1357,12 @@ public class SymbolTableBuilder {
             if (orLeft instanceof Immediate && orRight instanceof Immediate) {
                 if (((Immediate) orLeft).getNumber() == 0 && ((Immediate) orRight).getNumber() == 0) {
                     orLeft = new Immediate(0);
-                    currBlock.addContent(new FourExpr(orLeft, tempSymbol, FourExpr.ExprOp.ASS));
+                    // currBlock.addContent(new FourExpr(orLeft, tempSymbol, FourExpr.ExprOp.ASS));
                     currBlock.addContent(new Jump(falseBlock));
                 } else {
-                    orLeft = new Immediate(1);
-                    currBlock.addContent(new FourExpr(orLeft, tempSymbol, FourExpr.ExprOp.ASS));
-                    currBlock.addContent(new Jump(orEnd));
+                    currBlock.addContent(new FourExpr(new Immediate(1), tempSymbol,  FourExpr.ExprOp.ASS));
+                    shortCutReturn(orEnd);
+                    return tempSymbol;
                 }
             } else {
                 break;
@@ -1367,17 +1374,14 @@ public class SymbolTableBuilder {
             index++;
         }
 
+        currBlock.addContent(new FourExpr(new Immediate(0), tempSymbol,  FourExpr.ExprOp.ASS));
+
         if (index == andExps.size()) {
-            currBlock.addContent(new Jump(orEnd));
-            currBlock = orEnd;
-            currBlock.setIndex(blockId++);
-            // currBlock.addContent(new FourExpr(orLeft, tempSymbol, FourExpr.ExprOp.ASS));
+            shortCutReturn(orEnd);
             return tempSymbol;
         }
 
-        // Symbol midRes = Symbol.tempSymbol(SymbolType.INT);
         currBlock.addContent(new FourExpr(tempSymbol, orRight, tempSymbol, FourExpr.ExprOp.OR));
-        // tempSymbol = midRes;
         currBlock.addContent(new Branch(tempSymbol, orEnd, falseBlock, false));
         currBlock = falseBlock;
         currBlock.setIndex(blockId++);
@@ -1385,10 +1389,8 @@ public class SymbolTableBuilder {
         index++;
 
         while (index < andExps.size()) {
-            // midRes = Symbol.tempSymbol(SymbolType.INT);
             orRight = checkLAndExp(andExps.get(index));
             currBlock.addContent(new FourExpr(tempSymbol, orRight, tempSymbol, FourExpr.ExprOp.OR));
-            // tempSymbol = midRes;
             currBlock.addContent(new Branch(tempSymbol, orEnd, falseBlock, false));
             currBlock = falseBlock;
             currBlock.setIndex(blockId++);
@@ -1396,9 +1398,7 @@ public class SymbolTableBuilder {
             index++;
         }
 
-        currBlock.addContent(new Jump(orEnd));
-        currBlock = orEnd;
-        currBlock.setIndex(blockId++);
+        shortCutReturn(orEnd);
         return tempSymbol;
     }
 
@@ -1426,14 +1426,19 @@ public class SymbolTableBuilder {
         BasicBlock trueBlock = new BasicBlock("AND_" + blockCount++);
         if (andLeft instanceof Immediate) {
             if (((Immediate) andLeft).getNumber() == 0) {
-                currBlock.addContent(new FourExpr(andLeft, tempSymbol, FourExpr.ExprOp.ASS));
-                currBlock.addContent(new Jump(andEnd));
+                currBlock.addContent(new FourExpr(new Immediate(0), tempSymbol,  FourExpr.ExprOp.ASS));
+                shortCutReturn(andEnd);
+                return tempSymbol;
             } else {
-                currBlock.addContent(new FourExpr(andLeft, tempSymbol, FourExpr.ExprOp.ASS));
+                currBlock.addContent(new FourExpr(new Immediate(1), tempSymbol,  FourExpr.ExprOp.ASS));
                 currBlock.addContent(new Jump(trueBlock));
             }
         } else {
-            currBlock.addContent(new FourExpr(andLeft, tempSymbol, FourExpr.ExprOp.ASS));
+            if(((Symbol) andLeft).getScope() == Symbol.Scope.TEMP){
+                tempSymbol = (Symbol) andLeft;
+            } else {
+                currBlock.addContent(new FourExpr(andLeft, tempSymbol, FourExpr.ExprOp.ASS));
+            }
             currBlock.addContent(new Branch(andLeft, trueBlock, andEnd, true));
         }
         currBlock = trueBlock;
@@ -1444,33 +1449,27 @@ public class SymbolTableBuilder {
         Operand andRight = null;
         while (index < eqExps.size()) {
             andRight = checkEqExp(eqExps.get(index));
-            // Symbol midRes = Symbol.tempSymbol(SymbolType.INT);
             if (andLeft instanceof Immediate && andRight instanceof Immediate) {
                 if (((Immediate) andLeft).getNumber() != 0 && ((Immediate) andRight).getNumber() != 0) {
                     andLeft = new Immediate(1);
-                    currBlock.addContent(new FourExpr(andLeft, tempSymbol, FourExpr.ExprOp.ASS));
                     currBlock.addContent(new Jump(trueBlock));
                 } else {
-                    andLeft = new Immediate(0);
-                    currBlock.addContent(new FourExpr(andLeft, tempSymbol, FourExpr.ExprOp.ASS));
-                    currBlock.addContent(new Jump(andEnd));
+                    currBlock.addContent(new FourExpr(new Immediate(0), tempSymbol,  FourExpr.ExprOp.ASS));
+                    shortCutReturn(andEnd);
+                    return tempSymbol;
                 }
-                // currBlock.addContent(new FourExpr(andLeft, tempSymbol, FourExpr.ExprOp.ASS));
             } else {
                 break;
             }
             currBlock = trueBlock;
             currBlock.setIndex(blockId++);
             trueBlock = new BasicBlock("AND_" + blockCount++);
-            // tempSymbol = midRes;
             index++;
         }
 
+        currBlock.addContent(new FourExpr(new Immediate(1), tempSymbol,  FourExpr.ExprOp.ASS));
         if (index == eqExps.size()) {
-            currBlock.addContent(new Jump(andEnd));
-            currBlock = andEnd;
-            currBlock.setIndex(blockId++);
-            // currBlock.addContent(new FourExpr(andLeft, tempSymbol, FourExpr.ExprOp.ASS));
+            shortCutReturn(andEnd);
             return tempSymbol;
         }
         // Symbol midRes = Symbol.tempSymbol(SymbolType.INT);
@@ -1494,9 +1493,7 @@ public class SymbolTableBuilder {
             index++;
         }
 
-        currBlock.addContent(new Jump(andEnd));
-        currBlock = andEnd;
-        currBlock.setIndex(blockId++);
+        shortCutReturn(andEnd);
         return tempSymbol;
     }
 

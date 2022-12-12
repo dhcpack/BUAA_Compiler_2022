@@ -1008,7 +1008,12 @@ public class Translator {
     }
 
     private void translateJump(Jump jump) {
-        freeAllRegisters(FREE_TEMP | FREE_GLOBAL, true);  // TODO: check
+        if(!(jump.getTarget().getTotalJumps() == 1 && jump.getTarget() == nextBasicBlock && currentBlockNodeIndex == currentBasicBlock.getContent().size()-1) ) {
+            freeAllRegisters(FREE_TEMP | FREE_GLOBAL, true);
+        }
+        // } else {
+        //     System.out.printf("label %s with cnt 1\n", jump.getTarget().getLabel());
+        // }
         mipsCode.addInstr(new J(jump.getTarget().getLabel()));
     }
 
