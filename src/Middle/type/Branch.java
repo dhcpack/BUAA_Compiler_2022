@@ -3,17 +3,28 @@ package Middle.type;
 import java.util.HashSet;
 
 public class Branch extends BlockNode {
+    public enum BranchType{
+        BEQZ,
+        BNEZ,
+    }
+
     private Operand cond;
+    // private final BranchType branchType;
     private final BasicBlock thenBlock;
     private final BasicBlock elseBlock;
     private final boolean thenFirst;
 
-    public Branch(Operand cond, BasicBlock thenBlock, BasicBlock elseBlock, boolean thenFirst) {
+    public Branch(Operand cond,  BasicBlock thenBlock, BasicBlock elseBlock, boolean thenFirst) {
         this.cond = cond;
+        // this.branchType = branchType;
         this.thenBlock = thenBlock;
         this.elseBlock = elseBlock;
         this.thenFirst = thenFirst;
     }
+
+    // public BranchType getBranchType() {
+    //     return branchType;
+    // }
 
     public boolean isThenFirst() {
         return this.thenFirst;

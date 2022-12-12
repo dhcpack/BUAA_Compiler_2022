@@ -67,6 +67,7 @@ public class Translator {
 
     // 当前基本块和当前指令位置
     private BasicBlock currentBasicBlock;
+    private BasicBlock nextBasicBlock;
     private int currentBlockNodeIndex;
 
     public Translator(MiddleCode middleCode) {
@@ -129,6 +130,11 @@ public class Translator {
             tempRegisters = new Registers();
             symbolUsageMap = currentFunc.getSymbolUsageMap();
             for (int i = 0; i < funcBlocks.size(); i++) {
+                if(i != funcBlocks.size() -1){
+                    nextBasicBlock = funcBlocks.get(i+1);
+                } else {
+                    nextBasicBlock = null;
+                }
                 if (i == 0) {
                     translateBasicBlock(funcBlocks.get(0), params);
                 } else {
@@ -441,17 +447,8 @@ public class Translator {
             } else {
                 mipsCode.addInstr(new J(branch.getThenBlock().getLabel()));
             }
-            // mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.v1, ((Immediate) cond).getNumber()));
-            // mipsCode.addInstr(
-            //         new BranchInstr(BranchInstr.BranchType.bne, Registers.v1, Registers.zero, branch.getThenBlock().getLabel
-            //         ()));
             consumeUsage(cond);
         } else if (cond instanceof Symbol) {
-            // Symbol symbol = (Symbol) cond;
-            // int register = allocRegister(symbol, loadTempRegister);
-            // mipsCode.addInstr(
-            //         new BranchInstr(BranchInstr.BranchType.bne, register, Registers.zero, branch.getThenBlock().getLabel()));
-
             Symbol symbol = (Symbol) cond;
             int register;
             if (tempSymbolRegisterMap.containsKey(symbol)) {
@@ -464,14 +461,19 @@ public class Translator {
                 consumeUsage(cond);
 
             }
-            mipsCode.addInstr(
-                    new BranchInstr(BranchInstr.BranchType.bne, register, Registers.zero, branch.getThenBlock().getLabel()));
+            if(branch.getThenBlock() == nextBasicBlock){
+                mipsCode.addInstr(
+                        new BranchInstr(BranchInstr.BranchType.beq, register, Registers.zero, branch.getElseBlock().getLabel()));
+            } else if(branch.getElseBlock() == nextBasicBlock){
+                mipsCode.addInstr(
+                        new BranchInstr(BranchInstr.BranchType.bne, register, Registers.zero, branch.getThenBlock().getLabel()));
+            } else {
+                mipsCode.addInstr(
+                        new BranchInstr(BranchInstr.BranchType.bne, register, Registers.zero, branch.getThenBlock().getLabel()));
+                mipsCode.addInstr(new J(branch.getElseBlock().getLabel()));
+            }
         }
 
-        mipsCode.addInstr(new J(branch.getElseBlock().getLabel()));
-        // queue.add(branch.getThenBlock());
-        // queue.add(branch.getElseBlock());
-        // consumeUsage(cond);
     }
 
     // 注意要保证先寻找左右操作数寄存器，再寻找res寄存器
