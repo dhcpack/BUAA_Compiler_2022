@@ -240,6 +240,7 @@ public class ConflictGraph {
                 for (Integer r : availRegister) {
                     node.setRegister(r);
                     symbolRegisterMap.put(node.getSymbol(), r);
+                    // System.err.printf("%s, %d\n", node.getSymbol(), r);
                     break;
                 }
             }

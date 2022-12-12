@@ -153,28 +153,28 @@ public class SymbolTableBuilder {
         replaceNonModified();
     }
 
-    public void replaceNonModified(){
+    public void replaceNonModified() {
         LinkedHashMap<FuncBlock, ArrayList<BasicBlock>> funcToSortedBlock = middleCode.getFuncToSortedBlock();
-        for (ArrayList<BasicBlock> basicBlocks:funcToSortedBlock.values()){
-            for (BasicBlock basicBlock:basicBlocks){
-                for (BlockNode blockNode:basicBlock.getContent()) {
-                    if(blockNode instanceof FourExpr){
+        for (ArrayList<BasicBlock> basicBlocks : funcToSortedBlock.values()) {
+            for (BasicBlock basicBlock : basicBlocks) {
+                for (BlockNode blockNode : basicBlock.getContent()) {
+                    if (blockNode instanceof FourExpr) {
                         FourExpr fourExpr = (FourExpr) blockNode;
-                        if(fourExpr.isSingle()){
-                            if(nonModifiedInt.containsKey(fourExpr.getLeft())){
+                        if (fourExpr.isSingle()) {
+                            if (nonModifiedInt.containsKey(fourExpr.getLeft())) {
                                 fourExpr.setLeft(new Immediate(nonModifiedInt.get(fourExpr.getLeft())));
                             }
                         } else {
-                            if(nonModifiedInt.containsKey(fourExpr.getLeft())){
+                            if (nonModifiedInt.containsKey(fourExpr.getLeft())) {
                                 fourExpr.setLeft(new Immediate(nonModifiedInt.get(fourExpr.getLeft())));
                             }
-                            if(nonModifiedInt.containsKey(fourExpr.getRight())){
+                            if (nonModifiedInt.containsKey(fourExpr.getRight())) {
                                 fourExpr.setRight(new Immediate(nonModifiedInt.get(fourExpr.getRight())));
                             }
                         }
-                    } else if(blockNode instanceof PrintInt){
+                    } else if (blockNode instanceof PrintInt) {
                         PrintInt printInt = (PrintInt) blockNode;
-                        if(nonModifiedInt.containsKey(printInt.getVal())){
+                        if (nonModifiedInt.containsKey(printInt.getVal())) {
                             printInt.setVal(new Immediate(nonModifiedInt.get(printInt.getVal())));
                         }
                     }
@@ -228,7 +228,7 @@ public class SymbolTableBuilder {
                         currBlock.addContent(new Middle.type.FourExpr(new Immediate(val), symbol, FourExpr.ExprOp.DEF));
                         symbol.setScope(Symbol.Scope.LOCAL);
                     }
-                    nonModifiedInt.put(symbol,val);
+                    nonModifiedInt.put(symbol, val);
                 } else {  // 初始化数值不可以直接计算出结果，用FourExpr表示
                     Operand val;
                     if (initVal.isConst()) {
@@ -236,8 +236,8 @@ public class SymbolTableBuilder {
                     } else {
                         val = checkExp(initVal.getExp(), false);
                     }
-                    if(val instanceof Immediate){
-                        nonModifiedInt.put(symbol,((Immediate) val).getNumber());
+                    if (val instanceof Immediate) {
+                        nonModifiedInt.put(symbol, ((Immediate) val).getNumber());
                     }
                     symbol.setAddress(currSymbolTable.getStackSize());
                     currBlock.addContent(new Middle.type.FourExpr(val, symbol, FourExpr.ExprOp.DEF));
@@ -280,7 +280,8 @@ public class SymbolTableBuilder {
                         int offset = 0;
                         for (Integer num : initNum) {
                             // 局部数组
-                            currBlock.addContent(new Pointer(Pointer.Op.STORE, symbol,new Immediate(offset * 4),  new Immediate(num)));
+                            currBlock.addContent(
+                                    new Pointer(Pointer.Op.STORE, symbol, new Immediate(offset * 4), new Immediate(num)));
                             offset++;
                         }
                         symbol.setAddress(currSymbolTable.getStackSize());
@@ -582,11 +583,12 @@ public class SymbolTableBuilder {
             Symbol lVal = (Symbol) soPair.getOffset();
             // currBlock.addContent(new FourExpr(operand, lVal, FourExpr.ExprOp.ASS));
             ArrayList<BlockNode> currContent = currBlock.getContent();
-            if(currContent.size() == 0){
+            if (currContent.size() == 0) {
                 currBlock.addContent(new FourExpr(operand, lVal, FourExpr.ExprOp.ASS));
             } else {
-                BlockNode lastNode = currContent.get(currContent.size()-1);
-                if(lastNode instanceof FourExpr && ((FourExpr) lastNode).getRes() == operand && combinedOps.contains(((FourExpr) lastNode).getOp()) && !((FourExpr) lastNode).replaced()) {
+                BlockNode lastNode = currContent.get(currContent.size() - 1);
+                if (lastNode instanceof FourExpr && ((FourExpr) lastNode).getRes() == operand && combinedOps.contains(
+                        ((FourExpr) lastNode).getOp()) && !((FourExpr) lastNode).replaced()) {
                     ((FourExpr) lastNode).setRes(lVal);
                     ((FourExpr) lastNode).setReplaced();
                 } else if (lastNode instanceof Pointer && ((Pointer) lastNode).isLoad() && ((Pointer) lastNode).getLoad() == operand) {
@@ -600,7 +602,8 @@ public class SymbolTableBuilder {
         return;
     }
 
-    private HashSet<FourExpr.ExprOp> combinedOps = new HashSet<>(Arrays.asList(FourExpr.ExprOp.ADD, FourExpr.ExprOp.MUL, FourExpr.ExprOp.DIV, FourExpr.ExprOp.SUB));
+    private HashSet<FourExpr.ExprOp> combinedOps = new HashSet<>(
+            Arrays.asList(FourExpr.ExprOp.ADD, FourExpr.ExprOp.MUL, FourExpr.ExprOp.DIV, FourExpr.ExprOp.SUB));
 
 
     // Block → '{' { BlockItem } '}'
@@ -671,7 +674,7 @@ public class SymbolTableBuilder {
         }
         // check LVal, and LVal could not be const
         SOPair soPair = checkLVal(getIntStmt.getLVal(), true, false);
-        if(soPair.isArray()){
+        if (soPair.isArray()) {
             nonModifiedInt.remove(soPair.getBase());
         } else {
             nonModifiedInt.remove((Symbol) soPair.getOperand());
@@ -683,19 +686,19 @@ public class SymbolTableBuilder {
     // 'if' '(' Cond ')' Stmt [ 'else' Stmt ]
     public void checkIfStmt(IfStmt ifStmt) {
         // check cond Stmt
-        Operand cond = checkCond(ifStmt.getCond());
+        BasicBlock ifBody = new BasicBlock("IF_BODY_" + blockCount++);
+        BasicBlock ifElse = new BasicBlock("IF_ELSE_" + blockCount++);
+        BasicBlock ifEnd = new BasicBlock("IF_END_" + blockCount++);
+        checkCond(ifStmt.getCond(), ifBody, ifStmt.hasElse() ? ifElse : ifEnd);
         if (ifStmt.missRightParenthesis()) {
             errors.add(new MissRparentException(ifStmt.getIfLine()));
         }
         // 通过ID保证中间代码和mips代码中基本块的顺序和遍历顺序一致
         currSymbolTable = new SymbolTable(currSymbolTable, currFunc.getFuncSymbolTable());  // 下降一层
-        BasicBlock ifBody = new BasicBlock("IF_BODY_" + blockCount++);
-        BasicBlock ifEnd = new BasicBlock("IF_END_" + blockCount++);
+
         // currBlock.addContent(new Jump());
         // ArrayList<Stmt> stmts = ifStmt.getStmts();
         if (ifStmt.hasElse()) {
-            BasicBlock ifElse = new BasicBlock("IF_ELSE_" + blockCount++);
-            currBlock.addContent(new Branch(cond, ifBody, ifElse, true));
             currBlock = ifBody;
             ifBody.setIndex(blockId++);
             checkStmt(ifStmt.getStmts().get(0));
@@ -705,7 +708,6 @@ public class SymbolTableBuilder {
             checkStmt(ifStmt.getStmts().get(1));
             currBlock.addContent(new Jump(ifEnd));
         } else {
-            currBlock.addContent(new Branch(cond, ifBody, ifEnd, true));
             currBlock = ifBody;
             ifBody.setIndex(blockId++);
             checkStmt(ifStmt.getStmts().get(0));
@@ -833,15 +835,12 @@ public class SymbolTableBuilder {
         BasicBlock doEnd = new BasicBlock("DO_END_" + blockCount++);
 
         // check Cond
-        Operand cond = checkCond(whileStmt.getCond());
+        checkCond(whileStmt.getCond(), doBlock, doEnd);
 
         // for break and continue
         whileHead.push(doCheckBlock);
         whileNext.push(doEnd);
 
-        // translate If
-        currBlock.addContent(new Branch(cond, doBlock, doEnd, true));
-        currBlock.addContent(new Jump(doBlock));
         // step into doBlock
         currBlock = doBlock;
         currBlock.setIndex(blockId++);
@@ -859,9 +858,7 @@ public class SymbolTableBuilder {
         whileHead.pop();
 
 
-        cond = checkCond(whileStmt.getCond());
-        currBlock.addContent(new Branch(cond, doBlock, doEnd, true));
-        currBlock.addContent(new Jump(doEnd));
+        checkCond(whileStmt.getCond(), doBlock, doEnd);
         currBlock = doEnd;
         currBlock.setIndex(blockId++);
     }
@@ -1029,7 +1026,7 @@ public class SymbolTableBuilder {
                 currBlock.addContent(new Memory(soPair.getBase(), soPair.getOffset(), ptr));
                 return ptr;
             }
-            if(soPair.isArray()){
+            if (soPair.isArray()) {
                 Symbol temp = Symbol.tempSymbol(SymbolType.INT);
                 currBlock.addContent(new Pointer(Pointer.Op.LOAD, soPair.getBase(), soPair.getOffset(), temp));
                 return temp;
@@ -1101,7 +1098,7 @@ public class SymbolTableBuilder {
                 for (int i = placeInteger.size() - 1; i >= 0; i--) {
                     place += placeInteger.get(i) * suffix.get(i);
                 }
-                if(symbol.isConst() && returnPointer){
+                if (symbol.isConst() && returnPointer) {
                     return new SOPair(new Immediate(symbol.getConstInitArray().get(place)));
                 } else {
                     return new SOPair(symbol, new Immediate(place * 4));
@@ -1230,8 +1227,9 @@ public class SymbolTableBuilder {
                 mappedSymbol.setAddress(currSymbolTable.getStackSize());
                 if (fparam.getSymbolType() == SymbolType.ARRAY) {
                     currBlock.addContent(new FourExpr(rParam, mappedSymbol, FourExpr.ExprOp.ASS));
-                    ((Symbol)rParam).setAddress(mappedSymbol.getAddress());
-                    currBlock.addContent(new Pointer(Pointer.Op.STORE, Symbol.tempSymbol(SymbolType.SPECIAL_SP),new Immediate(-mappedSymbol.getAddress()), rParam));
+                    ((Symbol) rParam).setAddress(mappedSymbol.getAddress());
+                    currBlock.addContent(new Pointer(Pointer.Op.STORE, Symbol.tempSymbol(SymbolType.SPECIAL_SP),
+                            new Immediate(-mappedSymbol.getAddress()), rParam));
                     mappedSymbol.setMappedSymbol((Symbol) rParam);
                     // Symbol ptr = Symbol.tempSymbol(SymbolType.POINTER);
                     // currBlock.addContent(
@@ -1299,202 +1297,84 @@ public class SymbolTableBuilder {
 
     // Cond → LOrExp
     // return Symbol
-    public Operand checkCond(Cond cond) {
-        return checkLOrExp(cond.getLOrExp());
+    public void checkCond(Cond cond, BasicBlock trueBlock, BasicBlock elseBlock) {
+        checkLOrExp(cond.getLOrExp(), trueBlock, elseBlock);
     }
 
-    private void shortCutReturn(BasicBlock endBlock){
-        currBlock.addContent(new Jump(endBlock));
-        currBlock = endBlock;
-        currBlock.setIndex(blockId++);
-    }
+    // private void shortCutReturn(BasicBlock endBlock, boolean setIndex){
+    //     currBlock.addContent(new Jump(endBlock));
+    //     currBlock = endBlock;
+    //     if(setIndex) currBlock.setIndex(blockId++);
+    // }
 
     // LOrExp → LAndExp {'||' LAndExp}
     // 短路求值
     // return Symbol
-    public Operand checkLOrExp(LOrExp lOrExp) {
-        BasicBlock lOrExpBlock = new BasicBlock("L_OR_EXP_" + blockCount++);
-        currBlock.addContent(new Jump(lOrExpBlock));
-        currBlock = lOrExpBlock;
-        currBlock.setIndex(blockId++);
-        Operand orLeft = checkLAndExp(lOrExp.getFirstExp());
-        ArrayList<LAndExp> andExps = lOrExp.getExps();
+    public void checkLOrExp(LOrExp lOrExp, BasicBlock trueBlock, BasicBlock elseBlock) {
+        // BasicBlock lOrExpBlock = new BasicBlock("L_OR_EXP_" + blockCount++);
+        // currBlock.addContent(new Jump(lOrExpBlock));
+        // currBlock = lOrExpBlock;
+        // currBlock.setIndex(blockId++);
+        ArrayList<LAndExp> andExps = new ArrayList<>(lOrExp.getExps());
 
-        BasicBlock orEnd = new BasicBlock("OR_END_" + blockCount++);
-        if (andExps.size() == 0) {
-            shortCutReturn(orEnd);
-            return orLeft;
-        }
-
-        Symbol tempSymbol = Symbol.tempSymbol(SymbolType.INT);
-        // currBlock.addContent(new FourExpr(orLeft, tempSymbol, FourExpr.ExprOp.ASS));
-        BasicBlock falseBlock = new BasicBlock("OR_" + blockCount++);
-        // currBlock.addContent(new FourExpr(orLeft, tempSymbol, FourExpr.ExprOp.ASS));
-
-        if (orLeft instanceof Immediate) {
-            if (((Immediate) orLeft).getNumber() == 0) {
-                // currBlock.addContent(new FourExpr(orLeft, tempSymbol, FourExpr.ExprOp.ASS));
-                currBlock.addContent(new FourExpr(new Immediate(0), tempSymbol,  FourExpr.ExprOp.ASS));
-                currBlock.addContent(new Jump(falseBlock));
+        andExps.add(0, lOrExp.getFirstExp());
+        for (int i = 0; i < andExps.size(); i++) {
+            LAndExp andExp = andExps.get(i);
+            if (i == andExps.size() - 1) {  // last
+                checkLAndExp(andExp, trueBlock, elseBlock);
+                currBlock = trueBlock;
             } else {
-                currBlock.addContent(new FourExpr(new Immediate(1), tempSymbol,  FourExpr.ExprOp.ASS));
-                shortCutReturn(orEnd);
-                return tempSymbol;
+                BasicBlock andEndBlock = new BasicBlock("AND_END_" + blockCount++);
+                checkLAndExp(andExp, trueBlock, andEndBlock);  // 全部true走trueBlock，有错误走andEndBlock
+                currBlock = andEndBlock;
+                currBlock.setIndex(blockId++);
             }
-        } else {
-            currBlock.addContent(new FourExpr(orLeft, tempSymbol, FourExpr.ExprOp.ASS));
-            currBlock.addContent(new Branch(orLeft, orEnd, falseBlock, false));
         }
-        currBlock = falseBlock;
-        currBlock.setIndex(blockId++);
-        falseBlock = new BasicBlock("OR_" + blockCount++);
-
-        int index = 0;
-        Operand orRight = null;
-        while (index < andExps.size()) {
-            orRight = checkLAndExp(andExps.get(index));
-            // Symbol midRes = Symbol.tempSymbol(SymbolType.INT);
-            if (orLeft instanceof Immediate && orRight instanceof Immediate) {
-                if (((Immediate) orLeft).getNumber() == 0 && ((Immediate) orRight).getNumber() == 0) {
-                    orLeft = new Immediate(0);
-                    // currBlock.addContent(new FourExpr(orLeft, tempSymbol, FourExpr.ExprOp.ASS));
-                    currBlock.addContent(new Jump(falseBlock));
-                } else {
-                    currBlock.addContent(new FourExpr(new Immediate(1), tempSymbol,  FourExpr.ExprOp.ASS));
-                    shortCutReturn(orEnd);
-                    return tempSymbol;
-                }
-            } else {
-                break;
-            }
-            currBlock = falseBlock;
-            currBlock.setIndex(blockId++);
-            falseBlock = new BasicBlock("OR_" + blockCount++);
-            // tempSymbol = midRes;
-            index++;
-        }
-
-        currBlock.addContent(new FourExpr(new Immediate(0), tempSymbol,  FourExpr.ExprOp.ASS));
-
-        if (index == andExps.size()) {
-            shortCutReturn(orEnd);
-            return tempSymbol;
-        }
-
-        currBlock.addContent(new FourExpr(tempSymbol, orRight, tempSymbol, FourExpr.ExprOp.OR));
-        currBlock.addContent(new Branch(tempSymbol, orEnd, falseBlock, false));
-        currBlock = falseBlock;
-        currBlock.setIndex(blockId++);
-        falseBlock = new BasicBlock("OR_" + blockCount++);
-        index++;
-
-        while (index < andExps.size()) {
-            orRight = checkLAndExp(andExps.get(index));
-            currBlock.addContent(new FourExpr(tempSymbol, orRight, tempSymbol, FourExpr.ExprOp.OR));
-            currBlock.addContent(new Branch(tempSymbol, orEnd, falseBlock, false));
-            currBlock = falseBlock;
-            currBlock.setIndex(blockId++);
-            falseBlock = new BasicBlock("OR_" + blockCount++);
-            index++;
-        }
-
-        shortCutReturn(orEnd);
-        return tempSymbol;
     }
 
     // LAndExp → EqExp {'&&' EqExp}
     // 短路求值
     // return Symbol
     // TODO: 看看能不能省略midRes，直接根据Operand跳转
-    public Operand checkLAndExp(LAndExp lAndExp) {
-        BasicBlock lAndExpBlock = new BasicBlock("L_AND_EXP_" + blockCount++);
-        currBlock.addContent(new Jump(lAndExpBlock));
-        currBlock = lAndExpBlock;
-        currBlock.setIndex(blockId++);
-        Operand andLeft = checkEqExp(lAndExp.getFirstExp());
-        ArrayList<EqExp> eqExps = lAndExp.getExps();
+    public void checkLAndExp(LAndExp lAndExp, BasicBlock trueBlock, BasicBlock falseBlock) {
+        // BasicBlock lAndExpBlock = new BasicBlock("L_AND_EXP_" + blockCount++);
+        // currBlock.addContent(new Jump(lAndExpBlock));
+        // currBlock = lAndExpBlock;
+        // currBlock.setIndex(blockId++);
+        ArrayList<EqExp> eqExps = new ArrayList<>(lAndExp.getExps());
 
-        BasicBlock andEnd = new BasicBlock("AND_END_" + blockCount++);
-        if (eqExps.size() == 0) {
-            currBlock.addContent(new Jump(andEnd));
-            currBlock = andEnd;
-            currBlock.setIndex(blockId++);
-            return andLeft;
-        }
-
-        Symbol tempSymbol = Symbol.tempSymbol(SymbolType.INT);
-        BasicBlock trueBlock = new BasicBlock("AND_" + blockCount++);
-        if (andLeft instanceof Immediate) {
-            if (((Immediate) andLeft).getNumber() == 0) {
-                currBlock.addContent(new FourExpr(new Immediate(0), tempSymbol,  FourExpr.ExprOp.ASS));
-                shortCutReturn(andEnd);
-                return tempSymbol;
-            } else {
-                currBlock.addContent(new FourExpr(new Immediate(1), tempSymbol,  FourExpr.ExprOp.ASS));
-                currBlock.addContent(new Jump(trueBlock));
-            }
-        } else {
-            if(((Symbol) andLeft).getScope() == Symbol.Scope.TEMP){
-                tempSymbol = (Symbol) andLeft;
-            } else {
-                currBlock.addContent(new FourExpr(andLeft, tempSymbol, FourExpr.ExprOp.ASS));
-            }
-            currBlock.addContent(new Branch(andLeft, trueBlock, andEnd, true));
-        }
-        currBlock = trueBlock;
-        currBlock.setIndex(blockId++);
-        trueBlock = new BasicBlock("AND_" + blockCount++);
-
-        int index = 0;
-        Operand andRight = null;
-        while (index < eqExps.size()) {
-            andRight = checkEqExp(eqExps.get(index));
-            if (andLeft instanceof Immediate && andRight instanceof Immediate) {
-                if (((Immediate) andLeft).getNumber() != 0 && ((Immediate) andRight).getNumber() != 0) {
-                    andLeft = new Immediate(1);
-                    currBlock.addContent(new Jump(trueBlock));
+        eqExps.add(0, lAndExp.getFirstExp());
+        for (int i = 0; i < eqExps.size(); i++) {
+            EqExp eqExp = eqExps.get(i);
+            Operand curr = checkEqExp(eqExp);
+            if (i != eqExps.size() - 1) {
+                BasicBlock tempTrue = new BasicBlock("AND_" + blockCount++);
+                if (curr instanceof Immediate) {
+                    if (((Immediate) curr).getNumber() == 0) {
+                        currBlock.addContent(new Jump(falseBlock));
+                        return;
+                    } else {
+                        currBlock.addContent(new Jump(tempTrue));
+                        currBlock = tempTrue;
+                        currBlock.setIndex(blockId++);
+                    }
                 } else {
-                    currBlock.addContent(new FourExpr(new Immediate(0), tempSymbol,  FourExpr.ExprOp.ASS));
-                    shortCutReturn(andEnd);
-                    return tempSymbol;
+                    currBlock.addContent(new Branch(curr, tempTrue, falseBlock, true));
+                    currBlock = tempTrue;
+                    currBlock.setIndex(blockId++);
                 }
             } else {
-                break;
+                if (curr instanceof Immediate) {
+                    if (((Immediate) curr).getNumber() == 0) {
+                        currBlock.addContent(new Jump(falseBlock));
+                    } else {
+                        currBlock.addContent(new Jump(trueBlock));
+                    }
+                } else {
+                    currBlock.addContent(new Branch(curr, trueBlock, falseBlock, true));
+                }
             }
-            currBlock = trueBlock;
-            currBlock.setIndex(blockId++);
-            trueBlock = new BasicBlock("AND_" + blockCount++);
-            index++;
         }
-
-        currBlock.addContent(new FourExpr(new Immediate(1), tempSymbol,  FourExpr.ExprOp.ASS));
-        if (index == eqExps.size()) {
-            shortCutReturn(andEnd);
-            return tempSymbol;
-        }
-        // Symbol midRes = Symbol.tempSymbol(SymbolType.INT);
-        currBlock.addContent(new FourExpr(tempSymbol, andRight, tempSymbol, FourExpr.ExprOp.AND));
-        // tempSymbol = midRes;
-        currBlock.addContent(new Branch(tempSymbol, trueBlock, andEnd, true));
-        currBlock = trueBlock;
-        currBlock.setIndex(blockId++);
-        trueBlock = new BasicBlock("AND_" + blockCount++);
-        index++;
-
-        while (index < eqExps.size()) {
-            // midRes = Symbol.tempSymbol(SymbolType.INT);
-            andRight = checkEqExp(eqExps.get(index));
-            currBlock.addContent(new FourExpr(tempSymbol, andRight, tempSymbol, FourExpr.ExprOp.AND));
-            // tempSymbol = midRes;
-            currBlock.addContent(new Branch(tempSymbol, trueBlock, andEnd, true));
-            currBlock = trueBlock;
-            currBlock.setIndex(blockId++);
-            trueBlock = new BasicBlock("AND_" + blockCount++);
-            index++;
-        }
-
-        shortCutReturn(andEnd);
-        return tempSymbol;
     }
 
     // EqExp → RelExp {('==' | '!=') RelExp}

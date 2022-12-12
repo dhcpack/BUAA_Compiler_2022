@@ -130,8 +130,8 @@ public class Translator {
             tempRegisters = new Registers();
             symbolUsageMap = currentFunc.getSymbolUsageMap();
             for (int i = 0; i < funcBlocks.size(); i++) {
-                if(i != funcBlocks.size() -1){
-                    nextBasicBlock = funcBlocks.get(i+1);
+                if (i != funcBlocks.size() - 1) {
+                    nextBasicBlock = funcBlocks.get(i + 1);
                 } else {
                     nextBasicBlock = null;
                 }
@@ -461,10 +461,11 @@ public class Translator {
                 consumeUsage(cond);
 
             }
-            if(branch.getThenBlock() == nextBasicBlock){
+            if (branch.getThenBlock() == nextBasicBlock && currentBlockNodeIndex == this.currentBasicBlock.getContent()
+                    .size() - 1) {
                 mipsCode.addInstr(
                         new BranchInstr(BranchInstr.BranchType.beq, register, Registers.zero, branch.getElseBlock().getLabel()));
-            } else if(branch.getElseBlock() == nextBasicBlock){
+            } else if (branch.getElseBlock() == nextBasicBlock) {
                 mipsCode.addInstr(
                         new BranchInstr(BranchInstr.BranchType.bne, register, Registers.zero, branch.getThenBlock().getLabel()));
             } else {
@@ -1008,7 +1009,9 @@ public class Translator {
     }
 
     private void translateJump(Jump jump) {
-        if(!(jump.getTarget().getTotalJumps() == 1 && jump.getTarget() == nextBasicBlock && currentBlockNodeIndex == currentBasicBlock.getContent().size()-1) ) {
+        if (!(jump.getTarget()
+                .getTotalJumps() == 1 && jump.getTarget() == nextBasicBlock && currentBlockNodeIndex == currentBasicBlock.getContent()
+                .size() - 1)) {
             freeAllRegisters(FREE_TEMP | FREE_GLOBAL, true);
         }
         // } else {

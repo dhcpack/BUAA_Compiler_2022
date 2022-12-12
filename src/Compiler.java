@@ -6,7 +6,7 @@ import java.io.IOException;
 
 public class Compiler {
     public static void main(String[] args) throws IOException {
-        // command: java -jar ./src/Test/Mars2022.jar nc mips.txt
+        // command: java -jar Mars2022.jar nc mips.txt
         /*
         * Unfixed error type
         *

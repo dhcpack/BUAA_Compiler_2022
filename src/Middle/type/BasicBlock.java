@@ -1,5 +1,6 @@
 package Middle.type;
 
+import BackEnd.instructions.J;
 import Frontend.Symbol.Symbol;
 import Frontend.Symbol.SymbolType;
 
@@ -54,6 +55,10 @@ public class BasicBlock implements Comparable<BasicBlock> {
     private final HashSet<BasicBlock> nextBlock = new HashSet<>();
 
     public void addContent(BlockNode blockNode) {
+        if ((blockNode instanceof Jump || blockNode instanceof Branch) && this.content.size() != 0 && (this.content.get(
+                this.content.size() - 1) instanceof Jump || this.content.get(this.content.size() - 1) instanceof Branch)) {
+            return;
+        }
         this.content.add(blockNode);
         blockNode.setBelongBlock(this);
     }
@@ -85,7 +90,7 @@ public class BasicBlock implements Comparable<BasicBlock> {
             } else if (blockNode instanceof GetInt) {
                 // "GETINT " + target;
                 GetInt getInt = (GetInt) blockNode;
-                if(getInt.isArray()){
+                if (getInt.isArray()) {
                     operandUsage.add(getInt.getBase());
                     operandUsage.add(getInt.getOffset());
                 } else {
@@ -169,6 +174,7 @@ public class BasicBlock implements Comparable<BasicBlock> {
     @Override
     public int compareTo(BasicBlock o) {
         if (!hasIndex) {
+            System.err.println("ERROR: " + this.label + " doesn't has index");
             assert false;
         }
         return this.index - o.index;
@@ -181,7 +187,7 @@ public class BasicBlock implements Comparable<BasicBlock> {
         return totalJumps;
     }
 
-    public void addJump(){
+    public void addJump() {
         this.totalJumps++;
     }
 }
