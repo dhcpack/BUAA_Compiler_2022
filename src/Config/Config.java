@@ -11,6 +11,7 @@ import Frontend.Parser.TokenHandler;
 import Frontend.SymbolTableBuilder;
 import Middle.MiddleCode;
 import Middle.optimizer.ExtractCommonExpr;
+import Middle.optimizer.MergeBranch;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -39,6 +40,7 @@ public class Config {
 
         // Middle Optimize
         ExtractCommonExpr.optimize(middleCode);
+        MergeBranch.optimize(middleCode);
 
         // output middle code
         middleCode.output();  // through MiddleWriter

@@ -1,62 +1,98 @@
-const int MAX = 6;
+int val_L = 0;
+const int const_a = 1 - 2 + (-3)*4 + 5/(2+3) - 6 % 4, const_b =((5-10)*(-4) + 4)/6 * (3%6/3);
+const int const_array1_a[2] = {1, 1};
+const int const_array2_a[2][2] = { {1, 1}, {1, 1} }, const_array2_b[2][2] = { {1, 1}, {1, 1} };
+int var_array1_a[2] = {0, 0};
+int var_array2_a[2][2] = { {1, 1}, {1, 1} };
 
-int main()
-{
-    printf("19182616\n");
-    int a = 0;
-    int num = 0;
-    int i = 2;
-    int c,d;
-    int j = 1, sum;
-    int k;
-    num = getint();
-    c = getint();
-    d = getint();
-    sum = getint();
-    k = getint();
-    if(num >= 2)
-    {
-        while(i<num)
-        {
-            if(num%i==0)
-            a = a + 1;
-            i = i + 1;
-        }
-        if(a!=0){
-            printf("%d is not a prime number\n", num);
-        }else{
-            printf("%d is a prime number\n", num);
-        }
+void check_LandEq() {
+    val_L = 0;
+    if (!0) {
+        val_L = val_L + 1;
     }
-    else
-    {
-        printf("%d is neither prime nor composite\n", num);
+    if (1 != 0) {
+        val_L = val_L + 1;
     }
-    if(c>0 && d>0)
-    {
-        printf("c and d are both positive\n");
+    if (val_L == 2) {
+        printf("L and Eq is ok (no params)\n");
+    } else {
+        printf("sth wrong with L and Eq (no params)\n");
     }
-    else
-    {
-        printf("Neither c nor d are positive\n");
-    }
+}
 
-    while(1)
-    {
-        sum = sum + 1;
-        printf("%d\n", sum);
-        j = j + 1;
-        if(j > 3)break;
+int check_Rel(int a, int b, int c) {
+    int val_Rel = 0;
+    if (a >= 1) {
+        val_Rel = val_Rel + 1;
     }
-    printf("k = %d, MAX = %d\n", k, MAX);
-    while(k<MAX)
-    {
-        k = k + 1;
-        if(k==3 || k==4)
-        {
-            continue;
+    if (a <= 2) {
+        val_Rel = val_Rel + 1;
+    }
+    if (1 < b) {
+        val_Rel = val_Rel + 1;
+    }
+    if (b > 2) {
+        val_Rel = val_Rel + 1;
+    }
+    if (c == 2) {
+        val_Rel = val_Rel + 1;
+    }
+    if (c != 3) {
+        val_Rel = val_Rel + 1;
+    }
+    return val_Rel;
+}
+
+void check_Add(int x) {
+    printf("const_a = %d, x = %d\n", const_a, x);
+    if (const_a == x) {
+        printf("Add is ok1\n");
+    }
+    if (const_b == 4) {
+        printf("Add is ok2\n");
+    }
+}
+
+void check_block(int a2, int b2[], int c2[][2]) {
+    int tmp0 = -1;
+    int tmp1 = 1;
+    if( a2 > 0 ) {
+        while(tmp1 > 0) {
+            tmp1 = tmp1 - 2;
+            if (b2[1] == 0) {
+                break;
+            }
+            tmp1 = tmp1 - 2;
         }
-        printf("%d\n", k);
+    } else {
+        while(tmp0 < 0) {
+            tmp0 = tmp0 + 2;
+            if (c2[1][1] == 1) {
+                continue;
+            }
+            tmp0 = tmp0 + 2;
+        }
     }
+    ;
+    printf("%d\n",tmp0);
+    printf("%d\n",tmp1);
+    return;
+}
+
+
+int main() {
+    int a, val_Rel;
+    printf("19373408 all weak points\n");
+    check_LandEq();
+    val_Rel = check_Rel(1, 6, 2);
+    if (val_Rel == 6) {
+        printf("Rel is ok (with params)\n");
+    } else {
+        printf("sth wrong with Rel (no params)\n");
+    }
+    check_Add(-14);
+    a = getint();//1
+    check_block(a, var_array1_a, var_array2_a);
+    check_block(-1, var_array1_a, var_array2_a);
     return 0;
 }

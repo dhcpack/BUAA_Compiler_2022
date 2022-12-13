@@ -5,11 +5,19 @@ public class BranchInstr implements Instruction {
         beq,
         bne,
 
-        bgez,
-        bgtz,
+        bge,
+        bgt,
+
+        ble,
+        blt,
+
 
         blez,
         bltz,
+        beqz,
+        bnez,
+        bgtz,
+        bgez,
     }
 
     private final InstructionType type = InstructionType.BRANCH;
@@ -17,19 +25,29 @@ public class BranchInstr implements Instruction {
     private final BranchType branchType;
     private final int rOperand1;
     private int rOperand2;
+    private int number;
+    private boolean isNumber;
     private final String label;
+    private final boolean isCalcBranch;
 
-    public BranchInstr(BranchType branchType, int rOperand1, int rOperand2, String label) {
+    public BranchInstr(BranchType branchType, int rOperand1, int numberOrROperand, String label, boolean isNumber) {
         this.branchType = branchType;
         this.rOperand1 = rOperand1;
-        this.rOperand2 = rOperand2;
         this.label = label;
+        this.isNumber = isNumber;
+        if (isNumber) {
+            this.number = numberOrROperand;
+        } else {
+            this.rOperand2 = numberOrROperand;
+        }
+        this.isCalcBranch = true;
     }
 
     public BranchInstr(BranchType branchType, int rOperand1, String label) {
         this.branchType = branchType;
         this.rOperand1 = rOperand1;
         this.label = label;
+        this.isCalcBranch = false;
     }
 
     @Override
@@ -39,10 +57,19 @@ public class BranchInstr implements Instruction {
 
     @Override
     public String toString() {
-        if (branchType == BranchType.bne || branchType == BranchType.beq) {
-            return String.format("%s $%d, $%d, %s\n", branchType.name(), rOperand1, rOperand2, label);
+        if (this.isCalcBranch) {
+            if (isNumber) {
+                return String.format("%s $%d, %d, %s\n", branchType.name(), rOperand1, number, label);
+            } else {
+                return String.format("%s $%d, $%d, %s\n", branchType.name(), rOperand1, rOperand2, label);
+            }
         } else {
-            return String.format("%s $%d, %s\n", branchType.name(), rOperand1, label);
+            if (branchType == BranchType.beqz || branchType == BranchType.bnez || branchType == BranchType.bltz || branchType == BranchType.bgtz || branchType == BranchType.bgez) {
+                return String.format("%s $%d, %s\n", branchType.name(), rOperand1, label);
+            } else {
+                assert false;
+                return null;
+            }
         }
     }
 }

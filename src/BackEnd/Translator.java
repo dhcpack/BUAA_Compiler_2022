@@ -436,45 +436,96 @@ public class Translator {
         }
     }
 
+    // 求与当前Cond符号互补的Cond符号
+    public BranchInstr.BranchType getComplementType(BranchInstr.BranchType branchType) {
+        if (branchType == BranchInstr.BranchType.beq) {
+            return BranchInstr.BranchType.bne;
+        } else if (branchType == BranchInstr.BranchType.bne) {
+            return BranchInstr.BranchType.beq;
+        } else if (branchType == BranchInstr.BranchType.bge) {
+            return BranchInstr.BranchType.blt;
+        } else if (branchType == BranchInstr.BranchType.bgt) {
+            return BranchInstr.BranchType.ble;
+        } else if (branchType == BranchInstr.BranchType.ble) {
+            return BranchInstr.BranchType.bgt;
+        } else if (branchType == BranchInstr.BranchType.blt) {
+            return BranchInstr.BranchType.bge;
+        } else {
+            assert false;
+            return null;
+        }
+    }
+
     private void translateBranch(Branch branch) {
         HashMap<Symbol, Integer> tempSymbolRegisterMap = new HashMap<>(tempRegisters.getSymbolToRegister());
-        Operand cond = branch.getCond();
-        if (cond instanceof Immediate) {
-            freeAllRegisters(FREE_TEMP | FREE_GLOBAL, true);
-            int imm = ((Immediate) cond).getNumber();
-            if (imm == 0) {
-                mipsCode.addInstr(new J(branch.getElseBlock().getLabel()));
+        if (branch.isCalcBranch()) {
+            Symbol left = branch.getLeftSymbol();
+            int leftRegister = allocRegister(left, loadTempRegister | loadGlobalRegister);
+            consumeUsage(left);
+            Operand right = branch.getRightOperand();
+            if (right instanceof Immediate) {
+                freeAllRegisters(FREE_TEMP | FREE_GLOBAL, true);
+                int imm = ((Immediate) right).getNumber();
+                if (branch.getThenBlock() == nextBasicBlock && currentBlockNodeIndex == this.currentBasicBlock.getContent().size() - 1) {
+                    mipsCode.addInstr(
+                            new BranchInstr(getComplementType(branch.getBranchType()), leftRegister, imm, branch.getElseBlock().getLabel(), true));
+                } else if (branch.getElseBlock() == nextBasicBlock && currentBlockNodeIndex == this.currentBasicBlock.getContent().size() - 1) {
+                    mipsCode.addInstr(new BranchInstr(branch.getBranchType(), leftRegister, imm, branch.getThenBlock().getLabel(), true));
+                } else {
+                    mipsCode.addInstr(new BranchInstr(branch.getBranchType(), leftRegister, imm, branch.getThenBlock().getLabel(), true));
+                    mipsCode.addInstr(new J(branch.getElseBlock().getLabel()));
+                }
             } else {
-                mipsCode.addInstr(new J(branch.getThenBlock().getLabel()));
+                int rightRegister = allocRegister((Symbol) right, loadTempRegister | loadGlobalRegister);
+                consumeUsage(right);
+                freeAllRegisters(FREE_TEMP | FREE_GLOBAL, true);
+                if (branch.getThenBlock() == nextBasicBlock && currentBlockNodeIndex == this.currentBasicBlock.getContent().size() - 1) {
+                    mipsCode.addInstr(
+                            new BranchInstr(getComplementType(branch.getBranchType()), leftRegister, rightRegister, branch.getElseBlock().getLabel(),
+                                    false));
+                } else if (branch.getElseBlock() == nextBasicBlock && currentBlockNodeIndex == this.currentBasicBlock.getContent().size() - 1) {
+                    mipsCode.addInstr(new BranchInstr(branch.getBranchType(), leftRegister, rightRegister, branch.getThenBlock().getLabel(), false));
+                } else {
+                    mipsCode.addInstr(new BranchInstr(branch.getBranchType(), leftRegister, rightRegister, branch.getThenBlock().getLabel(), false));
+                    mipsCode.addInstr(new J(branch.getElseBlock().getLabel()));
+                }
             }
-            consumeUsage(cond);
-        } else if (cond instanceof Symbol) {
-            Symbol symbol = (Symbol) cond;
-            int register;
-            if (tempSymbolRegisterMap.containsKey(symbol)) {
-                consumeUsage(cond);
+        } else {
+            Operand cond = branch.getCond();
+            if (cond instanceof Immediate) {
                 freeAllRegisters(FREE_TEMP | FREE_GLOBAL, true);
-                register = tempSymbolRegisterMap.get(symbol);
-            } else {
-                freeAllRegisters(FREE_TEMP | FREE_GLOBAL, true);
-                register = allocRegister(symbol, loadTempRegister);
+                int imm = ((Immediate) cond).getNumber();
+                if (imm == 0) {
+                    mipsCode.addInstr(new J(branch.getElseBlock().getLabel()));
+                } else {
+                    mipsCode.addInstr(new J(branch.getThenBlock().getLabel()));
+                }
                 consumeUsage(cond);
+            } else if (cond instanceof Symbol) {
+                Symbol symbol = (Symbol) cond;
+                int register;
+                if (tempSymbolRegisterMap.containsKey(symbol)) {
+                    consumeUsage(cond);
+                    freeAllRegisters(FREE_TEMP | FREE_GLOBAL, true);
+                    register = tempSymbolRegisterMap.get(symbol);
+                } else {
+                    freeAllRegisters(FREE_TEMP | FREE_GLOBAL, true);
+                    register = allocRegister(symbol, loadTempRegister);
+                    consumeUsage(cond);
 
-            }
-            if (branch.getThenBlock() == nextBasicBlock && currentBlockNodeIndex == this.currentBasicBlock.getContent()
-                    .size() - 1) {
-                mipsCode.addInstr(
-                        new BranchInstr(BranchInstr.BranchType.beq, register, Registers.zero, branch.getElseBlock().getLabel()));
-            } else if (branch.getElseBlock() == nextBasicBlock) {
-                mipsCode.addInstr(
-                        new BranchInstr(BranchInstr.BranchType.bne, register, Registers.zero, branch.getThenBlock().getLabel()));
-            } else {
-                mipsCode.addInstr(
-                        new BranchInstr(BranchInstr.BranchType.bne, register, Registers.zero, branch.getThenBlock().getLabel()));
-                mipsCode.addInstr(new J(branch.getElseBlock().getLabel()));
+                }
+                if (branch.getThenBlock() == nextBasicBlock && currentBlockNodeIndex == this.currentBasicBlock.getContent()
+                        .size() - 1) {
+                    mipsCode.addInstr(new BranchInstr(BranchInstr.BranchType.beqz, register, branch.getElseBlock().getLabel()));
+                } else if (branch.getElseBlock() == nextBasicBlock && currentBlockNodeIndex == this.currentBasicBlock.getContent()
+                        .size() - 1) {
+                    mipsCode.addInstr(new BranchInstr(BranchInstr.BranchType.bnez, register, branch.getThenBlock().getLabel()));
+                } else {
+                    mipsCode.addInstr(new BranchInstr(BranchInstr.BranchType.bnez, register, branch.getThenBlock().getLabel()));
+                    mipsCode.addInstr(new J(branch.getElseBlock().getLabel()));
+                }
             }
         }
-
     }
 
     // 注意要保证先寻找左右操作数寄存器，再寻找res寄存器

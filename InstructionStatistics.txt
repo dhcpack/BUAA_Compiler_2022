@@ -2,5 +2,5 @@ DIV 	: 21
 MULT 	: 1006
 JUMP/BRANCH 	: 1895
 MEM 	: 8837
-OTHER 	: 35061
-FinalCycle : 65114.0
+OTHER 	: 32796
+FinalCycle : 62849.0

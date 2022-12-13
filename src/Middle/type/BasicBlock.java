@@ -73,7 +73,12 @@ public class BasicBlock implements Comparable<BasicBlock> {
         for (BlockNode blockNode : getContent()) {
             if (blockNode instanceof Branch) {
                 // "Branch " + cond + " ? " + thenBlock + " : " + elseBlock;
-                operandUsage.add(((Branch) blockNode).getCond());
+                if (((Branch) blockNode).isCalcBranch()) {
+                    operandUsage.add(((Branch) blockNode).getLeftSymbol());
+                    operandUsage.add(((Branch) blockNode).getRightOperand());
+                } else {
+                    operandUsage.add(((Branch) blockNode).getCond());
+                }
                 // add to next block
                 nextBlock.add(((Branch) blockNode).getElseBlock());
                 nextBlock.add(((Branch) blockNode).getThenBlock());

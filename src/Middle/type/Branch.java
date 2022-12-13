@@ -1,33 +1,64 @@
 package Middle.type;
 
+import BackEnd.instructions.BranchInstr;
+import Frontend.Symbol.Symbol;
+
 import java.util.HashSet;
 
 public class Branch extends BlockNode {
-    public enum BranchType{
-        BEQZ,
-        BNEZ,
-    }
-
     private Operand cond;
-    // private final BranchType branchType;
+    private BranchInstr.BranchType branchType;
     private final BasicBlock thenBlock;
     private final BasicBlock elseBlock;
     private final boolean thenFirst;
 
-    public Branch(Operand cond,  BasicBlock thenBlock, BasicBlock elseBlock, boolean thenFirst) {
-        this.cond = cond;
-        // this.branchType = branchType;
+    private final boolean isCalcBranch;
+    private Symbol leftSymbol;
+    private Operand rightOperand;
+
+    public Branch(BranchInstr.BranchType branchType, Symbol leftSymbol, Operand rightOperand, BasicBlock thenBlock,
+                  BasicBlock elseBlock, boolean thenFirst) {
+        this.branchType = branchType;
+        this.leftSymbol = leftSymbol;
+        this.rightOperand = rightOperand;
         this.thenBlock = thenBlock;
         this.elseBlock = elseBlock;
         this.thenFirst = thenFirst;
         // 记录被跳转到的次数
         this.thenBlock.addJump();
         this.elseBlock.addJump();
+        this.isCalcBranch = true;
     }
 
-    // public BranchType getBranchType() {
-    //     return branchType;
-    // }
+    public Branch(Operand cond, BasicBlock thenBlock, BasicBlock elseBlock, boolean thenFirst) {
+        this.cond = cond;
+        this.thenBlock = thenBlock;
+        this.elseBlock = elseBlock;
+        this.thenFirst = thenFirst;
+        // 记录被跳转到的次数
+        this.thenBlock.addJump();
+        this.elseBlock.addJump();
+        this.isCalcBranch = false;
+    }
+
+    // for calc branch
+    public BranchInstr.BranchType getBranchType() {
+        return branchType;
+    }
+
+    public boolean isCalcBranch() {
+        return isCalcBranch;
+    }
+
+    public Symbol getLeftSymbol() {
+        assert isCalcBranch;
+        return leftSymbol;
+    }
+
+    public Operand getRightOperand() {
+        assert isCalcBranch;
+        return rightOperand;
+    }
 
     public boolean isThenFirst() {
         return this.thenFirst;
@@ -58,6 +89,10 @@ public class Branch extends BlockNode {
 
     @Override
     public String toString() {
-        return "Branch " + cond + " ? " + thenBlock + " : " + elseBlock;
+        if (isCalcBranch) {
+            return String.format("BRANCH(%s) %s %s ? %s : %s", branchType, leftSymbol, rightOperand, thenBlock, elseBlock);
+        } else {
+            return "Branch " + cond + " ? " + thenBlock + " : " + elseBlock;
+        }
     }
 }

@@ -59,8 +59,7 @@ FUNC_factorial:
 	MUL, INT(ti_12179[temp]), INT(n[sp-0x4]), 4
 	ADD, INT(ti_12179[temp]), INT(ti_12179[temp]), 0
 	LOAD INT(ti_12180[temp]), INT(ti_12179[temp])[ARRAY(array[data+0x24])]
-	NEQ, INT(ti_12181[temp]), INT(ti_12180[temp]), 0
-	Branch INT(ti_12181[temp]) ? IF_BODY_11 : IF_ELSE_12
+	BRANCH(bne) INT(ti_12180[temp]) 0 ? IF_BODY_11 : IF_ELSE_12
 IF_BODY_11:
 	JUMP B_14
 B_14:
@@ -101,8 +100,7 @@ IF_END_13:
 # param: INT(n[sp-0x4])
 FUNC_isPrime:
 	DEF, INT(i[sp-0x8]), 3
-	LE, INT(ti_12195[temp]), INT(n[sp-0x4]), 0
-	Branch INT(ti_12195[temp]) ? IF_BODY_19 : IF_END_21
+	BRANCH(ble) INT(n[sp-0x4]) 0 ? IF_BODY_19 : IF_END_21
 IF_BODY_19:
 	JUMP B_22
 B_22:
@@ -112,8 +110,7 @@ B_23:
 	JUMP IF_END_21
 IF_END_21:
 	MOD, INT(ti_12196[temp]), INT(n[sp-0x4]), 2
-	EQ, INT(ti_12197[temp]), INT(ti_12196[temp]), 0
-	Branch INT(ti_12197[temp]) ? IF_BODY_24 : IF_END_26
+	BRANCH(beq) INT(ti_12196[temp]) 0 ? IF_BODY_24 : IF_END_26
 IF_BODY_24:
 	JUMP B_27
 B_27:
@@ -123,14 +120,12 @@ B_28:
 	JUMP IF_END_26
 IF_END_26:
 	DIV, INT(ti_12198[temp]), INT(n[sp-0x4]), 2
-	LT, INT(ti_12199[temp]), INT(i[sp-0x8]), INT(ti_12198[temp])
-	Branch INT(ti_12199[temp]) ? DO_BODY_29 : DO_END_31
+	BRANCH(blt) INT(i[sp-0x8]) INT(ti_12198[temp]) ? DO_BODY_29 : DO_END_31
 DO_BODY_29:
 	JUMP B_32
 B_32:
 	MOD, INT(ti_12200[temp]), INT(n[sp-0x4]), INT(i[sp-0x8])
-	EQ, INT(ti_12201[temp]), INT(ti_12200[temp]), 0
-	Branch INT(ti_12201[temp]) ? IF_BODY_33 : IF_END_35
+	BRANCH(beq) INT(ti_12200[temp]) 0 ? IF_BODY_33 : IF_END_35
 IF_BODY_33:
 	JUMP B_36
 B_36:
@@ -145,8 +140,7 @@ B_38:
 	JUMP DO_CHECK_30
 DO_CHECK_30:
 	DIV, INT(ti_12203[temp]), INT(n[sp-0x4]), 2
-	LT, INT(ti_12204[temp]), INT(i[sp-0x8]), INT(ti_12203[temp])
-	Branch INT(ti_12204[temp]) ? DO_BODY_29 : DO_END_31
+	BRANCH(blt) INT(i[sp-0x8]) INT(ti_12203[temp]) ? DO_BODY_29 : DO_END_31
 DO_END_31:
 	RETURN 1
 # func sumMatrix : stack size 0x10
@@ -155,14 +149,12 @@ FUNC_sumMatrix:
 	DEF, INT(i[sp-0x8]), 0
 	DEF, INT(j[sp-0xc]), 0
 	DEF, INT(sum[sp-0x10]), 0
-	LT, INT(ti_12205[temp]), INT(i[sp-0x8]), 10
-	Branch INT(ti_12205[temp]) ? DO_BODY_40 : DO_END_42
+	BRANCH(blt) INT(i[sp-0x8]) 10 ? DO_BODY_40 : DO_END_42
 DO_BODY_40:
 	JUMP B_43
 B_43:
 	ASS, INT(j[sp-0xc]), 0
-	LT, INT(ti_12206[temp]), INT(j[sp-0xc]), 10
-	Branch INT(ti_12206[temp]) ? DO_BODY_44 : DO_END_46
+	BRANCH(blt) INT(j[sp-0xc]) 10 ? DO_BODY_44 : DO_END_46
 DO_BODY_44:
 	JUMP B_47
 B_47:
@@ -177,16 +169,14 @@ B_47:
 B_48:
 	JUMP DO_CHECK_45
 DO_CHECK_45:
-	LT, INT(ti_12212[temp]), INT(j[sp-0xc]), 10
-	Branch INT(ti_12212[temp]) ? DO_BODY_44 : DO_END_46
+	BRANCH(blt) INT(j[sp-0xc]) 10 ? DO_BODY_44 : DO_END_46
 DO_END_46:
 	ADD, INT(i[sp-0x8]), INT(i[sp-0x8]), 1
 	JUMP B_49
 B_49:
 	JUMP DO_CHECK_41
 DO_CHECK_41:
-	LT, INT(ti_12214[temp]), INT(i[sp-0x8]), 10
-	Branch INT(ti_12214[temp]) ? DO_BODY_40 : DO_END_42
+	BRANCH(blt) INT(i[sp-0x8]) 10 ? DO_BODY_40 : DO_END_42
 DO_END_42:
 	RETURN INT(sum[sp-0x10])
 # func matrixMulti : stack size 0x1b8
@@ -195,14 +185,12 @@ FUNC_matrixMulti:
 	DEF, INT(i[sp-0x1a0]), 0
 	DEF, INT(j[sp-0x1a4]), 0
 	DEF, INT(k[sp-0x1a8]), 0
-	LT, INT(ti_12215[temp]), INT(i[sp-0x1a0]), 10
-	Branch INT(ti_12215[temp]) ? DO_BODY_51 : DO_END_53
+	BRANCH(blt) INT(i[sp-0x1a0]) 10 ? DO_BODY_51 : DO_END_53
 DO_BODY_51:
 	JUMP B_54
 B_54:
 	ASS, INT(j[sp-0x1a4]), 0
-	LT, INT(ti_12216[temp]), INT(j[sp-0x1a4]), 10
-	Branch INT(ti_12216[temp]) ? DO_BODY_55 : DO_END_57
+	BRANCH(blt) INT(j[sp-0x1a4]) 10 ? DO_BODY_55 : DO_END_57
 DO_BODY_55:
 	JUMP B_58
 B_58:
@@ -212,8 +200,7 @@ B_58:
 	MUL, INT(ti_12218[temp]), INT(i[sp-0x1a0]), 40
 	ADD, INT(ti_12218[temp]), INT(ti_12218[temp]), INT(ti_12217[temp])
 	STORE 0, INT(ti_12218[temp])[ARRAY(matrix_c[sp-0x19c])]
-	LT, INT(ti_12219[temp]), INT(k[sp-0x1a8]), 10
-	Branch INT(ti_12219[temp]) ? DO_BODY_59 : DO_END_61
+	BRANCH(blt) INT(k[sp-0x1a8]) 10 ? DO_BODY_59 : DO_END_61
 DO_BODY_59:
 	JUMP B_62
 B_62:
@@ -244,24 +231,21 @@ B_62:
 B_63:
 	JUMP DO_CHECK_60
 DO_CHECK_60:
-	LT, INT(ti_12234[temp]), INT(k[sp-0x1a8]), 10
-	Branch INT(ti_12234[temp]) ? DO_BODY_59 : DO_END_61
+	BRANCH(blt) INT(k[sp-0x1a8]) 10 ? DO_BODY_59 : DO_END_61
 DO_END_61:
 	ADD, INT(j[sp-0x1a4]), INT(j[sp-0x1a4]), 1
 	JUMP B_64
 B_64:
 	JUMP DO_CHECK_56
 DO_CHECK_56:
-	LT, INT(ti_12236[temp]), INT(j[sp-0x1a4]), 10
-	Branch INT(ti_12236[temp]) ? DO_BODY_55 : DO_END_57
+	BRANCH(blt) INT(j[sp-0x1a4]) 10 ? DO_BODY_55 : DO_END_57
 DO_END_57:
 	ADD, INT(i[sp-0x1a0]), INT(i[sp-0x1a0]), 1
 	JUMP B_65
 B_65:
 	JUMP DO_CHECK_52
 DO_CHECK_52:
-	LT, INT(ti_12238[temp]), INT(i[sp-0x1a0]), 10
-	Branch INT(ti_12238[temp]) ? DO_BODY_51 : DO_END_53
+	BRANCH(blt) INT(i[sp-0x1a0]) 10 ? DO_BODY_51 : DO_END_53
 DO_END_53:
 	OFFSET (ARRAY(matrix_c[sp-0x19c])+0)->POINTER(tp_1929[sp-0x1ac])
 	ASS, ARRAY(INLINE_array_f_1[sp-0x1ac]), POINTER(tp_1929[sp-0x1ac])
@@ -271,14 +255,12 @@ INLINE_sumMatrix_BEGIN_1:
 	DEF, INT(INLINE_i_1[sp-0x1b0]), 0
 	DEF, INT(INLINE_j_1[sp-0x1b4]), 0
 	DEF, INT(INLINE_sum_1[sp-0x1b8]), 0
-	LT, INT(ti_12240[temp]), INT(INLINE_i_1[sp-0x1b0]), 10
-	Branch INT(ti_12240[temp]) ? DO_BODY_66 : DO_END_68
+	BRANCH(blt) INT(INLINE_i_1[sp-0x1b0]) 10 ? DO_BODY_66 : DO_END_68
 DO_BODY_66:
 	JUMP B_69
 B_69:
 	ASS, INT(INLINE_j_1[sp-0x1b4]), 0
-	LT, INT(ti_12241[temp]), INT(INLINE_j_1[sp-0x1b4]), 10
-	Branch INT(ti_12241[temp]) ? DO_BODY_70 : DO_END_72
+	BRANCH(blt) INT(INLINE_j_1[sp-0x1b4]) 10 ? DO_BODY_70 : DO_END_72
 DO_BODY_70:
 	JUMP B_73
 B_73:
@@ -293,16 +275,14 @@ B_73:
 B_74:
 	JUMP DO_CHECK_71
 DO_CHECK_71:
-	LT, INT(ti_12247[temp]), INT(INLINE_j_1[sp-0x1b4]), 10
-	Branch INT(ti_12247[temp]) ? DO_BODY_70 : DO_END_72
+	BRANCH(blt) INT(INLINE_j_1[sp-0x1b4]) 10 ? DO_BODY_70 : DO_END_72
 DO_END_72:
 	ADD, INT(INLINE_i_1[sp-0x1b0]), INT(INLINE_i_1[sp-0x1b0]), 1
 	JUMP B_75
 B_75:
 	JUMP DO_CHECK_67
 DO_CHECK_67:
-	LT, INT(ti_12249[temp]), INT(INLINE_i_1[sp-0x1b0]), 10
-	Branch INT(ti_12249[temp]) ? DO_BODY_66 : DO_END_68
+	BRANCH(blt) INT(INLINE_i_1[sp-0x1b0]) 10 ? DO_BODY_66 : DO_END_68
 DO_END_68:
 	ASS, INT(ti_12239[temp]), INT(INLINE_sum_1[sp-0x1b8])
 	JUMP INLINE_sumMatrix_END_1
@@ -334,8 +314,7 @@ INLINE_output_id_END_2:
 	JUMP INLINE_isPrime_BEGIN_3
 INLINE_isPrime_BEGIN_3:
 	DEF, INT(INLINE_i_3[sp-0x8]), 3
-	LE, INT(ti_12251[temp]), INT(INLINE_n_3[sp-0x4]), 0
-	Branch INT(ti_12251[temp]) ? IF_BODY_86 : IF_END_88
+	BRANCH(ble) INT(INLINE_n_3[sp-0x4]) 0 ? IF_BODY_86 : IF_END_88
 IF_BODY_86:
 	JUMP B_89
 B_89:
@@ -343,8 +322,7 @@ B_89:
 	JUMP INLINE_isPrime_END_3
 IF_END_88:
 	MOD, INT(ti_12252[temp]), INT(INLINE_n_3[sp-0x4]), 2
-	EQ, INT(ti_12253[temp]), INT(ti_12252[temp]), 0
-	Branch INT(ti_12253[temp]) ? IF_BODY_91 : IF_END_93
+	BRANCH(beq) INT(ti_12252[temp]) 0 ? IF_BODY_91 : IF_END_93
 IF_BODY_91:
 	JUMP B_94
 B_94:
@@ -352,14 +330,12 @@ B_94:
 	JUMP INLINE_isPrime_END_3
 IF_END_93:
 	DIV, INT(ti_12254[temp]), INT(INLINE_n_3[sp-0x4]), 2
-	LT, INT(ti_12255[temp]), INT(INLINE_i_3[sp-0x8]), INT(ti_12254[temp])
-	Branch INT(ti_12255[temp]) ? DO_BODY_96 : DO_END_98
+	BRANCH(blt) INT(INLINE_i_3[sp-0x8]) INT(ti_12254[temp]) ? DO_BODY_96 : DO_END_98
 DO_BODY_96:
 	JUMP B_99
 B_99:
 	MOD, INT(ti_12256[temp]), INT(INLINE_n_3[sp-0x4]), INT(INLINE_i_3[sp-0x8])
-	EQ, INT(ti_12257[temp]), INT(ti_12256[temp]), 0
-	Branch INT(ti_12257[temp]) ? IF_BODY_100 : IF_END_102
+	BRANCH(beq) INT(ti_12256[temp]) 0 ? IF_BODY_100 : IF_END_102
 IF_BODY_100:
 	JUMP B_103
 B_103:
@@ -372,16 +348,14 @@ B_105:
 	JUMP DO_CHECK_97
 DO_CHECK_97:
 	DIV, INT(ti_12259[temp]), INT(INLINE_n_3[sp-0x4]), 2
-	LT, INT(ti_12260[temp]), INT(INLINE_i_3[sp-0x8]), INT(ti_12259[temp])
-	Branch INT(ti_12260[temp]) ? DO_BODY_96 : DO_END_98
+	BRANCH(blt) INT(INLINE_i_3[sp-0x8]) INT(ti_12259[temp]) ? DO_BODY_96 : DO_END_98
 DO_END_98:
 	ASS, INT(ti_12250[temp]), 1
 	JUMP INLINE_isPrime_END_3
 INLINE_isPrime_END_3:
 	PRINT_INT INT(ti_12250[temp])
 	PRINT_STR STR_2
-	GE, INT(ti_12261[temp]), 2, INT(int_c[data+0x10])
-	Branch INT(ti_12261[temp]) ? IF_BODY_107 : IF_END_109
+	BRANCH(ble) INT(int_c[data+0x10]) 2 ? IF_BODY_107 : IF_END_109
 IF_BODY_107:
 	JUMP B_110
 B_110:
@@ -390,8 +364,7 @@ B_110:
 B_111:
 	JUMP IF_END_109
 IF_END_109:
-	EQ, INT(ti_12262[temp]), 2, INT(int_d[data+0x14])
-	Branch INT(ti_12262[temp]) ? IF_BODY_112 : IF_END_114
+	BRANCH(beq) INT(int_d[data+0x14]) 2 ? IF_BODY_112 : IF_END_114
 IF_BODY_112:
 	JUMP B_115
 B_115:
@@ -400,8 +373,7 @@ B_115:
 B_116:
 	JUMP IF_END_114
 IF_END_114:
-	GT, INT(ti_12263[temp]), 2, INT(int_e[data+0x18])
-	Branch INT(ti_12263[temp]) ? IF_BODY_117 : IF_ELSE_118
+	BRANCH(blt) INT(int_e[data+0x18]) 2 ? IF_BODY_117 : IF_ELSE_118
 IF_BODY_117:
 	JUMP B_120
 B_120:
@@ -421,16 +393,13 @@ IF_END_119:
 	DEF, INT(j[sp-0x10]), 0
 	ADD, INT(int_c[data+0x10]), INT(i[sp-0xc]), 3
 	ASS, INT(i[sp-0xc]), 0
-	LT, INT(ti_12265[temp]), INT(i[sp-0xc]), 100
-	Branch INT(ti_12265[temp]) ? DO_BODY_124 : DO_END_126
+	BRANCH(blt) INT(i[sp-0xc]) 100 ? DO_BODY_124 : DO_END_126
 DO_BODY_124:
 	JUMP B_127
 B_127:
-	EQ, INT(ti_12266[temp]), INT(i[sp-0xc]), 0
-	Branch INT(ti_12266[temp]) ? IF_BODY_128 : AND_END_131
+	BRANCH(beq) INT(i[sp-0xc]) 0 ? IF_BODY_128 : AND_END_131
 AND_END_131:
-	EQ, INT(ti_12267[temp]), INT(i[sp-0xc]), 1
-	Branch INT(ti_12267[temp]) ? IF_BODY_128 : IF_ELSE_129
+	BRANCH(beq) INT(i[sp-0xc]) 1 ? IF_BODY_128 : IF_ELSE_129
 IF_BODY_128:
 	JUMP B_132
 B_132:
@@ -455,19 +424,16 @@ IF_END_130:
 B_136:
 	JUMP DO_CHECK_125
 DO_CHECK_125:
-	LT, INT(ti_12271[temp]), INT(i[sp-0xc]), 100
-	Branch INT(ti_12271[temp]) ? DO_BODY_124 : DO_END_126
+	BRANCH(blt) INT(i[sp-0xc]) 100 ? DO_BODY_124 : DO_END_126
 DO_END_126:
 	ASS, INT(i[sp-0xc]), 5
 	JUMP B_137
 B_137:
 	JUMP B_138
 B_138:
-	LT, INT(ti_12272[temp]), INT(i[sp-0xc]), INT(int_c[data+0x10])
-	Branch INT(ti_12272[temp]) ? DO_BODY_139 : AND_END_142
+	BRANCH(blt) INT(i[sp-0xc]) INT(int_c[data+0x10]) ? DO_BODY_139 : AND_END_142
 AND_END_142:
-	GT, INT(ti_12273[temp]), INT(i[sp-0xc]), INT(int_c[data+0x10])
-	Branch INT(ti_12273[temp]) ? DO_BODY_139 : DO_END_141
+	BRANCH(bgt) INT(i[sp-0xc]) INT(int_c[data+0x10]) ? DO_BODY_139 : DO_END_141
 DO_BODY_139:
 	JUMP B_143
 B_143:
@@ -475,8 +441,7 @@ B_143:
 	PRINT_INT INT(ti_12274[temp])
 	PRINT_STR STR_2
 	ADD, INT(i[sp-0xc]), INT(i[sp-0xc]), 1
-	EQ, INT(ti_12276[temp]), INT(i[sp-0xc]), INT(int_c[data+0x10])
-	Branch INT(ti_12276[temp]) ? IF_BODY_144 : IF_ELSE_145
+	BRANCH(beq) INT(i[sp-0xc]) INT(int_c[data+0x10]) ? IF_BODY_144 : IF_ELSE_145
 IF_BODY_144:
 	JUMP B_147
 B_147:
@@ -486,14 +451,11 @@ IF_ELSE_145:
 B_149:
 	JUMP DO_CHECK_140
 DO_CHECK_140:
-	LT, INT(ti_12277[temp]), INT(i[sp-0xc]), INT(int_c[data+0x10])
-	Branch INT(ti_12277[temp]) ? DO_BODY_139 : AND_END_152
+	BRANCH(blt) INT(i[sp-0xc]) INT(int_c[data+0x10]) ? DO_BODY_139 : AND_END_152
 AND_END_152:
-	GT, INT(ti_12278[temp]), INT(i[sp-0xc]), INT(int_c[data+0x10])
-	Branch INT(ti_12278[temp]) ? DO_BODY_139 : DO_END_141
+	BRANCH(bgt) INT(i[sp-0xc]) INT(int_c[data+0x10]) ? DO_BODY_139 : DO_END_141
 DO_END_141:
-	EQ, INT(ti_12279[temp]), INT(i[sp-0xc]), INT(int_c[data+0x10])
-	Branch INT(ti_12279[temp]) ? IF_BODY_153 : IF_END_155
+	BRANCH(beq) INT(i[sp-0xc]) INT(int_c[data+0x10]) ? IF_BODY_153 : IF_END_155
 IF_BODY_153:
 	JUMP B_156
 B_156:
@@ -533,14 +495,12 @@ INLINE_output_a_plus_b_END_6:
 	PRINT_INT INT(i[sp-0xc])
 	PRINT_STR STR_2
 	ASS, INT(i[sp-0xc]), 0
-	LT, INT(ti_12284[temp]), INT(i[sp-0xc]), 10
-	Branch INT(ti_12284[temp]) ? DO_BODY_161 : DO_END_163
+	BRANCH(blt) INT(i[sp-0xc]) 10 ? DO_BODY_161 : DO_END_163
 DO_BODY_161:
 	JUMP B_164
 B_164:
 	ASS, INT(j[sp-0x10]), 0
-	LT, INT(ti_12285[temp]), INT(j[sp-0x10]), 10
-	Branch INT(ti_12285[temp]) ? DO_BODY_165 : DO_END_167
+	BRANCH(blt) INT(j[sp-0x10]) 10 ? DO_BODY_165 : DO_END_167
 DO_BODY_165:
 	JUMP B_168
 B_168:
@@ -561,16 +521,14 @@ B_168:
 B_169:
 	JUMP DO_CHECK_166
 DO_CHECK_166:
-	LT, INT(ti_12293[temp]), INT(j[sp-0x10]), 10
-	Branch INT(ti_12293[temp]) ? DO_BODY_165 : DO_END_167
+	BRANCH(blt) INT(j[sp-0x10]) 10 ? DO_BODY_165 : DO_END_167
 DO_END_167:
 	ADD, INT(i[sp-0xc]), INT(i[sp-0xc]), 1
 	JUMP B_170
 B_170:
 	JUMP DO_CHECK_162
 DO_CHECK_162:
-	LT, INT(ti_12295[temp]), INT(i[sp-0xc]), 10
-	Branch INT(ti_12295[temp]) ? DO_BODY_161 : DO_END_163
+	BRANCH(blt) INT(i[sp-0xc]) 10 ? DO_BODY_161 : DO_END_163
 DO_END_163:
 	OFFSET (ARRAY(matrix_A[data+0x1b4])+0)->POINTER(tp_1931[sp-0x24])
 	OFFSET (ARRAY(matrix_B[data+0x344])+0)->POINTER(tp_1932[sp-0x28])
@@ -585,14 +543,12 @@ INLINE_matrixMulti_BEGIN_7:
 	DEF, INT(INLINE_i_7[sp-0x1c0]), 0
 	DEF, INT(INLINE_j_7[sp-0x1c4]), 0
 	DEF, INT(INLINE_k_7[sp-0x1c8]), 0
-	LT, INT(ti_12298[temp]), INT(INLINE_i_7[sp-0x1c0]), 10
-	Branch INT(ti_12298[temp]) ? DO_BODY_171 : DO_END_173
+	BRANCH(blt) INT(INLINE_i_7[sp-0x1c0]) 10 ? DO_BODY_171 : DO_END_173
 DO_BODY_171:
 	JUMP B_174
 B_174:
 	ASS, INT(INLINE_j_7[sp-0x1c4]), 0
-	LT, INT(ti_12299[temp]), INT(INLINE_j_7[sp-0x1c4]), 10
-	Branch INT(ti_12299[temp]) ? DO_BODY_175 : DO_END_177
+	BRANCH(blt) INT(INLINE_j_7[sp-0x1c4]) 10 ? DO_BODY_175 : DO_END_177
 DO_BODY_175:
 	JUMP B_178
 B_178:
@@ -602,8 +558,7 @@ B_178:
 	MUL, INT(ti_12301[temp]), INT(INLINE_i_7[sp-0x1c0]), 40
 	ADD, INT(ti_12301[temp]), INT(ti_12301[temp]), INT(ti_12300[temp])
 	STORE 0, INT(ti_12301[temp])[ARRAY(INLINE_matrix_c_7[sp-0x1bc])]
-	LT, INT(ti_12302[temp]), INT(INLINE_k_7[sp-0x1c8]), 10
-	Branch INT(ti_12302[temp]) ? DO_BODY_179 : DO_END_181
+	BRANCH(blt) INT(INLINE_k_7[sp-0x1c8]) 10 ? DO_BODY_179 : DO_END_181
 DO_BODY_179:
 	JUMP B_182
 B_182:
@@ -634,24 +589,21 @@ B_182:
 B_183:
 	JUMP DO_CHECK_180
 DO_CHECK_180:
-	LT, INT(ti_12317[temp]), INT(INLINE_k_7[sp-0x1c8]), 10
-	Branch INT(ti_12317[temp]) ? DO_BODY_179 : DO_END_181
+	BRANCH(blt) INT(INLINE_k_7[sp-0x1c8]) 10 ? DO_BODY_179 : DO_END_181
 DO_END_181:
 	ADD, INT(INLINE_j_7[sp-0x1c4]), INT(INLINE_j_7[sp-0x1c4]), 1
 	JUMP B_184
 B_184:
 	JUMP DO_CHECK_176
 DO_CHECK_176:
-	LT, INT(ti_12319[temp]), INT(INLINE_j_7[sp-0x1c4]), 10
-	Branch INT(ti_12319[temp]) ? DO_BODY_175 : DO_END_177
+	BRANCH(blt) INT(INLINE_j_7[sp-0x1c4]) 10 ? DO_BODY_175 : DO_END_177
 DO_END_177:
 	ADD, INT(INLINE_i_7[sp-0x1c0]), INT(INLINE_i_7[sp-0x1c0]), 1
 	JUMP B_185
 B_185:
 	JUMP DO_CHECK_172
 DO_CHECK_172:
-	LT, INT(ti_12321[temp]), INT(INLINE_i_7[sp-0x1c0]), 10
-	Branch INT(ti_12321[temp]) ? DO_BODY_171 : DO_END_173
+	BRANCH(blt) INT(INLINE_i_7[sp-0x1c0]) 10 ? DO_BODY_171 : DO_END_173
 DO_END_173:
 	OFFSET (ARRAY(INLINE_matrix_c_7[sp-0x1bc])+0)->POINTER(tp_1935[sp-0x1cc])
 	ASS, ARRAY(INLINE_array_f_8[sp-0x1cc]), POINTER(tp_1935[sp-0x1cc])
@@ -661,14 +613,12 @@ INLINE_sumMatrix_BEGIN_8:
 	DEF, INT(INLINE_i_8[sp-0x1d0]), 0
 	DEF, INT(INLINE_j_8[sp-0x1d4]), 0
 	DEF, INT(INLINE_sum_8[sp-0x1d8]), 0
-	LT, INT(ti_12323[temp]), INT(INLINE_i_8[sp-0x1d0]), 10
-	Branch INT(ti_12323[temp]) ? DO_BODY_186 : DO_END_188
+	BRANCH(blt) INT(INLINE_i_8[sp-0x1d0]) 10 ? DO_BODY_186 : DO_END_188
 DO_BODY_186:
 	JUMP B_189
 B_189:
 	ASS, INT(INLINE_j_8[sp-0x1d4]), 0
-	LT, INT(ti_12324[temp]), INT(INLINE_j_8[sp-0x1d4]), 10
-	Branch INT(ti_12324[temp]) ? DO_BODY_190 : DO_END_192
+	BRANCH(blt) INT(INLINE_j_8[sp-0x1d4]) 10 ? DO_BODY_190 : DO_END_192
 DO_BODY_190:
 	JUMP B_193
 B_193:
@@ -683,16 +633,14 @@ B_193:
 B_194:
 	JUMP DO_CHECK_191
 DO_CHECK_191:
-	LT, INT(ti_12330[temp]), INT(INLINE_j_8[sp-0x1d4]), 10
-	Branch INT(ti_12330[temp]) ? DO_BODY_190 : DO_END_192
+	BRANCH(blt) INT(INLINE_j_8[sp-0x1d4]) 10 ? DO_BODY_190 : DO_END_192
 DO_END_192:
 	ADD, INT(INLINE_i_8[sp-0x1d0]), INT(INLINE_i_8[sp-0x1d0]), 1
 	JUMP B_195
 B_195:
 	JUMP DO_CHECK_187
 DO_CHECK_187:
-	LT, INT(ti_12332[temp]), INT(INLINE_i_8[sp-0x1d0]), 10
-	Branch INT(ti_12332[temp]) ? DO_BODY_186 : DO_END_188
+	BRANCH(blt) INT(INLINE_i_8[sp-0x1d0]) 10 ? DO_BODY_186 : DO_END_188
 DO_END_188:
 	ASS, INT(ti_12322[temp]), INT(INLINE_sum_8[sp-0x1d8])
 	JUMP INLINE_sumMatrix_END_8

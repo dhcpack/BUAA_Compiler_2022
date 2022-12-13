@@ -54,7 +54,12 @@ public class DefUseCalcUtil {
         useSet = blockNode.getUseSet();
         if (blockNode instanceof Branch) {
             // "Branch " + cond + " ? " + thenBlock + " : " + elseBlock;
-            addToUseSet(((Branch) blockNode).getCond());
+            if (((Branch) blockNode).isCalcBranch()) {
+                addToUseSet(((Branch) blockNode).getLeftSymbol());
+                addToUseSet(((Branch) blockNode).getRightOperand());
+            } else {
+                addToUseSet(((Branch) blockNode).getCond());
+            }
         } else if (blockNode instanceof FourExpr) {
             // this.op.name() + ", " + this.res + ", " + this.left + ", " + this.right;
             // this.op.name() + ", " + this.res + ", " + this.left;
@@ -72,7 +77,7 @@ public class DefUseCalcUtil {
         } else if (blockNode instanceof GetInt) {
             // "GETINT " + target;
             GetInt getInt = (GetInt) blockNode;
-            if(getInt.isArray()){
+            if (getInt.isArray()) {
                 addToUseSet(getInt.getBase());
                 addToUseSet(getInt.getOffset());
             } else {
