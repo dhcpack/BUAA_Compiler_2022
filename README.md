@@ -19,6 +19,9 @@ OPT + GRAPH  :
     testfile6	Accepted	DIV:4, MULT:4, JUMP/BRANCH:4158300, MEM:9504699, OTHER:12494083, rank:3.6493657E7
     56 36 26 27 51 41
 
+sge 四句
+slti 一句
+
 
 
 

@@ -1,98 +1,65 @@
-int val_L = 0;
-const int const_a = 1 - 2 + (-3)*4 + 5/(2+3) - 6 % 4, const_b =((5-10)*(-4) + 4)/6 * (3%6/3);
-const int const_array1_a[2] = {1, 1};
-const int const_array2_a[2][2] = { {1, 1}, {1, 1} }, const_array2_b[2][2] = { {1, 1}, {1, 1} };
-int var_array1_a[2] = {0, 0};
-int var_array2_a[2][2] = { {1, 1}, {1, 1} };
+int global_var1=9;
+int global_var2,global_var3=10;
+const int con1=44;
+const int con2=56*12+6,con4=888;
+int main(){
+	const int con3=con1+con2/39;
+    printf("(20373335)\n");
+    printf("C level,test a code has decl,no func\n");
+    printf("con1 is %d\n",con1);
+    printf("con2 is %d,con3 is %d\n",con2,con3);
 
-void check_LandEq() {
-    val_L = 0;
-    if (!0) {
-        val_L = val_L + 1;
+    int var1,var2=con3;
+    int var3;
+    var3=getint();
+    // 鏃燘lockItem鐨勮鍙ュ潡
+    {
+        ;
     }
-    if (1 != 0) {
-        val_L = val_L + 1;
-    }
-    if (val_L == 2) {
-        printf("L and Eq is ok (no params)\n");
-    } else {
-        printf("sth wrong with L and Eq (no params)\n");
-    }
-}
+    // Block宓屽Block鐨勬儏鍐?
+    {{
 
-int check_Rel(int a, int b, int c) {
-    int val_Rel = 0;
-    if (a >= 1) {
-        val_Rel = val_Rel + 1;
-    }
-    if (a <= 2) {
-        val_Rel = val_Rel + 1;
-    }
-    if (1 < b) {
-        val_Rel = val_Rel + 1;
-    }
-    if (b > 2) {
-        val_Rel = val_Rel + 1;
-    }
-    if (c == 2) {
-        val_Rel = val_Rel + 1;
-    }
-    if (c != 3) {
-        val_Rel = val_Rel + 1;
-    }
-    return val_Rel;
-}
+    }}
 
-void check_Add(int x) {
-    printf("const_a = %d, x = %d\n", const_a, x);
-    if (const_a == x) {
-        printf("Add is ok1\n");
-    }
-    if (const_b == 4) {
-        printf("Add is ok2\n");
-    }
-}
+    // 瑕嗙洊宸﹀€艰鍙?椤癸紝鍥犲瓙锛岃〃杈惧紡锛屽嚱鏁?
+    var1=var2-var3*var2+(con2*var3)%(con1+con3);
+    printf("%d, %d, %d, %d, %d\n", var3*var2, con2*var3, con1+con3, (con2*var3) / (con1+con3), (con2*var3)%(con1+con3));
+    printf("the left val is %d\n",var1);
+    // Exp
+    var2-var3*var2+(con2*var3)%(con1+con3);
 
-void check_block(int a2, int b2[], int c2[][2]) {
-    int tmp0 = -1;
-    int tmp1 = 1;
-    if( a2 > 0 ) {
-        while(tmp1 > 0) {
-            tmp1 = tmp1 - 2;
-            if (b2[1] == 0) {
-                break;
-            }
-            tmp1 = tmp1 - 2;
-        }
-    } else {
-        while(tmp0 < 0) {
-            tmp0 = tmp0 + 2;
-            if (c2[1][1] == 1) {
-                continue;
-            }
-            tmp0 = tmp0 + 2;
+    int var5=-+-+-con1;
+
+    // If
+    if(var1>1){
+        printf("var1 greater than 1\n");
+    }
+    if (con3>=0){
+        var3=var1/con1+var2*1225;
+    } else{
+        if(var2<con4){
+            var2=getint();
         }
     }
-    ;
-    printf("%d\n",tmp0);
-    printf("%d\n",tmp1);
-    return;
-}
-
-
-int main() {
-    int a, val_Rel;
-    printf("19373408 all weak points\n");
-    check_LandEq();
-    val_Rel = check_Rel(1, 6, 2);
-    if (val_Rel == 6) {
-        printf("Rel is ok (with params)\n");
-    } else {
-        printf("sth wrong with Rel (no params)\n");
+    if (var5<=con4){
+    	// printf后的exp不能为条件表达式
+    	if (var5==con1){
+    		printf("var5 equal to con1\n");
+		}
+        if(23!=22+1-7*55%9+7/2<=24){
+			;
+		}
     }
-    check_Add(-14);
-    a = getint();//1
-    check_block(a, var_array1_a, var_array2_a);
-    check_block(-1, var_array1_a, var_array2_a);
+    // While
+    while(1){
+    	int i=56;
+    	int j = 0;
+    	if (j<=i){
+    		break;
+		} else{
+			int k;
+			continue;
+		}
+	}
     return 0;
 }

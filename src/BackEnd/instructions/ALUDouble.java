@@ -6,18 +6,21 @@ public class ALUDouble implements Instruction {
         addiu,
         andi,
         ori,
+        xor,
 
         sne,
         seq,
 
         // slti, 可能出现立即数越界的问题，加载到寄存器后用slt代替
-        sle,
-        sgt,
-        sge,
+        slti,  // 一条
+        sgt,  // 两条
+        sle,  // 四条
+        sge,  // 四条
 
         // 位运算
         sll,
         srl,
+        sra,
     }
 
     private final InstructionType type = InstructionType.ALU;

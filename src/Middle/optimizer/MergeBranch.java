@@ -26,8 +26,10 @@ public class MergeBranch {
             for (BasicBlock basicBlock : basicBlocks) {
                 /*
                  *
-                 *   # EQ, a, b, 4  or NEQ  or LT or LE or GT or GE
-                 *   # Branch a ? IF_BODY_42 : IF_END_44
+                 *   EQ, a, b, 4  or NEQ  or LT or LE or GT or GE
+                 *   Branch a ? IF_BODY_42 : IF_END_44
+                 *
+                 * Combine:
                  *   beq/bne/blt/ble/bgt/bge  $t1, $t2/imm label1
                  *   j label2
                  * */

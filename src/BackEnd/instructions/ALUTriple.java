@@ -11,10 +11,10 @@ public class ALUTriple implements Instruction{
         seq,
         sne,  // 可以用来写NOT(sne $t1, $0, $t0  # t0不是0时t1置一 )
 
-        slt,
-        sgt,
-        sge,
-        sle,
+        slt,  // 一条
+        sgt,  // 一条
+        sge,  // 三条
+        sle,  // 三条
     }
 
     private final InstructionType type = InstructionType.ALU;

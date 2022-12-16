@@ -38,6 +38,7 @@ import Middle.type.PrintInt;
 import Middle.type.PrintStr;
 import Middle.type.Return;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -768,6 +769,72 @@ public class Translator {
 
     // 优化div, mod
     // resRegister = operandRegister / c;
+
+    private int shPosition;
+    private int leftOneBit;
+    private long magicValue;
+
+    private void getMagicValue(BigInteger divImm) {
+        leftOneBit = 0;
+        while (divImm.compareTo(BigInteger.valueOf(1).shiftLeft(leftOneBit)) > 0) {
+            leftOneBit++;
+        }
+        shPosition = leftOneBit;
+        long lowValue = BigInteger.valueOf(1).shiftLeft(32 + leftOneBit).divide(divImm).longValue();
+        long highValue = BigInteger.valueOf(1).shiftLeft(32 + leftOneBit).add(BigInteger.valueOf(1)
+                .shiftLeft(1 + leftOneBit)).divide(divImm).longValue();
+        while (highValue >> 1 > lowValue >> 1 && shPosition > 0) {
+            highValue >>= 1;
+            lowValue >>= 1;
+            shPosition--;
+        }
+        magicValue = highValue;
+    }
+
+    private void translateMod(int immediate, int operandRegister, int resRegister) {  // 没有branch
+        translateDiv(immediate, operandRegister, Registers.a0);
+        translateMult(immediate,Registers.a0,  Registers.v0, null);
+        mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.subu, resRegister, operandRegister, Registers.v0));
+    }
+
+    private void translateDiv(int immediate, int operandRegister, int resRegister) {  // 没有branch
+        getMagicValue(BigInteger.valueOf(immediate).abs());
+        if (Math.abs(immediate) == 1) {
+            if (operandRegister != resRegister) {
+                mipsCode.addInstr(new MoveInstr(operandRegister, resRegister));
+            }
+            return;
+        } else if (Integer.bitCount(Math.abs(immediate)) == 1) {
+            mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.sra, Registers.at, operandRegister, leftOneBit - 1));
+            if(leftOneBit != 32){
+                mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.srl,Registers.at, Registers.at, 32-leftOneBit ));
+            }
+            mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.addu, resRegister, operandRegister, Registers.at));
+            mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.sra, resRegister, resRegister, leftOneBit));
+        } else {
+            if(magicValue < Integer.MAX_VALUE){
+                mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.at, (int) magicValue));
+                mipsCode.addInstr(new Mult(Registers.at, operandRegister, false));
+                mipsCode.addInstr(new Mfhi(Registers.at));
+                mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.sra, Registers.v1, Registers.at, shPosition));
+            } else {
+                mipsCode.addInstr(new ALUSingle(ALUSingle.ALUSingleType.li, Registers.at, (int)(magicValue - (1L << 32))));
+                mipsCode.addInstr(new Mult(Registers.at, operandRegister, false));
+                mipsCode.addInstr(new Mfhi(Registers.at));
+                mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.addu, Registers.v1, operandRegister, Registers.at));
+                mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.sra, Registers.v1, Registers.v1, shPosition));
+            }
+            mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.slti, Registers.at, operandRegister, 0));
+            mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.addu, resRegister, Registers.v1, Registers.at));
+        }
+        if (immediate < 0) {
+            mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.subu, resRegister, Registers.zero, resRegister));
+        }
+    }
+
+
+    // 优化div, mod  带有branch
+    // resRegister = operandRegister / c;
     private static int divLabel = 1;
 
     private void translateDivMod(int immediate, int operandRegister, int resRegister, boolean isMod) {
@@ -781,9 +848,14 @@ public class Translator {
         int k = (int) (Math.log(immediate) / Math.log(2));
         if ((int) Math.pow(2, k) == immediate) {
             if (!isMod) {  // div
-                instructions.add(new ALUDouble(ALUDouble.ALUDoubleType.srl, resRegister, operandRegister, k));
+                mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.sra, resRegister, operandRegister, k));
+                if(sign == -1){
+                    mipsCode.addInstr(new ALUTriple(ALUTriple.ALUTripleType.subu, resRegister, Registers.zero, resRegister));
+                }
+                return;
             } else {  // mod
-                instructions.add(new ALUDouble(ALUDouble.ALUDoubleType.andi, resRegister, operandRegister, immediate - 1));
+                mipsCode.addInstr(new ALUDouble(ALUDouble.ALUDoubleType.andi, resRegister, operandRegister, immediate - 1));
+                return;
             }
         } else {
             // int i;
@@ -837,7 +909,7 @@ public class Translator {
         }
     }
 
-    // 优化mult
+    // 优化mult 用到了v1和fp寄存器
     private void translateMult(int immediate, int operandRegister, int resRegister, ArrayList<Instruction> instructions) {
         if (immediate == 0) {
             if (instructions != null) {

@@ -163,14 +163,7 @@ B_23:
 	# JUMP IF_END_21
 IF_END_21:
 	# MOD, INT(ti_12196[temp]), INT(n[sp-0x4]), 2
-	bltz $6, DIV_831
 	andi $17, $6, 1
-	j DIV_END_832
-DIV_831:
-	subu $6, $0, $6
-	andi $17, $6, 1
-	subu $17, $0, $17
-DIV_END_832:
 	# BRANCH(beq) INT(ti_12196[temp]) 0 ? IF_BODY_24 : IF_END_26
 	bne $17, 0, IF_END_26
 IF_BODY_24:
@@ -184,14 +177,7 @@ B_28:
 	# JUMP IF_END_26
 IF_END_26:
 	# DIV, INT(ti_12198[temp]), INT(n[sp-0x4]), 2
-	bltz $6, DIV_833
-	srl $18, $6, 1
-	j DIV_END_834
-DIV_833:
-	subu $6, $0, $6
-	srl $18, $6, 1
-	subu $18, $0, $18
-DIV_END_834:
+	sra $18, $6, 1
 	# BRANCH(blt) INT(i[sp-0x8]) INT(ti_12198[temp]) ? DO_BODY_29 : DO_END_31
 	bge $5, $18, DO_END_31
 DO_BODY_29:
@@ -219,14 +205,7 @@ B_38:
 	# JUMP DO_CHECK_30
 DO_CHECK_30:
 	# DIV, INT(ti_12203[temp]), INT(n[sp-0x4]), 2
-	bltz $6, DIV_835
-	srl $20, $6, 1
-	j DIV_END_836
-DIV_835:
-	subu $6, $0, $6
-	srl $20, $6, 1
-	subu $20, $0, $20
-DIV_END_836:
+	sra $20, $6, 1
 	# BRANCH(blt) INT(i[sp-0x8]) INT(ti_12203[temp]) ? DO_BODY_29 : DO_END_31
 	blt $5, $20, DO_BODY_29
 DO_END_31:
@@ -515,14 +494,7 @@ B_89:
 	j INLINE_isPrime_END_3
 IF_END_88:
 	# MOD, INT(ti_12252[temp]), INT(INLINE_n_3[sp-0x4]), 2
-	bltz $6, DIV_837
 	andi $18, $6, 1
-	j DIV_END_838
-DIV_837:
-	subu $6, $0, $6
-	andi $18, $6, 1
-	subu $18, $0, $18
-DIV_END_838:
 	# BRANCH(beq) INT(ti_12252[temp]) 0 ? IF_BODY_91 : IF_END_93
 	bne $18, 0, IF_END_93
 IF_BODY_91:
@@ -535,14 +507,7 @@ B_94:
 	j INLINE_isPrime_END_3
 IF_END_93:
 	# DIV, INT(ti_12254[temp]), INT(INLINE_n_3[sp-0x4]), 2
-	bltz $6, DIV_839
-	srl $20, $6, 1
-	j DIV_END_840
-DIV_839:
-	subu $6, $0, $6
-	srl $20, $6, 1
-	subu $20, $0, $20
-DIV_END_840:
+	sra $20, $6, 1
 	# BRANCH(blt) INT(INLINE_i_3[sp-0x8]) INT(ti_12254[temp]) ? DO_BODY_96 : DO_END_98
 	bge $5, $20, DO_END_98
 DO_BODY_96:
@@ -569,14 +534,7 @@ B_105:
 	# JUMP DO_CHECK_97
 DO_CHECK_97:
 	# DIV, INT(ti_12259[temp]), INT(INLINE_n_3[sp-0x4]), 2
-	bltz $6, DIV_841
-	srl $23, $6, 1
-	j DIV_END_842
-DIV_841:
-	subu $6, $0, $6
-	srl $23, $6, 1
-	subu $23, $0, $23
-DIV_END_842:
+	sra $23, $6, 1
 	# BRANCH(blt) INT(INLINE_i_3[sp-0x8]) INT(ti_12259[temp]) ? DO_BODY_96 : DO_END_98
 	blt $5, $23, DO_BODY_96
 DO_END_98:
