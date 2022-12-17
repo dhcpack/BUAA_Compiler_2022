@@ -28,8 +28,8 @@ public class FourExpr extends BlockNode {
         OR,  // 短路求值
     }
 
-    private  Operand left;
-    private  Operand right;
+    private Operand left;
+    private Operand right;
     private Symbol res;
     private final ExprOp op;
 
@@ -49,11 +49,11 @@ public class FourExpr extends BlockNode {
 
     private boolean replaced = false;
 
-    public boolean replaced(){
+    public boolean replaced() {
         return replaced;
     }
 
-    public void setReplaced(){
+    public void setReplaced() {
         this.replaced = true;
     }
 
@@ -87,6 +87,14 @@ public class FourExpr extends BlockNode {
 
     public ExprOp getOp() {
         return op;
+    }
+
+    public boolean isImmediate() {
+        if (isSingle()) {
+            return this.left instanceof Immediate;
+        } else {
+            return this.left instanceof Immediate && this.right instanceof Immediate;
+        }
     }
 
     @Override

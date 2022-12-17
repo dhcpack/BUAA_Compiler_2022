@@ -10,6 +10,7 @@ import Frontend.Parser.Parser;
 import Frontend.Parser.TokenHandler;
 import Frontend.SymbolTableBuilder;
 import Middle.MiddleCode;
+import Middle.optimizer.DeleteUselessMiddleCode;
 import Middle.optimizer.ExtractCommonExpr;
 import Middle.optimizer.MergeBranch;
 
@@ -41,6 +42,7 @@ public class Config {
         // Middle Optimize
         ExtractCommonExpr.optimize(middleCode);
         MergeBranch.optimize(middleCode);
+        DeleteUselessMiddleCode.optimize(middleCode);
 
         // output middle code
         middleCode.output();  // through MiddleWriter
