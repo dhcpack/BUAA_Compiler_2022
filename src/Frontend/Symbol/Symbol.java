@@ -30,7 +30,6 @@ public class Symbol implements LeafNode, Operand, Cloneable {
     private boolean hasConstInitInt = false;
 
     // 数组
-    // 指针(省略第一维的数组) ???
     private final ArrayList<Integer> dimSize;
     private ArrayList<Integer> constInitArray;
     private boolean hasConstInitArray = false;

@@ -72,7 +72,7 @@ public class MergeBranch {
                             branch.isThenFirst());
                     newContent.remove(formerBlock);
                     newContent.add(newBranch);
-                    System.out.printf("Combine:\n\t%s\n\t%s\n==> %s\n", fourExpr, branch, newBranch);
+                    // System.out.printf("Combine:\n\t%s\n\t%s\n==> %s\n", fourExpr, branch, newBranch);
                 }
                 basicBlock.setContent(newContent);
                 fb.getKey().refreshBasicBlock();

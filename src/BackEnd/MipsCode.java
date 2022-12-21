@@ -15,7 +15,7 @@ import java.util.StringJoiner;
 public class MipsCode implements Output {
     private ArrayList<Integer> globalWords = new ArrayList<>();
     private LinkedHashMap<String, String> globalStrings = new LinkedHashMap<>();  // label, string
-    private final ArrayList<Instruction> instructions = new ArrayList<>();
+    private ArrayList<Instruction> instructions = new ArrayList<>();
 
     public void setGlobalWords(ArrayList<Integer> globalWords) {
         this.globalWords = globalWords;
@@ -35,6 +35,10 @@ public class MipsCode implements Output {
 
     public ArrayList<Instruction> getInstructions() {
         return this.instructions;
+    }
+
+    public void setInstructions(ArrayList<Instruction> instructions) {
+        this.instructions = instructions;
     }
 
     public void output(PrintStream printStream) {

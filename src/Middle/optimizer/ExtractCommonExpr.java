@@ -143,7 +143,6 @@ public class ExtractCommonExpr {
                             BlockNode newBlock = new FourExpr(symbolToReplace.get(symbol), symbol, FourExpr.ExprOp.ASS);
                             newBlock.setBelongBlock(currentBlock);
                             newContent.add(newContent.size() - 1, newBlock);
-                            // System.out.printf("ADD %s\n", newBlock);
                         }
                     }
                 }
@@ -159,7 +158,6 @@ public class ExtractCommonExpr {
         }
         Symbol readSymbol = (Symbol) read;
         if (symbolToReplace.containsKey(readSymbol)) {
-            // System.out.printf("replace %s with %s\n", readSymbol, symbolToReplace.get(readSymbol));
             return symbolToReplace.get(readSymbol);
         }
         return readSymbol;
@@ -167,7 +165,6 @@ public class ExtractCommonExpr {
 
     private static void refreshWrite(Symbol writeSymbol) {
         if (replaceToSymbols.containsKey(writeSymbol)) {
-            // System.out.printf("free replace %s\n", writeSymbol);
             HashSet<Symbol> symbols = replaceToSymbols.get(writeSymbol);
             Symbol next = null;
             for (Symbol symbol : symbols) {
@@ -187,7 +184,6 @@ public class ExtractCommonExpr {
                 }
             }
         } else if (symbolToReplace.containsKey(writeSymbol)) {
-            // System.out.printf("free replace %s\n", writeSymbol);
             Symbol replace = symbolToReplace.get(writeSymbol);
             symbolToReplace.remove(writeSymbol);
             replaceToSymbols.get(replace).remove(writeSymbol);

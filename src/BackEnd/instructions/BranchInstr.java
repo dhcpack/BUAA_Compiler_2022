@@ -50,6 +50,31 @@ public class BranchInstr implements Instruction {
         this.isCalcBranch = false;
     }
 
+    public boolean isCalcBranch() {
+        return this.isCalcBranch;
+    }
+
+    public boolean isNumber() {
+        return this.isNumber;
+    }
+
+    public int getNumber() {
+        assert isNumber;
+        return number;
+    }
+
+    public BranchType getBranchType() {
+        return this.branchType;
+    }
+
+    public int getrOperand1() {
+        return rOperand1;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
     @Override
     public double getCost() {
         return this.type.getCost();
@@ -64,7 +89,7 @@ public class BranchInstr implements Instruction {
                 return String.format("%s $%d, $%d, %s\n", branchType.name(), rOperand1, rOperand2, label);
             }
         } else {
-            if (branchType == BranchType.beqz || branchType == BranchType.bnez || branchType == BranchType.bltz || branchType == BranchType.bgtz || branchType == BranchType.bgez) {
+            if (branchType == BranchType.beqz || branchType == BranchType.bnez || branchType == BranchType.bltz || branchType == BranchType.bgtz || branchType == BranchType.bgez || branchType == BranchType.blez) {
                 return String.format("%s $%d, %s\n", branchType.name(), rOperand1, label);
             } else {
                 assert false;

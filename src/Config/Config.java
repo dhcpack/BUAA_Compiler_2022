@@ -4,10 +4,12 @@ import BackEnd.MipsCode;
 import BackEnd.Translator;
 import BackEnd.optimizer.DeleteUselessJump;
 import BackEnd.optimizer.DeleteUselessMips;
+import BackEnd.optimizer.OptimizeBranch;
 import Frontend.Lexer.Lexer;
 import Frontend.Parser.CompUnit;
 import Frontend.Parser.Parser;
 import Frontend.Parser.TokenHandler;
+import Frontend.Symbol.Errors;
 import Frontend.SymbolTableBuilder;
 import Middle.MiddleCode;
 import Middle.optimizer.DeleteUselessMiddleCode;
@@ -34,8 +36,12 @@ public class Config {
 
         // compUnit.output();  // through SyntaxWriter
 
-        // Errors errors = symbolTableBuilder.getErrors();
-        // errors.output();  // through ErrorWriter
+        Errors errors = symbolTableBuilder.getErrors();
+        errors.output();  // through ErrorWriter
+
+        if (errors.hasErrors()) {
+            return;
+        }
 
         MiddleCode middleCode = symbolTableBuilder.getMiddleCode();
 
@@ -52,6 +58,7 @@ public class Config {
         // Mips Optimize
         DeleteUselessJump.optimize(mipsCode);
         DeleteUselessMips.optimize(mipsCode);
+        // OptimizeBranch.optimize(mipsCode);
 
         // output mips code
         mipsCode.output(new PrintStream(Config.mipsFile));  // through MipsWriter

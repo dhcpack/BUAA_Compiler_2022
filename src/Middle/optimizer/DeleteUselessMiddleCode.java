@@ -46,7 +46,6 @@ public class DeleteUselessMiddleCode {
                         newContent.add(blockNode);
                         continue;
                     }
-                    // System.err.println(res);
                     Immediate immediate = calc((FourExpr) (blockNode));
                     BlockNode nextNode = content.get(i + 1);
                     if (nextNode instanceof FourExpr) {
@@ -54,7 +53,6 @@ public class DeleteUselessMiddleCode {
                         if (fourExpr.isSingle()) {
                             if (fourExpr.getLeft() == res) {
                                 fourExpr.setLeft(immediate);
-                                System.err.printf("DELETE %s\n", blockNode);
                             } else {
                                 newContent.add(blockNode);
                                 continue;
@@ -62,10 +60,8 @@ public class DeleteUselessMiddleCode {
                         } else {
                             if (fourExpr.getLeft() == res) {
                                 fourExpr.setLeft(immediate);
-                                System.err.printf("DELETE %s\n", blockNode);
                             } else if (fourExpr.getRight() == res) {
                                 fourExpr.setRight(immediate);
-                                System.err.printf("DELETE %s\n", blockNode);
                             } else {
                                 newContent.add(blockNode);
                                 continue;
@@ -75,7 +71,6 @@ public class DeleteUselessMiddleCode {
                         Branch branch = (Branch) nextNode;
                         if (branch.getCond() == res) {
                             branch.setCond(immediate);
-                            System.err.printf("DELETE %s\n", blockNode);
                         } else {
                             newContent.add(blockNode);
                             continue;

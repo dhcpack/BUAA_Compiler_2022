@@ -12,6 +12,14 @@ import Exceptions.MyException;
 public class Errors {
     private final ArrayList<MyException> exceptions = new ArrayList<>();
 
+    public boolean hasErrors() {
+        return this.exceptions.size() != 0;
+    }
+
+    public int getErrorCount() {
+        return this.exceptions.size();
+    }
+
     public void add(MyException exception) {
         this.exceptions.add(exception);
     }
@@ -28,6 +36,7 @@ public class Errors {
         });
         for (MyException exception : exceptions) {
             ErrorWriter.print(exception.getLine() + " " + exception.getType().getCode());
+            System.err.printf("%d %s\n", exception.getLine(), exception.getType().getCode());
         }
         try {
             ErrorWriter.flush();
