@@ -10,7 +10,7 @@ import Exceptions.MyException;
 
 
 public class Errors {
-    private final ArrayList<MyException> exceptions = new ArrayList<>();
+    private ArrayList<MyException> exceptions = new ArrayList<>();
 
     public boolean hasErrors() {
         return this.exceptions.size() != 0;
@@ -25,6 +25,19 @@ public class Errors {
     }
 
     public void output() {
+        ArrayList<MyException> newExceptions = new ArrayList<>();
+        for (MyException exception : exceptions) {
+            boolean flag = true;
+            for (MyException existException : newExceptions) {
+                if (exception.getLine() == existException.getLine() && exception.getType() == existException.getType()) {
+                    flag = false;
+                }
+            }
+            if (flag) {
+                newExceptions.add(exception);
+            }
+        }
+        exceptions = newExceptions;
         exceptions.sort(new Comparator<MyException>() {
             @Override
             public int compare(MyException o1, MyException o2) {

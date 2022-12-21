@@ -1015,7 +1015,7 @@ public class SymbolTableBuilder {
                 return null;
             }
             if (checkType == checkFuncArray1 || checkType == checkFuncArray2) {
-                errors.add(new MismatchParamTypeException(unaryOp.getToken().getLine()));
+                errors.add(new MismatchParamTypeException(funcExpLine));
             }
             if (unaryOp.getToken().getType() == TokenType.PLUS) {
                 return midRes;
@@ -1146,7 +1146,7 @@ public class SymbolTableBuilder {
                 flag = true;
             }
             if (!flag) {
-                errors.add(new MismatchParamTypeException(symbol.getIdent().getLine()));
+                errors.add(new MismatchParamTypeException(funcExpLine));
             }
 
             try {
@@ -1189,7 +1189,7 @@ public class SymbolTableBuilder {
 
     public Operand checkNumber(Number number, int checkType) {
         if (checkType == checkFuncArray1 || checkType == checkFuncArray2) {
-            errors.add(new MismatchParamTypeException(number.getLine()));
+            errors.add(new MismatchParamTypeException(funcExpLine));
         }
         return new Immediate(number.getNumber());
     }
@@ -1199,6 +1199,7 @@ public class SymbolTableBuilder {
     private final int checkFuncArray2 = 2;
     private final int checkFuncInt = 3;
     private int arrayNum;
+    private int funcExpLine;
 
     // 函数调用 FuncExp --> Ident '(' [FuncRParams] ')'
     // 函数实参表 FuncRParams → Exp { ',' Exp }
@@ -1235,8 +1236,8 @@ public class SymbolTableBuilder {
         assert symbol.isFunc();  // assert symbol is a function
 
         funcExp.setReturnType(symbol.getReturnType());  // 设置function的returnType  TODO: 可以用来检查funcExp是否正确使用
-        if (checkType != noCheck && funcExp.getReturnType() == SymbolType.VOID) {
-            errors.add(new MismatchParamTypeException(funcExp.getLine()));
+        if ((checkType == checkFuncInt && funcExp.getReturnType() == SymbolType.VOID) || checkType == checkFuncArray1 || checkType == checkFuncArray2) {
+            errors.add(new MismatchParamTypeException(funcExpLine));
         }
         // 形参表
         ArrayList<Symbol> Fparams = symbol.getParams();
@@ -1246,7 +1247,7 @@ public class SymbolTableBuilder {
 
         ArrayList<Operand> Rparams = new ArrayList<>();  // LeafNode is LVal or Number or funcExp
 
-        if (funcRParams != null) {
+        if (funcRParams != null) {  // 有实参
             ArrayList<Exp> RParamExp = funcRParams.getExps();
             if (Fparams.size() != RParamExp.size()) {
                 errors.add(new MismatchParamCountException(funcExp.getLine()));  // param count mismatch
@@ -1258,13 +1259,16 @@ public class SymbolTableBuilder {
                 Operand res = null;
                 int formerError = errors.getErrorCount();
                 if (fParam.getSymbolType() == SymbolType.INT) {
+                    funcExpLine = funcExp.getLine();
                     res = checkExp(rParamExp, checkFuncInt);
                 } else if (fParam.getSymbolType() == SymbolType.ARRAY) {
                     ArrayList<Integer> dimSize = fParam.getDimSize();
                     if (dimSize.size() == 1) {
+                        funcExpLine = funcExp.getLine();
                         res = checkExp(rParamExp, checkFuncArray1);
                     } else if (dimSize.size() == 2) {
                         arrayNum = dimSize.get(1);
+                        funcExpLine = funcExp.getLine();
                         res = checkExp(rParamExp, checkFuncArray2);
                     } else {
                         assert false;
@@ -1277,6 +1281,11 @@ public class SymbolTableBuilder {
                 }
                 Rparams.add(res);
             }  // check Exp会给所有的LVal和FuncExp设置SymbolType
+        } else {  // 无实参
+            if (Fparams.size() != 0) {
+                errors.add(new MismatchParamCountException(funcExp.getLine()));
+                return new Immediate(-20231164);
+            }
         }
 
         FuncBlock funcBlock = middleCode.getFunc(symbol.getName());

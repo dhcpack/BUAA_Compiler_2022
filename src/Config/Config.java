@@ -58,7 +58,7 @@ public class Config {
         // Mips Optimize
         DeleteUselessJump.optimize(mipsCode);
         DeleteUselessMips.optimize(mipsCode);
-        // OptimizeBranch.optimize(mipsCode);
+        OptimizeBranch.optimize(mipsCode);
 
         // output mips code
         mipsCode.output(new PrintStream(Config.mipsFile));  // through MipsWriter
