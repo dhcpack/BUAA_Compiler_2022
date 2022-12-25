@@ -2,1071 +2,269 @@
 
 .data
 	global:
-	1 2 2 3 3 0 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	10 0 1 2 3 4 5 6 7 8 9
 	.space 4
-	STR_1: .asciiz "19373630\n"
+	STR_1: .asciiz ", "
 	STR_2: .asciiz "\n"
 
 .text
 	la $gp, global
 	j FUNC_main
-FUNC_output_id:
-	# JUMP AND_4
-AND_4:
-	# JUMP AND_END_3
-AND_END_3:
-	# JUMP IF_BODY_0
+FUNC_fib:
+	lw $5, -0x4($29)
+	# BRANCH(beq) INT(i[sp-0x4]) 1 ? IF_BODY_0 : IF_END_2
+	bne $5, 1, IF_END_2
 IF_BODY_0:
-	# JUMP B_5
-B_5:
-	# PRINT_STR STR_1
-	li $2, 4
-	la $4, STR_1
-	syscall
-	# JUMP B_6
-B_6:
+	# JUMP B_3
+B_3:
+	# RETURN 1
+	li $2, 1
+	jr $ra
+	# JUMP B_4
+B_4:
 	# JUMP IF_END_2
 IF_END_2:
-	# RETURN VOID
+	# BRANCH(beq) INT(i[sp-0x4]) 2 ? IF_BODY_5 : IF_END_7
+	bne $5, 2, IF_END_7
+IF_BODY_5:
+	# JUMP B_8
+B_8:
+	# RETURN 2
+	li $2, 2
 	jr $ra
-	
-FUNC_output_a_plus_b:
-	lw $5, -0x4($29)
-	lw $6, -0x8($29)
-	# ADD, INT(ti_11884[temp]), INT(a[sp-0x4]), INT(b[sp-0x8])
-	addu $17, $5, $6
-	# PRINT_INT INT(ti_11884[temp])
-	li $2, 1
-	move $4, $17
-	syscall
-	# PRINT_STR STR_2
-	li $2, 4
-	la $4, STR_2
-	syscall
-	# RETURN VOID
-	jr $ra
-	
-FUNC_A_plus_B:
-	lw $5, -0x4($29)
-	lw $6, -0x8($29)
-	# ADD, INT(ti_11885[temp]), INT(a[sp-0x4]), INT(b[sp-0x8])
-	addu $17, $5, $6
-	# RETURN INT(ti_11885[temp])
-	move $2, $17
-	jr $ra
-	
-FUNC_return_one:
-	# RETURN 1
-	li $2, 1
-	jr $ra
-	
-FUNC_factorial:
-	lw $5, -0x4($29)
-	# MUL, INT(ti_11886[temp]), INT(n[sp-0x4]), 4
-	sll $17, $5, 2
-	# ADD, INT(ti_11886[temp]), INT(ti_11886[temp]), 0
-	# LOAD INT(ti_11887[temp]), INT(ti_11886[temp])[ARRAY(array[data+0x24])]
-	addu $2, $28, $17
-	lw $18, 0x24($2)
-	# BRANCH(bne) INT(ti_11887[temp]) 0 ? IF_BODY_11 : IF_ELSE_12
-	beq $18, 0, IF_ELSE_12
-IF_BODY_11:
-	# JUMP B_14
-B_14:
-	# MUL, INT(ti_11889[temp]), INT(n[sp-0x4]), 4
-	sll $19, $5, 2
-	# ADD, INT(ti_11889[temp]), INT(ti_11889[temp]), 0
-	# LOAD INT(ti_11890[temp]), INT(ti_11889[temp])[ARRAY(array[data+0x24])]
-	addu $2, $28, $19
-	lw $20, 0x24($2)
-	# RETURN INT(ti_11890[temp])
-	move $2, $20
-	jr $ra
-	# JUMP B_15
-B_15:
-	# JUMP IF_END_13
-	j IF_END_13
-IF_ELSE_12:
-	# JUMP B_16
-B_16:
-	# SUB, INT(ti_11892[temp]), INT(n[sp-0x4]), 1
-	addiu $21, $5, -1
-	# MUL, INT(ti_11891[temp]), INT(ti_11892[temp]), 4
-	sll $22, $21, 2
-	# ADD, INT(ti_11891[temp]), INT(ti_11891[temp]), 0
-	# SUB, INT(ti_11893[temp]), INT(n[sp-0x4]), 1
-	addiu $23, $5, -1
-	# Call FUNC_factorial; Params: INT(ti_11893[temp]); RET INT(ti_11894[temp])
+	# JUMP B_9
+B_9:
+	# JUMP IF_END_7
+IF_END_7:
+	# SUB, INT(ti_2[temp]), INT(i[sp-0x4]), 1
+	addiu $17, $5, -1
+	# Call FUNC_fib; Params: INT(ti_2[temp]); RET INT(ti_3[temp])
 	sw $31, 0x0($29)
-	addiu $4, $29, -16
-	sw $23, -0x4($4)
-	sw $22, -0x8($29)
+	addiu $4, $29, -12
+	sw $17, -0x4($4)
 	sw $5, -0x4($29)
 	move $29, $4
-	jal FUNC_factorial
+	jal FUNC_fib
+	addiu $29, $29, 12
+	lw $31, 0x0($29)
+	move $18, $2
+	lw $5, -0x4($29)
+	# SUB, INT(ti_4[temp]), INT(i[sp-0x4]), 2
+	addiu $19, $5, -2
+	# Call FUNC_fib; Params: INT(ti_4[temp]); RET INT(ti_5[temp])
+	sw $31, 0x0($29)
+	addiu $4, $29, -16
+	sw $19, -0x4($4)
+	sw $18, -0x8($29)
+	move $29, $4
+	jal FUNC_fib
 	addiu $29, $29, 16
 	lw $31, 0x0($29)
-	move $24, $2
-	lw $5, -0x4($29)
-	# STORE INT(ti_11894[temp]), INT(ti_11891[sp-0x8])[ARRAY(array[data+0x24])]
-	lw $25, -0x8($29)
-	addu $2, $28, $25
-	sw $24, 0x24($2)
-	# MUL, INT(ti_11895[temp]), INT(n[sp-0x4]), 4
-	sll $26, $5, 2
-	# ADD, INT(ti_11895[temp]), INT(ti_11895[temp]), 0
-	# SUB, INT(ti_11897[temp]), INT(n[sp-0x4]), 1
-	addiu $27, $5, -1
-	# MUL, INT(ti_11896[temp]), INT(ti_11897[temp]), 4
-	sll $17, $27, 2
-	# ADD, INT(ti_11896[temp]), INT(ti_11896[temp]), 0
-	# LOAD INT(ti_11898[temp]), INT(ti_11896[temp])[ARRAY(array[data+0x24])]
-	addu $2, $28, $17
-	lw $18, 0x24($2)
-	# MUL, INT(ti_11899[temp]), INT(ti_11898[temp]), INT(n[sp-0x4])
-	mult $18, $5
-	mflo $19
-	# STORE INT(ti_11899[temp]), INT(ti_11895[temp])[ARRAY(array[data+0x24])]
-	addu $2, $28, $26
-	sw $19, 0x24($2)
-	# MUL, INT(ti_11900[temp]), INT(n[sp-0x4]), 4
-	sll $20, $5, 2
-	# ADD, INT(ti_11900[temp]), INT(ti_11900[temp]), 0
-	# LOAD INT(ti_11901[temp]), INT(ti_11900[temp])[ARRAY(array[data+0x24])]
-	addu $2, $28, $20
-	lw $21, 0x24($2)
-	# RETURN INT(ti_11901[temp])
-	move $2, $21
-	jr $ra
-	# JUMP B_17
-B_17:
-	# JUMP IF_END_13
-IF_END_13:
-	# RETURN 0
-	li $2, 0
-	jr $ra
-	
-FUNC_isPrime:
-	lw $6, -0x4($29)
-	# DEF, INT(i[sp-0x8]), 3
-	li $5, 3
-	# BRANCH(ble) INT(n[sp-0x4]) 0 ? IF_BODY_19 : IF_END_21
-	bgt $6, 0, IF_END_21
-IF_BODY_19:
-	# JUMP B_22
-B_22:
-	# RETURN 0
-	li $2, 0
-	jr $ra
-	# JUMP B_23
-B_23:
-	# JUMP IF_END_21
-IF_END_21:
-	# MOD, INT(ti_11903[temp]), INT(n[sp-0x4]), 2
-	andi $17, $6, 1
-	# BRANCH(beq) INT(ti_11903[temp]) 0 ? IF_BODY_24 : IF_END_26
-	bne $17, 0, IF_END_26
-IF_BODY_24:
-	# JUMP B_27
-B_27:
-	# RETURN 0
-	li $2, 0
-	jr $ra
-	# JUMP B_28
-B_28:
-	# JUMP IF_END_26
-IF_END_26:
-	# DIV, INT(ti_11905[temp]), INT(n[sp-0x4]), 2
-	sra $18, $6, 1
-	# BRANCH(blt) INT(i[sp-0x8]) INT(ti_11905[temp]) ? DO_BODY_29 : DO_END_31
-	bge $5, $18, DO_END_31
-DO_BODY_29:
-	# JUMP B_32
-B_32:
-	# MOD, INT(ti_11907[temp]), INT(n[sp-0x4]), INT(i[sp-0x8])
-	div $6 $5
-	mfhi $19
-	# BRANCH(beq) INT(ti_11907[temp]) 0 ? IF_BODY_33 : IF_END_35
-	bne $19, 0, IF_END_35
-IF_BODY_33:
-	# JUMP B_36
-B_36:
-	# RETURN 0
-	li $2, 0
-	jr $ra
-	# JUMP B_37
-B_37:
-	# JUMP IF_END_35
-IF_END_35:
-	# ADD, INT(i[sp-0x8]), INT(i[sp-0x8]), 2
-	addiu $5, $5, 2
-	# JUMP B_38
-B_38:
-	# JUMP DO_CHECK_30
-DO_CHECK_30:
-	# DIV, INT(ti_11910[temp]), INT(n[sp-0x4]), 2
-	sra $20, $6, 1
-	# BRANCH(blt) INT(i[sp-0x8]) INT(ti_11910[temp]) ? DO_BODY_29 : DO_END_31
-	blt $5, $20, DO_BODY_29
-DO_END_31:
-	# RETURN 1
-	li $2, 1
-	jr $ra
-	
-FUNC_sumMatrix:
-	lw $7, -0x4($29)
-	# DEF, INT(i[sp-0x8]), 0
-	li $5, 0
-	# DEF, INT(sum[sp-0x10]), 0
-	li $8, 0
-	# BRANCH(blt) INT(i[sp-0x8]) 10 ? DO_BODY_40 : DO_END_42
-	bge $5, 10, DO_END_42
-DO_BODY_40:
-	# JUMP B_43
-B_43:
-	# ASS, INT(j[sp-0xc]), 0
-	li $6, 0
-	# BRANCH(blt) INT(j[sp-0xc]) 10 ? DO_BODY_44 : DO_END_46
-	bge $6, 10, DO_END_46
-DO_BODY_44:
-	# JUMP B_47
-B_47:
-	# MUL, INT(ti_11914[temp]), INT(j[sp-0xc]), 4
-	sll $17, $6, 2
-	# ADD, INT(ti_11914[temp]), INT(ti_11914[temp]), 0
-	# MUL, INT(ti_11915[temp]), INT(i[sp-0x8]), 40
-	sll $30, $5, 5
-	sll $3, $5, 3
-	addu $18, $30, $3
-	# ADD, INT(ti_11915[temp]), INT(ti_11915[temp]), INT(ti_11914[temp])
-	addu $18, $18, $17
-	# LOAD INT(ti_11916[temp]), INT(ti_11915[temp])[ARRAY(array_f[sp-0x4])]
-	addu $2, $7, $18
-	lw $19, 0x0($2)
-	# ADD, INT(sum[sp-0x10]), INT(sum[sp-0x10]), INT(ti_11916[temp])
-	addu $8, $8, $19
-	# ADD, INT(j[sp-0xc]), INT(j[sp-0xc]), 1
-	addiu $6, $6, 1
-	# JUMP B_48
-B_48:
-	# JUMP DO_CHECK_45
-DO_CHECK_45:
-	# BRANCH(blt) INT(j[sp-0xc]) 10 ? DO_BODY_44 : DO_END_46
-	blt $6, 10, DO_BODY_44
-DO_END_46:
-	# ADD, INT(i[sp-0x8]), INT(i[sp-0x8]), 1
-	addiu $5, $5, 1
-	# JUMP B_49
-B_49:
-	# JUMP DO_CHECK_41
-DO_CHECK_41:
-	# BRANCH(blt) INT(i[sp-0x8]) 10 ? DO_BODY_40 : DO_END_42
-	blt $5, 10, DO_BODY_40
-DO_END_42:
-	# RETURN INT(sum[sp-0x10])
-	move $2, $8
-	jr $ra
-	
-FUNC_matrixMulti:
-	lw $6, -0x4($29)
-	lw $5, -0x8($29)
-	lw $7, -0xc($29)
-	# DEF, INT(i[sp-0x1a0]), 0
-	li $7, 0
-	# BRANCH(blt) INT(i[sp-0x1a0]) 10 ? DO_BODY_51 : DO_END_53
-	bge $7, 10, DO_END_53
-DO_BODY_51:
-	# JUMP B_54
-B_54:
-	# ASS, INT(j[sp-0x1a4]), 0
-	li $9, 0
-	# BRANCH(blt) INT(j[sp-0x1a4]) 10 ? DO_BODY_55 : DO_END_57
-	bge $9, 10, DO_END_57
-DO_BODY_55:
-	# JUMP B_58
-B_58:
-	# ASS, INT(k[sp-0x1a8]), 0
-	li $10, 0
-	# MUL, INT(ti_11924[temp]), INT(j[sp-0x1a4]), 4
-	sll $17, $9, 2
-	# ADD, INT(ti_11924[temp]), INT(ti_11924[temp]), 0
-	# MUL, INT(ti_11925[temp]), INT(i[sp-0x1a0]), 40
-	sll $30, $7, 5
-	sll $3, $7, 3
-	addu $18, $30, $3
-	# ADD, INT(ti_11925[temp]), INT(ti_11925[temp]), INT(ti_11924[temp])
-	addu $18, $18, $17
-	# STORE 0, INT(ti_11925[temp])[ARRAY(matrix_c[sp-0x19c])]
-	li $3, 0
-	addu $2, $29, $18
-	sw $3, -0x19c($2)
-	# BRANCH(blt) INT(k[sp-0x1a8]) 10 ? DO_BODY_59 : DO_END_61
-	bge $10, 10, DO_END_61
-DO_BODY_59:
-	# JUMP B_62
-B_62:
-	# MUL, INT(ti_11927[temp]), INT(j[sp-0x1a4]), 4
-	sll $19, $9, 2
-	# ADD, INT(ti_11927[temp]), INT(ti_11927[temp]), 0
-	# MUL, INT(ti_11928[temp]), INT(i[sp-0x1a0]), 40
-	sll $30, $7, 5
-	sll $3, $7, 3
-	addu $20, $30, $3
-	# ADD, INT(ti_11928[temp]), INT(ti_11928[temp]), INT(ti_11927[temp])
-	addu $20, $20, $19
-	# MUL, INT(ti_11929[temp]), INT(j[sp-0x1a4]), 4
-	sll $21, $9, 2
-	# ADD, INT(ti_11929[temp]), INT(ti_11929[temp]), 0
-	# MUL, INT(ti_11930[temp]), INT(i[sp-0x1a0]), 40
-	sll $30, $7, 5
-	sll $3, $7, 3
-	addu $22, $30, $3
-	# ADD, INT(ti_11930[temp]), INT(ti_11930[temp]), INT(ti_11929[temp])
-	addu $22, $22, $21
-	# LOAD INT(ti_11931[temp]), INT(ti_11930[temp])[ARRAY(matrix_c[sp-0x19c])]
-	addu $2, $29, $22
-	lw $23, -0x19c($2)
-	# MUL, INT(ti_11932[temp]), INT(k[sp-0x1a8]), 4
-	sll $24, $10, 2
-	# ADD, INT(ti_11932[temp]), INT(ti_11932[temp]), 0
-	# MUL, INT(ti_11933[temp]), INT(i[sp-0x1a0]), 40
-	sll $30, $7, 5
-	sll $3, $7, 3
-	addu $25, $30, $3
-	# ADD, INT(ti_11933[temp]), INT(ti_11933[temp]), INT(ti_11932[temp])
-	addu $25, $25, $24
-	# LOAD INT(ti_11934[temp]), INT(ti_11933[temp])[ARRAY(matrix_a[sp-0x4])]
-	addu $2, $6, $25
-	lw $26, 0x0($2)
-	# MUL, INT(ti_11935[temp]), INT(j[sp-0x1a4]), 4
-	sll $27, $9, 2
-	# ADD, INT(ti_11935[temp]), INT(ti_11935[temp]), 0
-	# MUL, INT(ti_11936[temp]), INT(k[sp-0x1a8]), 40
-	sll $30, $10, 5
-	sll $3, $10, 3
-	addu $17, $30, $3
-	# ADD, INT(ti_11936[temp]), INT(ti_11936[temp]), INT(ti_11935[temp])
-	addu $17, $17, $27
-	# LOAD INT(ti_11937[temp]), INT(ti_11936[temp])[ARRAY(matrix_b[sp-0x8])]
-	addu $2, $5, $17
-	lw $18, 0x0($2)
-	# MUL, INT(ti_11938[temp]), INT(ti_11934[temp]), INT(ti_11937[temp])
-	mult $26, $18
-	mflo $19
-	# ADD, INT(ti_11939[temp]), INT(ti_11931[temp]), INT(ti_11938[temp])
-	addu $21, $23, $19
-	# STORE INT(ti_11939[temp]), INT(ti_11928[temp])[ARRAY(matrix_c[sp-0x19c])]
-	addu $2, $29, $20
-	sw $21, -0x19c($2)
-	# ADD, INT(k[sp-0x1a8]), INT(k[sp-0x1a8]), 1
-	addiu $10, $10, 1
-	# JUMP B_63
-B_63:
-	# JUMP DO_CHECK_60
-DO_CHECK_60:
-	# BRANCH(blt) INT(k[sp-0x1a8]) 10 ? DO_BODY_59 : DO_END_61
-	blt $10, 10, DO_BODY_59
-DO_END_61:
-	# ADD, INT(j[sp-0x1a4]), INT(j[sp-0x1a4]), 1
-	addiu $9, $9, 1
-	# JUMP B_64
-B_64:
-	# JUMP DO_CHECK_56
-DO_CHECK_56:
-	# BRANCH(blt) INT(j[sp-0x1a4]) 10 ? DO_BODY_55 : DO_END_57
-	blt $9, 10, DO_BODY_55
-DO_END_57:
-	# ADD, INT(i[sp-0x1a0]), INT(i[sp-0x1a0]), 1
-	addiu $7, $7, 1
-	# JUMP B_65
-B_65:
-	# JUMP DO_CHECK_52
-DO_CHECK_52:
-	# BRANCH(blt) INT(i[sp-0x1a0]) 10 ? DO_BODY_51 : DO_END_53
-	blt $7, 10, DO_BODY_51
-DO_END_53:
-	# OFFSET (ARRAY(matrix_c[sp-0x19c])+0)->POINTER(tp_1929[sp-0x1ac])
-	addiu $22, $29, -412
-	# ASS, ARRAY(INLINE_array_f_1[sp-0x1ac]), POINTER(tp_1929[sp-0x1ac])
-	move $8, $22
-	# STORE POINTER(tp_1929[sp-0x1ac]), -428[SPECIAL_SP(ts_1930[temp])]
-	sw $22, -0x1ac($29)
-	# JUMP INLINE_sumMatrix_BEGIN_1
-INLINE_sumMatrix_BEGIN_1:
-	# DEF, INT(INLINE_i_1[sp-0x1b0]), 0
-	li $6, 0
-	# DEF, INT(INLINE_sum_1[sp-0x1b8]), 0
-	li $7, 0
-	# BRANCH(blt) INT(INLINE_i_1[sp-0x1b0]) 10 ? DO_BODY_66 : DO_END_68
-	bge $6, 10, DO_END_68
-DO_BODY_66:
-	# JUMP B_69
-B_69:
-	# ASS, INT(INLINE_j_1[sp-0x1b4]), 0
-	li $5, 0
-	# BRANCH(blt) INT(INLINE_j_1[sp-0x1b4]) 10 ? DO_BODY_70 : DO_END_72
-	bge $5, 10, DO_END_72
-DO_BODY_70:
-	# JUMP B_73
-B_73:
-	# MUL, INT(ti_11949[temp]), INT(INLINE_j_1[sp-0x1b4]), 4
-	sll $24, $5, 2
-	# ADD, INT(ti_11949[temp]), INT(ti_11949[temp]), 0
-	# MUL, INT(ti_11950[temp]), INT(INLINE_i_1[sp-0x1b0]), 40
-	sll $30, $6, 5
-	sll $3, $6, 3
-	addu $25, $30, $3
-	# ADD, INT(ti_11950[temp]), INT(ti_11950[temp]), INT(ti_11949[temp])
-	addu $25, $25, $24
-	# LOAD INT(ti_11951[temp]), INT(ti_11950[temp])[ARRAY(INLINE_array_f_1[sp-0x1ac])]
-	lw $17, -0x1ac($29)
-	addu $2, $17, $25
-	lw $27, 0x0($2)
-	# ADD, INT(INLINE_sum_1[sp-0x1b8]), INT(INLINE_sum_1[sp-0x1b8]), INT(ti_11951[temp])
-	addu $7, $7, $27
-	# ADD, INT(INLINE_j_1[sp-0x1b4]), INT(INLINE_j_1[sp-0x1b4]), 1
-	addiu $5, $5, 1
-	# JUMP B_74
-B_74:
-	# JUMP DO_CHECK_71
-DO_CHECK_71:
-	# BRANCH(blt) INT(INLINE_j_1[sp-0x1b4]) 10 ? DO_BODY_70 : DO_END_72
-	sw $17, -0x1ac($29)
-	blt $5, 10, DO_BODY_70
-DO_END_72:
-	# ADD, INT(INLINE_i_1[sp-0x1b0]), INT(INLINE_i_1[sp-0x1b0]), 1
-	addiu $6, $6, 1
-	# JUMP B_75
-B_75:
-	# JUMP DO_CHECK_67
-DO_CHECK_67:
-	# BRANCH(blt) INT(INLINE_i_1[sp-0x1b0]) 10 ? DO_BODY_66 : DO_END_68
-	blt $6, 10, DO_BODY_66
-DO_END_68:
-	# ASS, INT(ti_11946[temp]), INT(INLINE_sum_1[sp-0x1b8])
-	move $26, $7
-	# JUMP INLINE_sumMatrix_END_1
-	sw $26, -0x1bc($29)
-INLINE_sumMatrix_END_1:
-	# RETURN INT(ti_11946[sp-0x1bc])
-	lw $18, -0x1bc($29)
-	move $2, $18
+	move $20, $2
+	# ADD, INT(ti_6[temp]), INT(ti_3[sp-0x8]), INT(ti_5[temp])
+	lw $21, -0x8($29)
+	addu $22, $21, $20
+	# RETURN INT(ti_6[temp])
+	move $2, $22
 	jr $ra
 	
 FUNC_main:
-	# JUMP INLINE_output_id_BEGIN_2
-INLINE_output_id_BEGIN_2:
-	# JUMP AND_82
-AND_82:
-	# JUMP AND_END_81
-AND_END_81:
-	# JUMP IF_BODY_78
-IF_BODY_78:
-	# JUMP B_83
-B_83:
+	# DEF, INT(i[sp-0x4]), 2
+	li $6, 2
+	# DEF, INT(j[sp-0x8]), 5
+	li $5, 5
+	# GETINT INT(i[sp-0x4])
+	li $2, 5
+	syscall
+	move $6, $2
+	# GETINT INT(j[sp-0x8])
+	li $2, 5
+	syscall
+	move $5, $2
+	# MUL, INT(ti_7[temp]), INT(i[sp-0x4]), INT(j[sp-0x8])
+	mult $6, $5
+	mflo $17
+	# NEG, INT(ti_8[temp]), INT(ti_7[temp])
+	subu $18, $0, $17
+	# Call FUNC_fib; Params: 4; RET INT(ti_9[temp])
+	sw $31, 0x0($29)
+	addiu $4, $29, -28
+	li $3, 4
+	sw $3, -0x4($4)
+	sw $18, -0x18($29)
+	move $29, $4
+	jal FUNC_fib
+	addiu $29, $29, 28
+	lw $31, 0x0($29)
+	move $19, $2
+	# MUL, INT(ti_10[temp]), INT(ti_8[sp-0x18]), INT(ti_9[temp])
+	lw $20, -0x18($29)
+	mult $20, $19
+	mflo $21
+	# LOAD INT(ti_13[temp]), 4[ARRAY(a[data+0x4])]
+	lw $22, 0x8($28)
+	# ADD, INT(ti_12[temp]), INT(ti_10[temp]), INT(ti_13[temp])
+	addu $23, $21, $22
+	# MUL, INT(i[sp-0x4]), INT(ti_12[temp]), 5
+	sll $30, $23, 2
+	addu $6, $30, $23
+	# Call FUNC_fib; Params: 5; RET INT(ti_17[temp])
+	sw $31, 0x0($29)
+	addiu $4, $29, -28
+	li $3, 5
+	sw $3, -0x4($4)
+	sw $6, -0x4($29)
+	move $29, $4
+	jal FUNC_fib
+	addiu $29, $29, 28
+	lw $31, 0x0($29)
+	move $24, $2
+	lw $6, -0x4($29)
+	# ADD, INT(ti_18[temp]), INT(ti_17[temp]), 2
+	addiu $25, $24, 2
+	# Call FUNC_fib; Params: INT(ti_18[temp]); RET INT(ti_19[temp])
+	sw $31, 0x0($29)
+	addiu $4, $29, -32
+	sw $25, -0x4($4)
+	sw $6, -0x4($29)
+	move $29, $4
+	jal FUNC_fib
+	addiu $29, $29, 32
+	lw $31, 0x0($29)
+	move $26, $2
+	lw $6, -0x4($29)
+	# SUB, INT(ti_20[temp]), 1197, INT(ti_19[temp])
+	subu $3, $0, $26
+	addiu $27, $3, 1197
+	# ADD, INT(j[sp-0x8]), INT(ti_20[temp]), -10091
+	addiu $5, $27, -10091
+	# BRANCH(ble) INT(i[sp-0x4]) 100 ? DO_BODY_11 : DO_END_13
+	bgt $6, 100, DO_END_13
+DO_BODY_11:
+	# JUMP B_14
+B_14:
+	# LOAD INT(ti_23[temp]), 0[ARRAY(a[data+0x4])]
+	lw $17, 0x4($28)
+	# ADD, INT(ti_25[temp]), INT(ti_23[temp]), 36
+	addiu $18, $17, 36
+	# STORE INT(ti_25[temp]), 0[ARRAY(a[data+0x4])]
+	sw $18, 0x4($28)
+	# LOAD INT(ti_26[temp]), 4[ARRAY(a[data+0x4])]
+	lw $20, 0x8($28)
+	# ADD, INT(ti_28[temp]), INT(ti_26[temp]), 36
+	addiu $19, $20, 36
+	# STORE INT(ti_28[temp]), 4[ARRAY(a[data+0x4])]
+	sw $19, 0x8($28)
+	# LOAD INT(ti_29[temp]), 8[ARRAY(a[data+0x4])]
+	lw $21, 0xc($28)
+	# ADD, INT(ti_31[temp]), INT(ti_29[temp]), 36
+	addiu $22, $21, 36
+	# STORE INT(ti_31[temp]), 8[ARRAY(a[data+0x4])]
+	sw $22, 0xc($28)
+	# LOAD INT(ti_32[temp]), 12[ARRAY(a[data+0x4])]
+	lw $23, 0x10($28)
+	# ADD, INT(ti_34[temp]), INT(ti_32[temp]), 36
+	addiu $24, $23, 36
+	# STORE INT(ti_34[temp]), 12[ARRAY(a[data+0x4])]
+	sw $24, 0x10($28)
+	# LOAD INT(ti_35[temp]), 16[ARRAY(a[data+0x4])]
+	lw $25, 0x14($28)
+	# ADD, INT(ti_37[temp]), INT(ti_35[temp]), 36
+	addiu $26, $25, 36
+	# STORE INT(ti_37[temp]), 16[ARRAY(a[data+0x4])]
+	sw $26, 0x14($28)
+	# LOAD INT(ti_38[temp]), 20[ARRAY(a[data+0x4])]
+	lw $27, 0x18($28)
+	# ADD, INT(ti_40[temp]), INT(ti_38[temp]), 36
+	addiu $17, $27, 36
+	# STORE INT(ti_40[temp]), 20[ARRAY(a[data+0x4])]
+	sw $17, 0x18($28)
+	# LOAD INT(ti_41[temp]), 24[ARRAY(a[data+0x4])]
+	lw $18, 0x1c($28)
+	# ADD, INT(ti_43[temp]), INT(ti_41[temp]), 36
+	addiu $20, $18, 36
+	# STORE INT(ti_43[temp]), 24[ARRAY(a[data+0x4])]
+	sw $20, 0x1c($28)
+	# LOAD INT(ti_44[temp]), 28[ARRAY(a[data+0x4])]
+	lw $19, 0x20($28)
+	# ADD, INT(ti_46[temp]), INT(ti_44[temp]), 36
+	addiu $21, $19, 36
+	# STORE INT(ti_46[temp]), 28[ARRAY(a[data+0x4])]
+	sw $21, 0x20($28)
+	# LOAD INT(ti_47[temp]), 32[ARRAY(a[data+0x4])]
+	lw $22, 0x24($28)
+	# ADD, INT(ti_49[temp]), INT(ti_47[temp]), 36
+	addiu $23, $22, 36
+	# STORE INT(ti_49[temp]), 32[ARRAY(a[data+0x4])]
+	sw $23, 0x24($28)
+	# LOAD INT(ti_50[temp]), 36[ARRAY(a[data+0x4])]
+	lw $24, 0x28($28)
+	# ADD, INT(ti_52[temp]), INT(ti_50[temp]), 36
+	addiu $25, $24, 36
+	# STORE INT(ti_52[temp]), 36[ARRAY(a[data+0x4])]
+	sw $25, 0x28($28)
+	# ADD, INT(i[sp-0x4]), INT(i[sp-0x4]), 1
+	addiu $6, $6, 1
+	# JUMP B_15
+B_15:
+	# JUMP DO_CHECK_12
+DO_CHECK_12:
+	# BRANCH(ble) INT(i[sp-0x4]) 100 ? DO_BODY_11 : DO_END_13
+	ble $6, 100, DO_BODY_11
+DO_END_13:
+	# ASS, INT(i[sp-0x4]), 0
+	li $6, 0
+	# BRANCH(blt) INT(i[sp-0x4]) 10 ? DO_BODY_16 : DO_END_18
+	bge $6, 10, DO_END_18
+DO_BODY_16:
+	# JUMP B_19
+B_19:
+	# MUL, INT(ti_56[temp]), INT(i[sp-0x4]), 4
+	sll $26, $6, 2
+	# ADD, INT(ti_56[temp]), INT(ti_56[temp]), 0
+	# LOAD INT(ti_57[temp]), INT(ti_56[temp])[ARRAY(a[data+0x4])]
+	addu $2, $28, $26
+	lw $27, 0x4($2)
+	# PRINT_INT INT(ti_57[temp])
+	li $2, 1
+	move $4, $27
+	syscall
 	# PRINT_STR STR_1
 	li $2, 4
 	la $4, STR_1
 	syscall
-	# JUMP B_84
-B_84:
-	# JUMP IF_END_80
-IF_END_80:
-	# JUMP B_85
-B_85:
-	# JUMP INLINE_output_id_END_2
-INLINE_output_id_END_2:
-	# ASS, INT(INLINE_n_3[sp-0x4]), 89
-	li $6, 89
-	# JUMP INLINE_isPrime_BEGIN_3
-INLINE_isPrime_BEGIN_3:
-	# DEF, INT(INLINE_i_3[sp-0x8]), 3
-	li $5, 3
-	# BRANCH(ble) INT(INLINE_n_3[sp-0x4]) 0 ? IF_BODY_86 : IF_END_88
-	bgt $6, 0, IF_END_88
-IF_BODY_86:
-	# JUMP B_89
-B_89:
-	# ASS, INT(ti_11957[temp]), 0
-	li $17, 0
-	# JUMP INLINE_isPrime_END_3
-	sw $17, -0x1dc($29)
-	j INLINE_isPrime_END_3
-IF_END_88:
-	# MOD, INT(ti_11959[temp]), INT(INLINE_n_3[sp-0x4]), 2
-	andi $18, $6, 1
-	# BRANCH(beq) INT(ti_11959[temp]) 0 ? IF_BODY_91 : IF_END_93
-	bne $18, 0, IF_END_93
-IF_BODY_91:
-	# JUMP B_94
-B_94:
-	# ASS, INT(ti_11957[sp-0x1dc]), 0
-	li $19, 0
-	# JUMP INLINE_isPrime_END_3
-	sw $19, -0x1dc($29)
-	j INLINE_isPrime_END_3
-IF_END_93:
-	# DIV, INT(ti_11961[temp]), INT(INLINE_n_3[sp-0x4]), 2
-	sra $20, $6, 1
-	# BRANCH(blt) INT(INLINE_i_3[sp-0x8]) INT(ti_11961[temp]) ? DO_BODY_96 : DO_END_98
-	bge $5, $20, DO_END_98
-DO_BODY_96:
-	# JUMP B_99
-B_99:
-	# MOD, INT(ti_11963[temp]), INT(INLINE_n_3[sp-0x4]), INT(INLINE_i_3[sp-0x8])
-	div $6 $5
-	mfhi $21
-	# BRANCH(beq) INT(ti_11963[temp]) 0 ? IF_BODY_100 : IF_END_102
-	bne $21, 0, IF_END_102
-IF_BODY_100:
-	# JUMP B_103
-B_103:
-	# ASS, INT(ti_11957[sp-0x1dc]), 0
-	li $22, 0
-	# JUMP INLINE_isPrime_END_3
-	sw $22, -0x1dc($29)
-	j INLINE_isPrime_END_3
-IF_END_102:
-	# ADD, INT(INLINE_i_3[sp-0x8]), INT(INLINE_i_3[sp-0x8]), 2
-	addiu $5, $5, 2
-	# JUMP B_105
-B_105:
-	# JUMP DO_CHECK_97
-DO_CHECK_97:
-	# DIV, INT(ti_11966[temp]), INT(INLINE_n_3[sp-0x4]), 2
-	sra $23, $6, 1
-	# BRANCH(blt) INT(INLINE_i_3[sp-0x8]) INT(ti_11966[temp]) ? DO_BODY_96 : DO_END_98
-	blt $5, $23, DO_BODY_96
-DO_END_98:
-	# ASS, INT(ti_11957[sp-0x1dc]), 1
-	li $24, 1
-	# JUMP INLINE_isPrime_END_3
-	sw $24, -0x1dc($29)
-INLINE_isPrime_END_3:
-	# PRINT_INT INT(ti_11957[sp-0x1dc])
-	li $2, 1
-	lw $25, -0x1dc($29)
-	move $4, $25
-	syscall
+	# ADD, INT(i[sp-0x4]), INT(i[sp-0x4]), 1
+	addiu $6, $6, 1
+	# JUMP B_20
+B_20:
+	# JUMP DO_CHECK_17
+DO_CHECK_17:
+	# BRANCH(blt) INT(i[sp-0x4]) 10 ? DO_BODY_16 : DO_END_18
+	blt $6, 10, DO_BODY_16
+DO_END_18:
 	# PRINT_STR STR_2
 	li $2, 4
 	la $4, STR_2
 	syscall
-	# BRANCH(ble) INT(int_c[data+0x10]) 2 ? IF_BODY_107 : IF_END_109
-	lw $26, 0x10($28)
-	sw $26, 0x10($28)
-	bgt $26, 2, IF_END_109
-IF_BODY_107:
-	# JUMP B_110
-B_110:
-	# ASS, INT(int_d[data+0x14]), 1
-	li $27, 1
-	# JUMP B_111
-B_111:
-	# JUMP IF_END_109
-	sw $27, 0x14($28)
-IF_END_109:
-	# BRANCH(beq) INT(int_d[data+0x14]) 2 ? IF_BODY_112 : IF_END_114
-	lw $17, 0x14($28)
-	sw $17, 0x14($28)
-	bne $17, 2, IF_END_114
-IF_BODY_112:
-	# JUMP B_115
-B_115:
-	# ASS, INT(int_e[data+0x18]), 0
-	li $18, 0
-	# JUMP B_116
-B_116:
-	# JUMP IF_END_114
-	sw $18, 0x18($28)
-IF_END_114:
-	# BRANCH(blt) INT(int_e[data+0x18]) 2 ? IF_BODY_117 : IF_ELSE_118
-	lw $19, 0x18($28)
-	sw $19, 0x18($28)
-	bge $19, 2, IF_ELSE_118
-IF_BODY_117:
-	# JUMP B_120
-B_120:
-	# ASS, INT(int_d[data+0x14]), 3
-	li $20, 3
-	# JUMP B_121
-B_121:
-	# JUMP IF_END_119
-	sw $20, 0x14($28)
-	j IF_END_119
-IF_ELSE_118:
-	# JUMP B_122
-B_122:
-	# ASS, INT(int_d[data+0x14]), 4
-	li $21, 4
-	# JUMP B_123
-B_123:
-	# JUMP IF_END_119
-	sw $21, 0x14($28)
-IF_END_119:
-	# DEF, INT(i[sp-0xc]), 5
-	li $5, 5
-	# ADD, INT(int_c[data+0x10]), INT(i[sp-0xc]), 3
-	addiu $22, $5, 3
-	# ASS, INT(i[sp-0xc]), 0
-	li $5, 0
-	# BRANCH(blt) INT(i[sp-0xc]) 100 ? DO_BODY_124 : DO_END_126
-	sw $22, 0x10($28)
-	bge $5, 100, DO_END_126
-DO_BODY_124:
-	# JUMP B_127
-B_127:
-	# BRANCH(beq) INT(i[sp-0xc]) 0 ? IF_BODY_128 : AND_END_131
-	beq $5, 0, IF_BODY_128
-AND_END_131:
-	# BRANCH(beq) INT(i[sp-0xc]) 1 ? IF_BODY_128 : IF_ELSE_129
-	bne $5, 1, IF_ELSE_129
-IF_BODY_128:
-	# JUMP B_132
-B_132:
-	# MUL, INT(ti_11975[temp]), INT(i[sp-0xc]), 4
-	sll $23, $5, 2
-	# ADD, INT(ti_11975[temp]), INT(ti_11975[temp]), 0
-	# STORE 1, INT(ti_11975[temp])[ARRAY(array[data+0x24])]
-	li $3, 1
-	addu $2, $28, $23
-	sw $3, 0x24($2)
-	# JUMP B_133
-B_133:
-	# JUMP IF_END_130
-	j IF_END_130
-IF_ELSE_129:
-	# JUMP B_134
-B_134:
-	# MUL, INT(ti_11976[temp]), INT(i[sp-0xc]), 4
-	sll $24, $5, 2
-	# ADD, INT(ti_11976[temp]), INT(ti_11976[temp]), 0
-	# STORE 0, INT(ti_11976[temp])[ARRAY(array[data+0x24])]
-	li $3, 0
-	addu $2, $28, $24
-	sw $3, 0x24($2)
-	# JUMP B_135
-B_135:
-	# JUMP IF_END_130
-IF_END_130:
-	# ADD, INT(i[sp-0xc]), INT(i[sp-0xc]), 1
-	addiu $5, $5, 1
-	# JUMP B_136
-B_136:
-	# JUMP DO_CHECK_125
-DO_CHECK_125:
-	# BRANCH(blt) INT(i[sp-0xc]) 100 ? DO_BODY_124 : DO_END_126
-	blt $5, 100, DO_BODY_124
-DO_END_126:
-	# ASS, INT(i[sp-0xc]), 5
-	li $5, 5
-	# JUMP B_137
-B_137:
-	# JUMP B_138
-B_138:
-	# BRANCH(blt) INT(i[sp-0xc]) INT(int_c[data+0x10]) ? DO_BODY_139 : AND_END_142
-	lw $25, 0x10($28)
-	sw $25, 0x10($28)
-	blt $5, $25, DO_BODY_139
-AND_END_142:
-	# BRANCH(bgt) INT(i[sp-0xc]) INT(int_c[data+0x10]) ? DO_BODY_139 : DO_END_141
-	lw $26, 0x10($28)
-	sw $26, 0x10($28)
-	ble $5, $26, DO_END_141
-DO_BODY_139:
-	# JUMP B_143
-B_143:
-	# Call FUNC_factorial; Params: INT(i[sp-0xc]); RET INT(ti_11981[temp])
-	sw $31, 0x0($29)
-	addiu $4, $29, -480
-	sw $5, -0x4($4)
-	sw $5, -0xc($29)
-	move $29, $4
-	jal FUNC_factorial
-	addiu $29, $29, 480
-	lw $31, 0x0($29)
-	move $27, $2
-	lw $5, -0xc($29)
-	# PRINT_INT INT(ti_11981[temp])
+	# PRINT_INT INT(i[sp-0x4])
 	li $2, 1
-	move $4, $27
+	move $4, $6
 	syscall
-	# PRINT_STR STR_2
+	# PRINT_STR STR_1
 	li $2, 4
-	la $4, STR_2
+	la $4, STR_1
 	syscall
-	# ADD, INT(i[sp-0xc]), INT(i[sp-0xc]), 1
-	addiu $5, $5, 1
-	# BRANCH(beq) INT(i[sp-0xc]) INT(int_c[data+0x10]) ? IF_BODY_144 : IF_ELSE_145
-	lw $17, 0x10($28)
-	sw $17, 0x10($28)
-	bne $5, $17, IF_ELSE_145
-IF_BODY_144:
-	# JUMP B_147
-B_147:
-	# JUMP DO_END_141
-	j DO_END_141
-IF_ELSE_145:
-	# JUMP B_149
-B_149:
-	# JUMP DO_CHECK_140
-DO_CHECK_140:
-	# BRANCH(blt) INT(i[sp-0xc]) INT(int_c[data+0x10]) ? DO_BODY_139 : AND_END_152
-	lw $18, 0x10($28)
-	sw $18, 0x10($28)
-	blt $5, $18, DO_BODY_139
-AND_END_152:
-	# BRANCH(bgt) INT(i[sp-0xc]) INT(int_c[data+0x10]) ? DO_BODY_139 : DO_END_141
-	lw $19, 0x10($28)
-	sw $19, 0x10($28)
-	bgt $5, $19, DO_BODY_139
-DO_END_141:
-	# BRANCH(beq) INT(i[sp-0xc]) INT(int_c[data+0x10]) ? IF_BODY_153 : IF_END_155
-	lw $20, 0x10($28)
-	sw $20, 0x10($28)
-	bne $5, $20, IF_END_155
-IF_BODY_153:
-	# JUMP B_156
-B_156:
-	# JUMP INLINE_return_one_BEGIN_4
-INLINE_return_one_BEGIN_4:
-	# ASS, INT(ti_11987[temp]), 1
-	li $21, 1
-	# JUMP INLINE_return_one_END_4
-	sw $21, -0x1e0($29)
-INLINE_return_one_END_4:
-	# PRINT_INT INT(ti_11987[sp-0x1e0])
-	li $2, 1
-	lw $22, -0x1e0($29)
-	move $4, $22
-	syscall
-	# PRINT_STR STR_2
-	li $2, 4
-	la $4, STR_2
-	syscall
-	# JUMP B_158
-B_158:
-	# JUMP IF_END_155
-IF_END_155:
-	# ASS, INT(INLINE_a_5[sp-0x14]), 1
-	li $6, 1
-	# ASS, INT(INLINE_b_5[sp-0x18]), 1
-	li $7, 1
-	# JUMP INLINE_A_plus_B_BEGIN_5
-INLINE_A_plus_B_BEGIN_5:
-	# ADD, INT(ti_11989[temp]), INT(INLINE_a_5[sp-0x14]), INT(INLINE_b_5[sp-0x18])
-	addu $23, $6, $7
-	# ASS, INT(ti_11988[temp]), INT(ti_11989[temp])
-	move $24, $23
-	# JUMP INLINE_A_plus_B_END_5
-	sw $24, -0x1e4($29)
-INLINE_A_plus_B_END_5:
-	# PRINT_INT INT(ti_11988[sp-0x1e4])
-	li $2, 1
-	lw $25, -0x1e4($29)
-	move $4, $25
-	syscall
-	# PRINT_STR STR_2
-	li $2, 4
-	la $4, STR_2
-	syscall
-	# ASS, INT(INLINE_a_6[sp-0x1c]), 2
-	li $6, 2
-	# ASS, INT(INLINE_b_6[sp-0x20]), 2
-	li $7, 2
-	# JUMP INLINE_output_a_plus_b_BEGIN_6
-INLINE_output_a_plus_b_BEGIN_6:
-	# ADD, INT(ti_11990[temp]), INT(INLINE_a_6[sp-0x1c]), INT(INLINE_b_6[sp-0x20])
-	addu $26, $6, $7
-	# PRINT_INT INT(ti_11990[temp])
-	li $2, 1
-	move $4, $26
-	syscall
-	# PRINT_STR STR_2
-	li $2, 4
-	la $4, STR_2
-	syscall
-	# JUMP B_160
-B_160:
-	# JUMP INLINE_output_a_plus_b_END_6
-INLINE_output_a_plus_b_END_6:
-	# GETINT INT(i[sp-0xc])
-	li $2, 5
-	syscall
-	move $5, $2
-	# PRINT_INT INT(i[sp-0xc])
+	# PRINT_INT INT(j[sp-0x8])
 	li $2, 1
 	move $4, $5
 	syscall
-	# PRINT_STR STR_2
+	# PRINT_STR STR_1
 	li $2, 4
-	la $4, STR_2
+	la $4, STR_1
 	syscall
-	# ASS, INT(i[sp-0xc]), 0
-	li $5, 0
-	# BRANCH(blt) INT(i[sp-0xc]) 10 ? DO_BODY_161 : DO_END_163
-	bge $5, 10, DO_END_163
-DO_BODY_161:
-	# JUMP B_164
-B_164:
-	# ASS, INT(j[sp-0x10]), 0
-	li $6, 0
-	# BRANCH(blt) INT(j[sp-0x10]) 10 ? DO_BODY_165 : DO_END_167
-	bge $6, 10, DO_END_167
-DO_BODY_165:
-	# JUMP B_168
-B_168:
-	# MUL, INT(ti_11993[temp]), INT(j[sp-0x10]), 4
-	sll $27, $6, 2
-	# ADD, INT(ti_11993[temp]), INT(ti_11993[temp]), 0
-	# MUL, INT(ti_11994[temp]), INT(i[sp-0xc]), 40
-	sll $30, $5, 5
-	sll $3, $5, 3
-	addu $17, $30, $3
-	# ADD, INT(ti_11994[temp]), INT(ti_11994[temp]), INT(ti_11993[temp])
-	addu $17, $17, $27
-	# ADD, INT(ti_11995[temp]), INT(i[sp-0xc]), 1
-	addiu $18, $5, 1
-	# STORE INT(ti_11995[temp]), INT(ti_11994[temp])[ARRAY(matrix_A[data+0x1b4])]
-	addu $2, $28, $17
-	sw $18, 0x1b4($2)
-	# MUL, INT(ti_11996[temp]), INT(j[sp-0x10]), 4
-	sll $19, $6, 2
-	# ADD, INT(ti_11996[temp]), INT(ti_11996[temp]), 0
-	# MUL, INT(ti_11997[temp]), INT(i[sp-0xc]), 40
-	sll $30, $5, 5
-	sll $3, $5, 3
-	addu $20, $30, $3
-	# ADD, INT(ti_11997[temp]), INT(ti_11997[temp]), INT(ti_11996[temp])
-	addu $20, $20, $19
-	# ADD, INT(ti_11998[temp]), INT(j[sp-0x10]), 1
-	addiu $21, $6, 1
-	# STORE INT(ti_11998[temp]), INT(ti_11997[temp])[ARRAY(matrix_B[data+0x344])]
-	addu $2, $28, $20
-	sw $21, 0x344($2)
-	# ADD, INT(j[sp-0x10]), INT(j[sp-0x10]), 1
-	addiu $6, $6, 1
-	# JUMP B_169
-B_169:
-	# JUMP DO_CHECK_166
-DO_CHECK_166:
-	# BRANCH(blt) INT(j[sp-0x10]) 10 ? DO_BODY_165 : DO_END_167
-	blt $6, 10, DO_BODY_165
-DO_END_167:
-	# ADD, INT(i[sp-0xc]), INT(i[sp-0xc]), 1
-	addiu $5, $5, 1
-	# JUMP B_170
-B_170:
-	# JUMP DO_CHECK_162
-DO_CHECK_162:
-	# BRANCH(blt) INT(i[sp-0xc]) 10 ? DO_BODY_161 : DO_END_163
-	blt $5, 10, DO_BODY_161
-DO_END_163:
-	# OFFSET (ARRAY(matrix_A[data+0x1b4])+0)->POINTER(tp_1931[sp-0x24])
-	addiu $22, $28, 436
-	# OFFSET (ARRAY(matrix_B[data+0x344])+0)->POINTER(tp_1932[sp-0x28])
-	addiu $23, $28, 836
-	# ASS, ARRAY(INLINE_matrix_a_7[sp-0x24]), POINTER(tp_1931[sp-0x24])
-	move $8, $22
-	# STORE POINTER(tp_1931[sp-0x24]), -36[SPECIAL_SP(ts_1933[temp])]
-	sw $22, -0x24($29)
-	# ASS, ARRAY(INLINE_matrix_b_7[sp-0x28]), POINTER(tp_1932[sp-0x28])
-	move $5, $23
-	# STORE POINTER(tp_1932[sp-0x28]), -40[SPECIAL_SP(ts_1934[temp])]
-	sw $23, -0x28($29)
-	# JUMP INLINE_matrixMulti_BEGIN_7
-INLINE_matrixMulti_BEGIN_7:
-	# DEF, INT(INLINE_i_7[sp-0x1c0]), 0
-	li $9, 0
-	# BRANCH(blt) INT(INLINE_i_7[sp-0x1c0]) 10 ? DO_BODY_171 : DO_END_173
-	bge $9, 10, DO_END_173
-DO_BODY_171:
-	# JUMP B_174
-B_174:
-	# ASS, INT(INLINE_j_7[sp-0x1c4]), 0
-	li $6, 0
-	# BRANCH(blt) INT(INLINE_j_7[sp-0x1c4]) 10 ? DO_BODY_175 : DO_END_177
-	bge $6, 10, DO_END_177
-DO_BODY_175:
-	# JUMP B_178
-B_178:
-	# ASS, INT(INLINE_k_7[sp-0x1c8]), 0
-	li $7, 0
-	# MUL, INT(ti_12007[temp]), INT(INLINE_j_7[sp-0x1c4]), 4
-	sll $24, $6, 2
-	# ADD, INT(ti_12007[temp]), INT(ti_12007[temp]), 0
-	# MUL, INT(ti_12008[temp]), INT(INLINE_i_7[sp-0x1c0]), 40
-	sll $30, $9, 5
-	sll $3, $9, 3
-	addu $25, $30, $3
-	# ADD, INT(ti_12008[temp]), INT(ti_12008[temp]), INT(ti_12007[temp])
-	addu $25, $25, $24
-	# STORE 0, INT(ti_12008[temp])[ARRAY(INLINE_matrix_c_7[sp-0x1bc])]
-	li $3, 0
-	addu $2, $29, $25
-	sw $3, -0x1bc($2)
-	# BRANCH(blt) INT(INLINE_k_7[sp-0x1c8]) 10 ? DO_BODY_179 : DO_END_181
-	bge $7, 10, DO_END_181
-DO_BODY_179:
-	# JUMP B_182
-B_182:
-	# MUL, INT(ti_12010[temp]), INT(INLINE_j_7[sp-0x1c4]), 4
-	sll $26, $6, 2
-	# ADD, INT(ti_12010[temp]), INT(ti_12010[temp]), 0
-	# MUL, INT(ti_12011[temp]), INT(INLINE_i_7[sp-0x1c0]), 40
-	sll $30, $9, 5
-	sll $3, $9, 3
-	addu $27, $30, $3
-	# ADD, INT(ti_12011[temp]), INT(ti_12011[temp]), INT(ti_12010[temp])
-	addu $27, $27, $26
-	# MUL, INT(ti_12012[temp]), INT(INLINE_j_7[sp-0x1c4]), 4
-	sll $17, $6, 2
-	# ADD, INT(ti_12012[temp]), INT(ti_12012[temp]), 0
-	# MUL, INT(ti_12013[temp]), INT(INLINE_i_7[sp-0x1c0]), 40
-	sll $30, $9, 5
-	sll $3, $9, 3
-	addu $18, $30, $3
-	# ADD, INT(ti_12013[temp]), INT(ti_12013[temp]), INT(ti_12012[temp])
-	addu $18, $18, $17
-	# LOAD INT(ti_12014[temp]), INT(ti_12013[temp])[ARRAY(INLINE_matrix_c_7[sp-0x1bc])]
-	addu $2, $29, $18
-	lw $19, -0x1bc($2)
-	# MUL, INT(ti_12015[temp]), INT(INLINE_k_7[sp-0x1c8]), 4
-	sll $20, $7, 2
-	# ADD, INT(ti_12015[temp]), INT(ti_12015[temp]), 0
-	# MUL, INT(ti_12016[temp]), INT(INLINE_i_7[sp-0x1c0]), 40
-	sll $30, $9, 5
-	sll $3, $9, 3
-	addu $21, $30, $3
-	# ADD, INT(ti_12016[temp]), INT(ti_12016[temp]), INT(ti_12015[temp])
-	addu $21, $21, $20
-	# LOAD INT(ti_12017[temp]), INT(ti_12016[temp])[ARRAY(INLINE_matrix_a_7[sp-0x24])]
-	lw $23, -0x24($29)
-	addu $2, $23, $21
-	lw $22, 0x0($2)
-	# MUL, INT(ti_12018[temp]), INT(INLINE_j_7[sp-0x1c4]), 4
-	sll $24, $6, 2
-	# ADD, INT(ti_12018[temp]), INT(ti_12018[temp]), 0
-	# MUL, INT(ti_12019[temp]), INT(INLINE_k_7[sp-0x1c8]), 40
-	sll $30, $7, 5
-	sll $3, $7, 3
-	addu $25, $30, $3
-	# ADD, INT(ti_12019[temp]), INT(ti_12019[temp]), INT(ti_12018[temp])
-	addu $25, $25, $24
-	# LOAD INT(ti_12020[temp]), INT(ti_12019[temp])[ARRAY(INLINE_matrix_b_7[sp-0x28])]
-	lw $17, -0x28($29)
-	addu $2, $17, $25
-	lw $26, 0x0($2)
-	# MUL, INT(ti_12021[temp]), INT(ti_12017[temp]), INT(ti_12020[temp])
-	mult $22, $26
-	mflo $18
-	# ADD, INT(ti_12022[temp]), INT(ti_12014[temp]), INT(ti_12021[temp])
-	addu $20, $19, $18
-	# STORE INT(ti_12022[temp]), INT(ti_12011[temp])[ARRAY(INLINE_matrix_c_7[sp-0x1bc])]
-	addu $2, $29, $27
-	sw $20, -0x1bc($2)
-	# ADD, INT(INLINE_k_7[sp-0x1c8]), INT(INLINE_k_7[sp-0x1c8]), 1
-	addiu $7, $7, 1
-	# JUMP B_183
-B_183:
-	# JUMP DO_CHECK_180
-DO_CHECK_180:
-	# BRANCH(blt) INT(INLINE_k_7[sp-0x1c8]) 10 ? DO_BODY_179 : DO_END_181
-	sw $23, -0x24($29)
-	sw $17, -0x28($29)
-	blt $7, 10, DO_BODY_179
-DO_END_181:
-	# ADD, INT(INLINE_j_7[sp-0x1c4]), INT(INLINE_j_7[sp-0x1c4]), 1
-	addiu $6, $6, 1
-	# JUMP B_184
-B_184:
-	# JUMP DO_CHECK_176
-DO_CHECK_176:
-	# BRANCH(blt) INT(INLINE_j_7[sp-0x1c4]) 10 ? DO_BODY_175 : DO_END_177
-	blt $6, 10, DO_BODY_175
-DO_END_177:
-	# ADD, INT(INLINE_i_7[sp-0x1c0]), INT(INLINE_i_7[sp-0x1c0]), 1
-	addiu $9, $9, 1
-	# JUMP B_185
-B_185:
-	# JUMP DO_CHECK_172
-DO_CHECK_172:
-	# BRANCH(blt) INT(INLINE_i_7[sp-0x1c0]) 10 ? DO_BODY_171 : DO_END_173
-	blt $9, 10, DO_BODY_171
-DO_END_173:
-	# OFFSET (ARRAY(INLINE_matrix_c_7[sp-0x1bc])+0)->POINTER(tp_1935[sp-0x1cc])
-	addiu $21, $29, -444
-	# ASS, ARRAY(INLINE_array_f_8[sp-0x1cc]), POINTER(tp_1935[sp-0x1cc])
-	move $7, $21
-	# STORE POINTER(tp_1935[sp-0x1cc]), -460[SPECIAL_SP(ts_1936[temp])]
-	sw $21, -0x1cc($29)
-	# JUMP INLINE_sumMatrix_BEGIN_8
-INLINE_sumMatrix_BEGIN_8:
-	# DEF, INT(INLINE_i_8[sp-0x1d0]), 0
-	li $8, 0
-	# DEF, INT(INLINE_sum_8[sp-0x1d8]), 0
-	li $6, 0
-	# BRANCH(blt) INT(INLINE_i_8[sp-0x1d0]) 10 ? DO_BODY_186 : DO_END_188
-	bge $8, 10, DO_END_188
-DO_BODY_186:
-	# JUMP B_189
-B_189:
-	# ASS, INT(INLINE_j_8[sp-0x1d4]), 0
-	li $5, 0
-	# BRANCH(blt) INT(INLINE_j_8[sp-0x1d4]) 10 ? DO_BODY_190 : DO_END_192
-	bge $5, 10, DO_END_192
-DO_BODY_190:
-	# JUMP B_193
-B_193:
-	# MUL, INT(ti_12032[temp]), INT(INLINE_j_8[sp-0x1d4]), 4
-	sll $24, $5, 2
-	# ADD, INT(ti_12032[temp]), INT(ti_12032[temp]), 0
-	# MUL, INT(ti_12033[temp]), INT(INLINE_i_8[sp-0x1d0]), 40
-	sll $30, $8, 5
-	sll $3, $8, 3
-	addu $25, $30, $3
-	# ADD, INT(ti_12033[temp]), INT(ti_12033[temp]), INT(ti_12032[temp])
-	addu $25, $25, $24
-	# LOAD INT(ti_12034[temp]), INT(ti_12033[temp])[ARRAY(INLINE_array_f_8[sp-0x1cc])]
-	lw $26, -0x1cc($29)
-	addu $2, $26, $25
-	lw $22, 0x0($2)
-	# ADD, INT(INLINE_sum_8[sp-0x1d8]), INT(INLINE_sum_8[sp-0x1d8]), INT(ti_12034[temp])
-	addu $6, $6, $22
-	# ADD, INT(INLINE_j_8[sp-0x1d4]), INT(INLINE_j_8[sp-0x1d4]), 1
-	addiu $5, $5, 1
-	# JUMP B_194
-B_194:
-	# JUMP DO_CHECK_191
-DO_CHECK_191:
-	# BRANCH(blt) INT(INLINE_j_8[sp-0x1d4]) 10 ? DO_BODY_190 : DO_END_192
-	sw $26, -0x1cc($29)
-	blt $5, 10, DO_BODY_190
-DO_END_192:
-	# ADD, INT(INLINE_i_8[sp-0x1d0]), INT(INLINE_i_8[sp-0x1d0]), 1
-	addiu $8, $8, 1
-	# JUMP B_195
-B_195:
-	# JUMP DO_CHECK_187
-DO_CHECK_187:
-	# BRANCH(blt) INT(INLINE_i_8[sp-0x1d0]) 10 ? DO_BODY_186 : DO_END_188
-	blt $8, 10, DO_BODY_186
-DO_END_188:
-	# ASS, INT(ti_12029[temp]), INT(INLINE_sum_8[sp-0x1d8])
-	move $19, $6
-	# JUMP INLINE_sumMatrix_END_8
-	sw $19, -0x1e8($29)
-INLINE_sumMatrix_END_8:
-	# ASS, INT(ti_12004[temp]), INT(ti_12029[sp-0x1e8])
-	lw $18, -0x1e8($29)
-	move $27, $18
-	# JUMP INLINE_matrixMulti_END_7
-	sw $27, -0x1ec($29)
-INLINE_matrixMulti_END_7:
-	# PRINT_INT INT(ti_12004[sp-0x1ec])
+	# PRINT_INT -6
 	li $2, 1
-	lw $20, -0x1ec($29)
-	move $4, $20
+	li $4, -6
 	syscall
 	# PRINT_STR STR_2
 	li $2, 4
