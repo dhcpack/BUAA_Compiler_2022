@@ -22,7 +22,7 @@ C语言子集SysY ==> Mips
 
 ​	编译器的整体架构：
 
-![总体架构](.\img\总体架构.jpg)
+![总体架构](https://github.com/mooneater1021/BUAA_Compiler_2022/blob/main/img/%E6%80%BB%E4%BD%93%E6%9E%B6%E6%9E%84.jpg)
 
 
 
