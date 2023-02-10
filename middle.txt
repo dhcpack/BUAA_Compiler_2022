@@ -1,0 +1,787 @@
+###### GLOBAL STRING ######
+STR_1 : run:
+STR_2 : \n
+STR_3 : not run:
+STR_4 : 2022!!!\n
+STR_5 : printsth\n
+STR_6 : 20373614\n
+STR_7 : LOW:
+STR_8 : HIGH:
+STR_9 : add:
+STR_10 : input:
+STR_11 : year1:
+STR_12 : ,year2:
+STR_13 : ,year3:
+STR_14 : ,year4:
+STR_15 : ,year5:
+STR_16 : ,year6:
+
+###### GLOBAL ARRAY ######
+[0x0]array s1_1: 100 200 300 400 500 111 222 333 444 555 99 102 0 123 145
+[0x3c]array s2_1: 100 200 300 400 500 111 222 333 444 555 99 102 0 123 145
+[0x78]array add: 123 666 456
+[0x84]array s_2: 0 0 0
+[0x90]array s_3: 0 0 0
+[0xa8]array month: 1 2 3 4 5 6 7 8 9
+
+###### GLOBAL VAR ######
+[0x9c]a1: 1
+[0xa0]a2: 2
+[0xa4]a3: 3
+[0xcc]year_1: 4
+[0xd0]year_2: 100
+
+###### TEXT ######
+JUMP FUNC_main
+# func get_average : stack size 0xc
+# param: ARRAY(a[sp-0x4])
+FUNC_get_average:
+	DEF, INT(s[sp-0x8]), 0
+	DEF, INT(i[sp-0xc]), 2
+	BRANCH(bge) INT(i[sp-0xc]) 0 ? DO_BODY_0 : DO_END_2
+DO_BODY_0:
+	JUMP B_3
+B_3:
+	MUL, INT(ti_1[temp]), 0, 4
+	MUL, INT(ti_2[temp]), INT(i[sp-0xc]), 20
+	ADD, INT(ti_2[temp]), INT(ti_2[temp]), INT(ti_1[temp])
+	LOAD INT(ti_3[temp]), INT(ti_2[temp])[ARRAY(a[sp-0x4])]
+	MUL, INT(ti_4[temp]), 1, 4
+	MUL, INT(ti_5[temp]), INT(i[sp-0xc]), 20
+	ADD, INT(ti_5[temp]), INT(ti_5[temp]), INT(ti_4[temp])
+	LOAD INT(ti_6[temp]), INT(ti_5[temp])[ARRAY(a[sp-0x4])]
+	ADD, INT(ti_7[temp]), INT(ti_3[temp]), INT(ti_6[temp])
+	MUL, INT(ti_9[temp]), 2, 4
+	MUL, INT(ti_10[temp]), INT(i[sp-0xc]), 20
+	ADD, INT(ti_10[temp]), INT(ti_10[temp]), INT(ti_9[temp])
+	LOAD INT(ti_11[temp]), INT(ti_10[temp])[ARRAY(a[sp-0x4])]
+	ADD, INT(ti_8[temp]), INT(ti_7[temp]), INT(ti_11[temp])
+	MUL, INT(ti_13[temp]), 3, 4
+	MUL, INT(ti_14[temp]), INT(i[sp-0xc]), 20
+	ADD, INT(ti_14[temp]), INT(ti_14[temp]), INT(ti_13[temp])
+	LOAD INT(ti_15[temp]), INT(ti_14[temp])[ARRAY(a[sp-0x4])]
+	ADD, INT(ti_12[temp]), INT(ti_8[temp]), INT(ti_15[temp])
+	MUL, INT(ti_17[temp]), 4, 4
+	MUL, INT(ti_18[temp]), INT(i[sp-0xc]), 20
+	ADD, INT(ti_18[temp]), INT(ti_18[temp]), INT(ti_17[temp])
+	LOAD INT(ti_19[temp]), INT(ti_18[temp])[ARRAY(a[sp-0x4])]
+	ADD, INT(s[sp-0x8]), INT(ti_12[temp]), INT(ti_19[temp])
+	DIV, INT(s[sp-0x8]), INT(s[sp-0x8]), 5
+	MUL, INT(ti_21[temp]), INT(i[sp-0xc]), 4
+	STORE INT(s[sp-0x8]), INT(ti_21[temp])[ARRAY(s_2[data+0x84])]
+	SUB, INT(i[sp-0xc]), INT(i[sp-0xc]), 1
+	JUMP B_4
+B_4:
+	JUMP DO_CHECK_1
+DO_CHECK_1:
+	BRANCH(bge) INT(i[sp-0xc]) 0 ? DO_BODY_0 : DO_END_2
+DO_END_2:
+	RETURN VOID
+# func blank : stack size 0xc
+# param: INT(a[sp-0x4]), INT(b[sp-0x8]), INT(c[sp-0xc])
+FUNC_blank:
+	RETURN VOID
+# func blank2 : stack size 0xc
+# param: INT(a[sp-0x4]), ARRAY(b[sp-0x8]), ARRAY(C23[sp-0xc])
+FUNC_blank2:
+	RETURN VOID
+# func add_1 : stack size 0x10
+# param: INT(a[sp-0x4]), ARRAY(s[sp-0x8])
+FUNC_add_1:
+	DEF, INT(i_1[sp-0xc]), 2
+	DEF, INT(sum[sp-0x10]), 0
+	BRANCH(bge) INT(i_1[sp-0xc]) 0 ? DO_BODY_8 : DO_END_10
+DO_BODY_8:
+	JUMP B_11
+B_11:
+	MUL, INT(ti_25[temp]), INT(i_1[sp-0xc]), 4
+	LOAD INT(ti_26[temp]), INT(ti_25[temp])[ARRAY(s[sp-0x8])]
+	ADD, INT(sum[sp-0x10]), INT(sum[sp-0x10]), INT(ti_26[temp])
+	SUB, INT(i_1[sp-0xc]), INT(i_1[sp-0xc]), 1
+	JUMP B_12
+B_12:
+	JUMP DO_CHECK_9
+DO_CHECK_9:
+	BRANCH(bge) INT(i_1[sp-0xc]) 0 ? DO_BODY_8 : DO_END_10
+DO_END_10:
+	SUB, INT(a[sp-0x4]), INT(a[sp-0x4]), 3
+	DIV, INT(sum[sp-0x10]), INT(sum[sp-0x10]), INT(a[sp-0x4])
+	ADD, INT(a[sp-0x4]), INT(a[sp-0x4]), 4
+	MUL, INT(sum[sp-0x10]), INT(sum[sp-0x10]), INT(a[sp-0x4])
+	SUB, INT(sum[sp-0x10]), INT(sum[sp-0x10]), INT(a[sp-0x4])
+	ADD, INT(a[sp-0x4]), INT(a[sp-0x4]), 6
+	MOD, INT(ti_36[temp]), INT(sum[sp-0x10]), INT(a[sp-0x4])
+	ASS, INT(sum[sp-0x10]), INT(ti_36[temp])
+	RETURN INT(sum[sp-0x10])
+# func checkyear : stack size 0x4
+# param: INT(year[sp-0x4])
+FUNC_checkyear:
+	BRANCH(bge) INT(year[sp-0x4]) 0 ? IF_BODY_14 : IF_END_16
+IF_BODY_14:
+	JUMP B_17
+B_17:
+	BRANCH(bne) INT(year[sp-0x4]) 2022 ? IF_BODY_18 : AND_END_21
+AND_END_21:
+	BRANCH(ble) INT(year[sp-0x4]) 2021 ? IF_BODY_18 : IF_ELSE_19
+IF_BODY_18:
+	JUMP B_22
+B_22:
+	MOD, INT(ti_40[temp]), INT(year[sp-0x4]), 400
+	BRANCH(beq) INT(ti_40[temp]) 0 ? IF_BODY_23 : AND_END_26
+AND_END_26:
+	MOD, INT(ti_42[temp]), INT(year[sp-0x4]), 4
+	BRANCH(beq) INT(ti_42[temp]) 0 ? AND_27 : IF_ELSE_24
+AND_27:
+	MOD, INT(ti_44[temp]), INT(year[sp-0x4]), 100
+	BRANCH(bne) INT(ti_44[temp]) 0 ? IF_BODY_23 : IF_ELSE_24
+IF_BODY_23:
+	JUMP B_28
+B_28:
+	PRINT_STR STR_1
+	PRINT_INT INT(year[sp-0x4])
+	PRINT_STR STR_2
+	JUMP B_29
+B_29:
+	JUMP IF_END_25
+IF_ELSE_24:
+	JUMP B_30
+B_30:
+	PRINT_STR STR_3
+	PRINT_INT INT(year[sp-0x4])
+	PRINT_STR STR_2
+	JUMP B_31
+B_31:
+	JUMP IF_END_25
+IF_END_25:
+	JUMP B_32
+B_32:
+	JUMP IF_END_20
+IF_ELSE_19:
+	JUMP B_33
+B_33:
+	PRINT_STR STR_4
+	JUMP B_34
+B_34:
+	JUMP IF_END_20
+IF_END_20:
+	JUMP B_35
+B_35:
+	JUMP IF_END_16
+IF_END_16:
+	RETURN INT(year[sp-0x4])
+# func printsth : stack size 0x0
+# param: 
+FUNC_printsth:
+	PRINT_STR STR_5
+	RETURN VOID
+# func main : stack size 0x90
+# param: 
+FUNC_main:
+	JUMP B_38
+B_38:
+	DEF, INT(j[sp-0x4]), 0
+	DEF, INT(k[sp-0x8]), 3
+	DEF, INT(i[sp-0xc]), 3
+	DEF, INT(in_put[sp-0x10]), 0
+	DEF, INT(x[sp-0x14]), 0
+	DEF, INT(y[sp-0x18]), 0
+	DEF, INT(z[sp-0x1c]), 0
+	DEF, INT(x_1[sp-0x20]), 0
+	DEF, INT(y_1[sp-0x24]), 0
+	DEF, INT(z_1[sp-0x28]), 0
+	DEF, INT(aaa[sp-0x2c]), 0
+	DEF, INT(bbb[sp-0x30]), 0
+	DEF, INT(ccc[sp-0x34]), 0
+	DEF, INT(ddd[sp-0x38]), 0
+	DEF, INT(eee[sp-0x3c]), 0
+	DEF, INT(fff[sp-0x40]), 0
+	GETINT INT(in_put[sp-0x10])
+	GETINT INT(x[sp-0x14])
+	GETINT INT(y[sp-0x18])
+	GETINT INT(z[sp-0x1c])
+	GETINT INT(x_1[sp-0x20])
+	GETINT INT(y_1[sp-0x24])
+	GETINT INT(z_1[sp-0x28])
+	PRINT_STR STR_6
+	OFFSET (ARRAY(s1_1[data+0x0])+0)->POINTER(tp_0[sp-0x44])
+	ASS, ARRAY(INLINE_a_1[sp-0x44]), POINTER(tp_0[sp-0x44])
+	STORE POINTER(tp_0[sp-0x44]), -68[SPECIAL_SP(ts_1[temp])]
+	JUMP INLINE_get_average_BEGIN_1
+INLINE_get_average_BEGIN_1:
+	DEF, INT(INLINE_s_1[sp-0x48]), 0
+	DEF, INT(INLINE_i_1[sp-0x4c]), 2
+	BRANCH(bge) INT(INLINE_i_1[sp-0x4c]) 0 ? DO_BODY_39 : DO_END_41
+DO_BODY_39:
+	JUMP B_42
+B_42:
+	MUL, INT(ti_47[temp]), 0, 4
+	ADD, INT(ti_47[temp]), INT(ti_47[temp]), 0
+	MUL, INT(ti_48[temp]), INT(INLINE_i_1[sp-0x4c]), 20
+	ADD, INT(ti_48[temp]), INT(ti_48[temp]), INT(ti_47[temp])
+	LOAD INT(ti_49[temp]), INT(ti_48[temp])[ARRAY(INLINE_a_1[sp-0x44])]
+	MUL, INT(ti_50[temp]), 1, 4
+	ADD, INT(ti_50[temp]), INT(ti_50[temp]), 0
+	MUL, INT(ti_51[temp]), INT(INLINE_i_1[sp-0x4c]), 20
+	ADD, INT(ti_51[temp]), INT(ti_51[temp]), INT(ti_50[temp])
+	LOAD INT(ti_52[temp]), INT(ti_51[temp])[ARRAY(INLINE_a_1[sp-0x44])]
+	ADD, INT(ti_53[temp]), INT(ti_49[temp]), INT(ti_52[temp])
+	MUL, INT(ti_55[temp]), 2, 4
+	ADD, INT(ti_55[temp]), INT(ti_55[temp]), 0
+	MUL, INT(ti_56[temp]), INT(INLINE_i_1[sp-0x4c]), 20
+	ADD, INT(ti_56[temp]), INT(ti_56[temp]), INT(ti_55[temp])
+	LOAD INT(ti_57[temp]), INT(ti_56[temp])[ARRAY(INLINE_a_1[sp-0x44])]
+	ADD, INT(ti_54[temp]), INT(ti_53[temp]), INT(ti_57[temp])
+	MUL, INT(ti_59[temp]), 3, 4
+	ADD, INT(ti_59[temp]), INT(ti_59[temp]), 0
+	MUL, INT(ti_60[temp]), INT(INLINE_i_1[sp-0x4c]), 20
+	ADD, INT(ti_60[temp]), INT(ti_60[temp]), INT(ti_59[temp])
+	LOAD INT(ti_61[temp]), INT(ti_60[temp])[ARRAY(INLINE_a_1[sp-0x44])]
+	ADD, INT(ti_58[temp]), INT(ti_54[temp]), INT(ti_61[temp])
+	MUL, INT(ti_63[temp]), 4, 4
+	ADD, INT(ti_63[temp]), INT(ti_63[temp]), 0
+	MUL, INT(ti_64[temp]), INT(INLINE_i_1[sp-0x4c]), 20
+	ADD, INT(ti_64[temp]), INT(ti_64[temp]), INT(ti_63[temp])
+	LOAD INT(ti_65[temp]), INT(ti_64[temp])[ARRAY(INLINE_a_1[sp-0x44])]
+	ADD, INT(INLINE_s_1[sp-0x48]), INT(ti_58[temp]), INT(ti_65[temp])
+	DIV, INT(INLINE_s_1[sp-0x48]), INT(INLINE_s_1[sp-0x48]), 5
+	MUL, INT(ti_67[temp]), INT(INLINE_i_1[sp-0x4c]), 4
+	ADD, INT(ti_67[temp]), INT(ti_67[temp]), 0
+	STORE INT(INLINE_s_1[sp-0x48]), INT(ti_67[temp])[ARRAY(s_2[data+0x84])]
+	SUB, INT(INLINE_i_1[sp-0x4c]), INT(INLINE_i_1[sp-0x4c]), 1
+	JUMP B_43
+B_43:
+	JUMP DO_CHECK_40
+DO_CHECK_40:
+	BRANCH(bge) INT(INLINE_i_1[sp-0x4c]) 0 ? DO_BODY_39 : DO_END_41
+DO_END_41:
+	JUMP B_44
+B_44:
+	JUMP INLINE_get_average_END_1
+INLINE_get_average_END_1:
+	BRANCH(bgt) INT(i[sp-0xc]) 0 ? DO_BODY_45 : DO_END_47
+DO_BODY_45:
+	JUMP B_48
+B_48:
+	SUB, INT(ti_72[temp]), INT(i[sp-0xc]), 1
+	MUL, INT(ti_71[temp]), INT(ti_72[temp]), 4
+	ADD, INT(ti_71[temp]), INT(ti_71[temp]), 0
+	LOAD INT(ti_73[temp]), INT(ti_71[temp])[ARRAY(s_2[data+0x84])]
+	BRANCH(beq) INT(ti_73[temp]) 300 ? IF_BODY_49 : IF_ELSE_50
+IF_BODY_49:
+	JUMP B_52
+B_52:
+	SUB, INT(i[sp-0xc]), INT(i[sp-0xc]), 1
+	JUMP DO_CHECK_46
+IF_ELSE_50:
+	JUMP B_54
+B_54:
+	JUMP AND_58
+AND_58:
+	SUB, INT(ti_77[temp]), INT(i[sp-0xc]), 1
+	MUL, INT(ti_76[temp]), INT(ti_77[temp]), 4
+	ADD, INT(ti_76[temp]), INT(ti_76[temp]), 0
+	LOAD INT(ti_78[temp]), INT(ti_76[temp])[ARRAY(s_2[data+0x84])]
+	SUB, INT(ti_79[temp]), INT(ti_78[temp]), 300
+	NOT, INT(ti_80[temp]), INT(ti_79[temp])
+	Branch INT(ti_80[temp]) ? AND_59 : IF_END_57
+AND_59:
+	SUB, INT(ti_82[temp]), INT(i[sp-0xc]), 1
+	MUL, INT(ti_81[temp]), INT(ti_82[temp]), 4
+	ADD, INT(ti_81[temp]), INT(ti_81[temp]), 0
+	LOAD INT(ti_83[temp]), INT(ti_81[temp])[ARRAY(s_2[data+0x84])]
+	BRANCH(blt) INT(ti_83[temp]) 100 ? IF_BODY_55 : IF_END_57
+IF_BODY_55:
+	JUMP B_60
+B_60:
+	SUB, INT(ti_86[temp]), INT(i[sp-0xc]), 1
+	MUL, INT(ti_85[temp]), INT(ti_86[temp]), 4
+	ADD, INT(ti_85[temp]), INT(ti_85[temp]), 0
+	LOAD INT(ti_87[temp]), INT(ti_85[temp])[ARRAY(s_2[data+0x84])]
+	PRINT_STR STR_7
+	PRINT_INT INT(ti_87[temp])
+	PRINT_STR STR_2
+	JUMP B_61
+B_61:
+	JUMP IF_END_57
+IF_END_57:
+	JUMP AND_65
+AND_65:
+	JUMP IF_END_64
+IF_END_64:
+	SUB, INT(i[sp-0xc]), INT(i[sp-0xc]), 1
+	JUMP B_74
+B_74:
+	JUMP IF_END_51
+IF_END_51:
+	JUMP B_75
+B_75:
+	JUMP DO_CHECK_46
+DO_CHECK_46:
+	BRANCH(bgt) INT(i[sp-0xc]) 0 ? DO_BODY_45 : DO_END_47
+DO_END_47:
+	OFFSET (ARRAY(add[data+0x78])+0)->POINTER(tp_2[sp-0x54])
+	ASS, INT(INLINE_a_2[sp-0x50]), 5
+	ASS, ARRAY(INLINE_s_2[sp-0x54]), POINTER(tp_2[sp-0x54])
+	STORE POINTER(tp_2[sp-0x54]), -84[SPECIAL_SP(ts_3[temp])]
+	JUMP INLINE_add_1_BEGIN_2
+INLINE_add_1_BEGIN_2:
+	DEF, INT(INLINE_i_1_2[sp-0x58]), 2
+	DEF, INT(INLINE_sum_2[sp-0x5c]), 0
+	BRANCH(bge) INT(INLINE_i_1_2[sp-0x58]) 0 ? DO_BODY_76 : DO_END_78
+DO_BODY_76:
+	JUMP B_79
+B_79:
+	MUL, INT(ti_103[temp]), INT(INLINE_i_1_2[sp-0x58]), 4
+	ADD, INT(ti_103[temp]), INT(ti_103[temp]), 0
+	LOAD INT(ti_104[temp]), INT(ti_103[temp])[ARRAY(INLINE_s_2[sp-0x54])]
+	ADD, INT(INLINE_sum_2[sp-0x5c]), INT(INLINE_sum_2[sp-0x5c]), INT(ti_104[temp])
+	SUB, INT(INLINE_i_1_2[sp-0x58]), INT(INLINE_i_1_2[sp-0x58]), 1
+	JUMP B_80
+B_80:
+	JUMP DO_CHECK_77
+DO_CHECK_77:
+	BRANCH(bge) INT(INLINE_i_1_2[sp-0x58]) 0 ? DO_BODY_76 : DO_END_78
+DO_END_78:
+	SUB, INT(INLINE_a_2[sp-0x50]), INT(INLINE_a_2[sp-0x50]), 3
+	DIV, INT(INLINE_sum_2[sp-0x5c]), INT(INLINE_sum_2[sp-0x5c]), INT(INLINE_a_2[sp-0x50])
+	ADD, INT(INLINE_a_2[sp-0x50]), INT(INLINE_a_2[sp-0x50]), 4
+	MUL, INT(INLINE_sum_2[sp-0x5c]), INT(INLINE_sum_2[sp-0x5c]), INT(INLINE_a_2[sp-0x50])
+	SUB, INT(INLINE_sum_2[sp-0x5c]), INT(INLINE_sum_2[sp-0x5c]), INT(INLINE_a_2[sp-0x50])
+	ADD, INT(INLINE_a_2[sp-0x50]), INT(INLINE_a_2[sp-0x50]), 6
+	MOD, INT(ti_114[temp]), INT(INLINE_sum_2[sp-0x5c]), INT(INLINE_a_2[sp-0x50])
+	ASS, INT(INLINE_sum_2[sp-0x5c]), INT(ti_114[temp])
+	ASS, INT(ti_101[temp]), INT(INLINE_sum_2[sp-0x5c])
+	JUMP INLINE_add_1_END_2
+INLINE_add_1_END_2:
+	ASS, INT(j[sp-0x4]), INT(ti_101[temp])
+	PRINT_STR STR_9
+	PRINT_INT INT(j[sp-0x4])
+	PRINT_STR STR_2
+	OFFSET (ARRAY(add[data+0x78])+0)->POINTER(tp_4[sp-0x64])
+	ASS, INT(INLINE_a_3[sp-0x60]), INT(in_put[sp-0x10])
+	ASS, ARRAY(INLINE_s_3[sp-0x64]), POINTER(tp_4[sp-0x64])
+	STORE POINTER(tp_4[sp-0x64]), -100[SPECIAL_SP(ts_5[temp])]
+	JUMP INLINE_add_1_BEGIN_3
+INLINE_add_1_BEGIN_3:
+	DEF, INT(INLINE_i_1_3[sp-0x68]), 2
+	DEF, INT(INLINE_sum_3[sp-0x6c]), 0
+	BRANCH(bge) INT(INLINE_i_1_3[sp-0x68]) 0 ? DO_BODY_82 : DO_END_84
+DO_BODY_82:
+	JUMP B_85
+B_85:
+	MUL, INT(ti_117[temp]), INT(INLINE_i_1_3[sp-0x68]), 4
+	ADD, INT(ti_117[temp]), INT(ti_117[temp]), 0
+	LOAD INT(ti_118[temp]), INT(ti_117[temp])[ARRAY(INLINE_s_3[sp-0x64])]
+	ADD, INT(INLINE_sum_3[sp-0x6c]), INT(INLINE_sum_3[sp-0x6c]), INT(ti_118[temp])
+	SUB, INT(INLINE_i_1_3[sp-0x68]), INT(INLINE_i_1_3[sp-0x68]), 1
+	JUMP B_86
+B_86:
+	JUMP DO_CHECK_83
+DO_CHECK_83:
+	BRANCH(bge) INT(INLINE_i_1_3[sp-0x68]) 0 ? DO_BODY_82 : DO_END_84
+DO_END_84:
+	SUB, INT(INLINE_a_3[sp-0x60]), INT(INLINE_a_3[sp-0x60]), 3
+	DIV, INT(INLINE_sum_3[sp-0x6c]), INT(INLINE_sum_3[sp-0x6c]), INT(INLINE_a_3[sp-0x60])
+	ADD, INT(INLINE_a_3[sp-0x60]), INT(INLINE_a_3[sp-0x60]), 4
+	MUL, INT(INLINE_sum_3[sp-0x6c]), INT(INLINE_sum_3[sp-0x6c]), INT(INLINE_a_3[sp-0x60])
+	SUB, INT(INLINE_sum_3[sp-0x6c]), INT(INLINE_sum_3[sp-0x6c]), INT(INLINE_a_3[sp-0x60])
+	ADD, INT(INLINE_a_3[sp-0x60]), INT(INLINE_a_3[sp-0x60]), 6
+	MOD, INT(ti_128[temp]), INT(INLINE_sum_3[sp-0x6c]), INT(INLINE_a_3[sp-0x60])
+	ASS, INT(INLINE_sum_3[sp-0x6c]), INT(ti_128[temp])
+	ASS, INT(ti_115[temp]), INT(INLINE_sum_3[sp-0x6c])
+	JUMP INLINE_add_1_END_3
+INLINE_add_1_END_3:
+	ASS, INT(k[sp-0x8]), INT(ti_115[temp])
+	PRINT_STR STR_10
+	PRINT_INT INT(k[sp-0x8])
+	PRINT_STR STR_2
+	ASS, INT(INLINE_year_4[sp-0x70]), INT(x[sp-0x14])
+	JUMP INLINE_checkyear_BEGIN_4
+INLINE_checkyear_BEGIN_4:
+	BRANCH(bge) INT(INLINE_year_4[sp-0x70]) 0 ? IF_BODY_88 : IF_END_90
+IF_BODY_88:
+	JUMP B_91
+B_91:
+	BRANCH(bne) INT(INLINE_year_4[sp-0x70]) 2022 ? IF_BODY_92 : AND_END_95
+AND_END_95:
+	BRANCH(ble) INT(INLINE_year_4[sp-0x70]) 2021 ? IF_BODY_92 : IF_ELSE_93
+IF_BODY_92:
+	JUMP B_96
+B_96:
+	MOD, INT(ti_133[temp]), INT(INLINE_year_4[sp-0x70]), 400
+	BRANCH(beq) INT(ti_133[temp]) 0 ? IF_BODY_97 : AND_END_100
+AND_END_100:
+	MOD, INT(ti_135[temp]), INT(INLINE_year_4[sp-0x70]), 4
+	BRANCH(beq) INT(ti_135[temp]) 0 ? AND_101 : IF_ELSE_98
+AND_101:
+	MOD, INT(ti_137[temp]), INT(INLINE_year_4[sp-0x70]), 100
+	BRANCH(bne) INT(ti_137[temp]) 0 ? IF_BODY_97 : IF_ELSE_98
+IF_BODY_97:
+	JUMP B_102
+B_102:
+	PRINT_STR STR_1
+	PRINT_INT INT(INLINE_year_4[sp-0x70])
+	PRINT_STR STR_2
+	JUMP B_103
+B_103:
+	JUMP IF_END_99
+IF_ELSE_98:
+	JUMP B_104
+B_104:
+	PRINT_STR STR_3
+	PRINT_INT INT(INLINE_year_4[sp-0x70])
+	PRINT_STR STR_2
+	JUMP B_105
+B_105:
+	JUMP IF_END_99
+IF_END_99:
+	JUMP B_106
+B_106:
+	JUMP IF_END_94
+IF_ELSE_93:
+	JUMP B_107
+B_107:
+	PRINT_STR STR_4
+	JUMP B_108
+B_108:
+	JUMP IF_END_94
+IF_END_94:
+	JUMP B_109
+B_109:
+	JUMP IF_END_90
+IF_END_90:
+	ASS, INT(ti_129[temp]), INT(INLINE_year_4[sp-0x70])
+	JUMP INLINE_checkyear_END_4
+INLINE_checkyear_END_4:
+	ASS, INT(aaa[sp-0x2c]), INT(ti_129[temp])
+	ASS, INT(INLINE_year_5[sp-0x74]), INT(y[sp-0x18])
+	JUMP INLINE_checkyear_BEGIN_5
+INLINE_checkyear_BEGIN_5:
+	BRANCH(bge) INT(INLINE_year_5[sp-0x74]) 0 ? IF_BODY_111 : IF_END_113
+IF_BODY_111:
+	JUMP B_114
+B_114:
+	BRANCH(bne) INT(INLINE_year_5[sp-0x74]) 2022 ? IF_BODY_115 : AND_END_118
+AND_END_118:
+	BRANCH(ble) INT(INLINE_year_5[sp-0x74]) 2021 ? IF_BODY_115 : IF_ELSE_116
+IF_BODY_115:
+	JUMP B_119
+B_119:
+	MOD, INT(ti_143[temp]), INT(INLINE_year_5[sp-0x74]), 400
+	BRANCH(beq) INT(ti_143[temp]) 0 ? IF_BODY_120 : AND_END_123
+AND_END_123:
+	MOD, INT(ti_145[temp]), INT(INLINE_year_5[sp-0x74]), 4
+	BRANCH(beq) INT(ti_145[temp]) 0 ? AND_124 : IF_ELSE_121
+AND_124:
+	MOD, INT(ti_147[temp]), INT(INLINE_year_5[sp-0x74]), 100
+	BRANCH(bne) INT(ti_147[temp]) 0 ? IF_BODY_120 : IF_ELSE_121
+IF_BODY_120:
+	JUMP B_125
+B_125:
+	PRINT_STR STR_1
+	PRINT_INT INT(INLINE_year_5[sp-0x74])
+	PRINT_STR STR_2
+	JUMP B_126
+B_126:
+	JUMP IF_END_122
+IF_ELSE_121:
+	JUMP B_127
+B_127:
+	PRINT_STR STR_3
+	PRINT_INT INT(INLINE_year_5[sp-0x74])
+	PRINT_STR STR_2
+	JUMP B_128
+B_128:
+	JUMP IF_END_122
+IF_END_122:
+	JUMP B_129
+B_129:
+	JUMP IF_END_117
+IF_ELSE_116:
+	JUMP B_130
+B_130:
+	PRINT_STR STR_4
+	JUMP B_131
+B_131:
+	JUMP IF_END_117
+IF_END_117:
+	JUMP B_132
+B_132:
+	JUMP IF_END_113
+IF_END_113:
+	ASS, INT(ti_139[temp]), INT(INLINE_year_5[sp-0x74])
+	JUMP INLINE_checkyear_END_5
+INLINE_checkyear_END_5:
+	ASS, INT(bbb[sp-0x30]), INT(ti_139[temp])
+	ASS, INT(INLINE_year_6[sp-0x78]), INT(z[sp-0x1c])
+	JUMP INLINE_checkyear_BEGIN_6
+INLINE_checkyear_BEGIN_6:
+	BRANCH(bge) INT(INLINE_year_6[sp-0x78]) 0 ? IF_BODY_134 : IF_END_136
+IF_BODY_134:
+	JUMP B_137
+B_137:
+	BRANCH(bne) INT(INLINE_year_6[sp-0x78]) 2022 ? IF_BODY_138 : AND_END_141
+AND_END_141:
+	BRANCH(ble) INT(INLINE_year_6[sp-0x78]) 2021 ? IF_BODY_138 : IF_ELSE_139
+IF_BODY_138:
+	JUMP B_142
+B_142:
+	MOD, INT(ti_153[temp]), INT(INLINE_year_6[sp-0x78]), 400
+	BRANCH(beq) INT(ti_153[temp]) 0 ? IF_BODY_143 : AND_END_146
+AND_END_146:
+	MOD, INT(ti_155[temp]), INT(INLINE_year_6[sp-0x78]), 4
+	BRANCH(beq) INT(ti_155[temp]) 0 ? AND_147 : IF_ELSE_144
+AND_147:
+	MOD, INT(ti_157[temp]), INT(INLINE_year_6[sp-0x78]), 100
+	BRANCH(bne) INT(ti_157[temp]) 0 ? IF_BODY_143 : IF_ELSE_144
+IF_BODY_143:
+	JUMP B_148
+B_148:
+	PRINT_STR STR_1
+	PRINT_INT INT(INLINE_year_6[sp-0x78])
+	PRINT_STR STR_2
+	JUMP B_149
+B_149:
+	JUMP IF_END_145
+IF_ELSE_144:
+	JUMP B_150
+B_150:
+	PRINT_STR STR_3
+	PRINT_INT INT(INLINE_year_6[sp-0x78])
+	PRINT_STR STR_2
+	JUMP B_151
+B_151:
+	JUMP IF_END_145
+IF_END_145:
+	JUMP B_152
+B_152:
+	JUMP IF_END_140
+IF_ELSE_139:
+	JUMP B_153
+B_153:
+	PRINT_STR STR_4
+	JUMP B_154
+B_154:
+	JUMP IF_END_140
+IF_END_140:
+	JUMP B_155
+B_155:
+	JUMP IF_END_136
+IF_END_136:
+	ASS, INT(ti_149[temp]), INT(INLINE_year_6[sp-0x78])
+	JUMP INLINE_checkyear_END_6
+INLINE_checkyear_END_6:
+	ASS, INT(ccc[sp-0x34]), INT(ti_149[temp])
+	ASS, INT(INLINE_year_7[sp-0x7c]), INT(x_1[sp-0x20])
+	JUMP INLINE_checkyear_BEGIN_7
+INLINE_checkyear_BEGIN_7:
+	BRANCH(bge) INT(INLINE_year_7[sp-0x7c]) 0 ? IF_BODY_157 : IF_END_159
+IF_BODY_157:
+	JUMP B_160
+B_160:
+	BRANCH(bne) INT(INLINE_year_7[sp-0x7c]) 2022 ? IF_BODY_161 : AND_END_164
+AND_END_164:
+	BRANCH(ble) INT(INLINE_year_7[sp-0x7c]) 2021 ? IF_BODY_161 : IF_ELSE_162
+IF_BODY_161:
+	JUMP B_165
+B_165:
+	MOD, INT(ti_163[temp]), INT(INLINE_year_7[sp-0x7c]), 400
+	BRANCH(beq) INT(ti_163[temp]) 0 ? IF_BODY_166 : AND_END_169
+AND_END_169:
+	MOD, INT(ti_165[temp]), INT(INLINE_year_7[sp-0x7c]), 4
+	BRANCH(beq) INT(ti_165[temp]) 0 ? AND_170 : IF_ELSE_167
+AND_170:
+	MOD, INT(ti_167[temp]), INT(INLINE_year_7[sp-0x7c]), 100
+	BRANCH(bne) INT(ti_167[temp]) 0 ? IF_BODY_166 : IF_ELSE_167
+IF_BODY_166:
+	JUMP B_171
+B_171:
+	PRINT_STR STR_1
+	PRINT_INT INT(INLINE_year_7[sp-0x7c])
+	PRINT_STR STR_2
+	JUMP B_172
+B_172:
+	JUMP IF_END_168
+IF_ELSE_167:
+	JUMP B_173
+B_173:
+	PRINT_STR STR_3
+	PRINT_INT INT(INLINE_year_7[sp-0x7c])
+	PRINT_STR STR_2
+	JUMP B_174
+B_174:
+	JUMP IF_END_168
+IF_END_168:
+	JUMP B_175
+B_175:
+	JUMP IF_END_163
+IF_ELSE_162:
+	JUMP B_176
+B_176:
+	PRINT_STR STR_4
+	JUMP B_177
+B_177:
+	JUMP IF_END_163
+IF_END_163:
+	JUMP B_178
+B_178:
+	JUMP IF_END_159
+IF_END_159:
+	ASS, INT(ti_159[temp]), INT(INLINE_year_7[sp-0x7c])
+	JUMP INLINE_checkyear_END_7
+INLINE_checkyear_END_7:
+	ASS, INT(ddd[sp-0x38]), INT(ti_159[temp])
+	ASS, INT(INLINE_year_8[sp-0x80]), INT(y_1[sp-0x24])
+	JUMP INLINE_checkyear_BEGIN_8
+INLINE_checkyear_BEGIN_8:
+	BRANCH(bge) INT(INLINE_year_8[sp-0x80]) 0 ? IF_BODY_180 : IF_END_182
+IF_BODY_180:
+	JUMP B_183
+B_183:
+	BRANCH(bne) INT(INLINE_year_8[sp-0x80]) 2022 ? IF_BODY_184 : AND_END_187
+AND_END_187:
+	BRANCH(ble) INT(INLINE_year_8[sp-0x80]) 2021 ? IF_BODY_184 : IF_ELSE_185
+IF_BODY_184:
+	JUMP B_188
+B_188:
+	MOD, INT(ti_173[temp]), INT(INLINE_year_8[sp-0x80]), 400
+	BRANCH(beq) INT(ti_173[temp]) 0 ? IF_BODY_189 : AND_END_192
+AND_END_192:
+	MOD, INT(ti_175[temp]), INT(INLINE_year_8[sp-0x80]), 4
+	BRANCH(beq) INT(ti_175[temp]) 0 ? AND_193 : IF_ELSE_190
+AND_193:
+	MOD, INT(ti_177[temp]), INT(INLINE_year_8[sp-0x80]), 100
+	BRANCH(bne) INT(ti_177[temp]) 0 ? IF_BODY_189 : IF_ELSE_190
+IF_BODY_189:
+	JUMP B_194
+B_194:
+	PRINT_STR STR_1
+	PRINT_INT INT(INLINE_year_8[sp-0x80])
+	PRINT_STR STR_2
+	JUMP B_195
+B_195:
+	JUMP IF_END_191
+IF_ELSE_190:
+	JUMP B_196
+B_196:
+	PRINT_STR STR_3
+	PRINT_INT INT(INLINE_year_8[sp-0x80])
+	PRINT_STR STR_2
+	JUMP B_197
+B_197:
+	JUMP IF_END_191
+IF_END_191:
+	JUMP B_198
+B_198:
+	JUMP IF_END_186
+IF_ELSE_185:
+	JUMP B_199
+B_199:
+	PRINT_STR STR_4
+	JUMP B_200
+B_200:
+	JUMP IF_END_186
+IF_END_186:
+	JUMP B_201
+B_201:
+	JUMP IF_END_182
+IF_END_182:
+	ASS, INT(ti_169[temp]), INT(INLINE_year_8[sp-0x80])
+	JUMP INLINE_checkyear_END_8
+INLINE_checkyear_END_8:
+	ASS, INT(eee[sp-0x3c]), INT(ti_169[temp])
+	ASS, INT(INLINE_year_9[sp-0x84]), INT(z_1[sp-0x28])
+	JUMP INLINE_checkyear_BEGIN_9
+INLINE_checkyear_BEGIN_9:
+	BRANCH(bge) INT(INLINE_year_9[sp-0x84]) 0 ? IF_BODY_203 : IF_END_205
+IF_BODY_203:
+	JUMP B_206
+B_206:
+	BRANCH(bne) INT(INLINE_year_9[sp-0x84]) 2022 ? IF_BODY_207 : AND_END_210
+AND_END_210:
+	BRANCH(ble) INT(INLINE_year_9[sp-0x84]) 2021 ? IF_BODY_207 : IF_ELSE_208
+IF_BODY_207:
+	JUMP B_211
+B_211:
+	MOD, INT(ti_183[temp]), INT(INLINE_year_9[sp-0x84]), 400
+	BRANCH(beq) INT(ti_183[temp]) 0 ? IF_BODY_212 : AND_END_215
+AND_END_215:
+	MOD, INT(ti_185[temp]), INT(INLINE_year_9[sp-0x84]), 4
+	BRANCH(beq) INT(ti_185[temp]) 0 ? AND_216 : IF_ELSE_213
+AND_216:
+	MOD, INT(ti_187[temp]), INT(INLINE_year_9[sp-0x84]), 100
+	BRANCH(bne) INT(ti_187[temp]) 0 ? IF_BODY_212 : IF_ELSE_213
+IF_BODY_212:
+	JUMP B_217
+B_217:
+	PRINT_STR STR_1
+	PRINT_INT INT(INLINE_year_9[sp-0x84])
+	PRINT_STR STR_2
+	JUMP B_218
+B_218:
+	JUMP IF_END_214
+IF_ELSE_213:
+	JUMP B_219
+B_219:
+	PRINT_STR STR_3
+	PRINT_INT INT(INLINE_year_9[sp-0x84])
+	PRINT_STR STR_2
+	JUMP B_220
+B_220:
+	JUMP IF_END_214
+IF_END_214:
+	JUMP B_221
+B_221:
+	JUMP IF_END_209
+IF_ELSE_208:
+	JUMP B_222
+B_222:
+	PRINT_STR STR_4
+	JUMP B_223
+B_223:
+	JUMP IF_END_209
+IF_END_209:
+	JUMP B_224
+B_224:
+	JUMP IF_END_205
+IF_END_205:
+	ASS, INT(ti_179[temp]), INT(INLINE_year_9[sp-0x84])
+	JUMP INLINE_checkyear_END_9
+INLINE_checkyear_END_9:
+	ASS, INT(fff[sp-0x40]), INT(ti_179[temp])
+	OFFSET (ARRAY(add[data+0x78])+0)->POINTER(tp_6[sp-0x8c])
+	OFFSET (ARRAY(s1_1[data+0x0])+0)->POINTER(tp_7[sp-0x90])
+	ASS, INT(INLINE_a_10[sp-0x88]), INT(j[sp-0x4])
+	ASS, ARRAY(INLINE_b_10[sp-0x8c]), POINTER(tp_6[sp-0x8c])
+	STORE POINTER(tp_6[sp-0x8c]), -140[SPECIAL_SP(ts_8[temp])]
+	ASS, ARRAY(INLINE_C23_10[sp-0x90]), POINTER(tp_7[sp-0x90])
+	STORE POINTER(tp_7[sp-0x90]), -144[SPECIAL_SP(ts_9[temp])]
+	JUMP INLINE_blank2_BEGIN_10
+INLINE_blank2_BEGIN_10:
+	JUMP B_226
+B_226:
+	JUMP INLINE_blank2_END_10
+INLINE_blank2_END_10:
+	PRINT_STR STR_11
+	PRINT_INT INT(aaa[sp-0x2c])
+	PRINT_STR STR_12
+	PRINT_INT INT(bbb[sp-0x30])
+	PRINT_STR STR_13
+	PRINT_INT INT(ccc[sp-0x34])
+	PRINT_STR STR_14
+	PRINT_INT INT(ddd[sp-0x38])
+	PRINT_STR STR_15
+	PRINT_INT INT(eee[sp-0x3c])
+	PRINT_STR STR_16
+	PRINT_INT INT(fff[sp-0x40])
+	PRINT_STR STR_2
+	JUMP B_227
+B_227:
+	JUMP INLINE_printsth_BEGIN_11
+INLINE_printsth_BEGIN_11:
+	PRINT_STR STR_5
+	JUMP B_228
+B_228:
+	JUMP INLINE_printsth_END_11
+INLINE_printsth_END_11:
+	RETURN 0
