@@ -8,7 +8,6 @@ C语言子集SysY ==> Mips
 
 <center><font size=5>编译技术申优文档</font></center>
 
-<center><font size=3>20231164 张岳霖</font></center>
 
 ----------
 
