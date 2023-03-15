@@ -7,14 +7,6 @@ import java.io.IOException;
 public class Compiler {
     public static void main(String[] args) throws IOException {
         // command: java -jar Mars2022.jar nc mips.txt
-        /*
-        * Unfixed error type
-        *
-            int x[0];
-            int main(){
-                return x[];
-            }
-        * */
         if (Config.debugMode) {
             TestAll.run();
             TestWriter.flush();
