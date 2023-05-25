@@ -20,12 +20,12 @@ import java.io.IOException;
 import java.io.PrintStream;
 
 public class Config {
-    public static final boolean debugMode = false;
+    public static final boolean debugMode = true;
 
-    public static final String inputFile = "testfile.txt";
+    public static String inputFile = "testfile.txt";
     public static final String syntaxFile = "syntax.txt";
     public static final String middleFile = "middle.txt";
-    public static final String mipsFile = "mips.txt";
+    public static String mipsFile = "mips.txt";
     public static final String errorFile = "error.txt";
     public static final String expectedFile = "output.txt";
 
@@ -51,7 +51,7 @@ public class Config {
         DeleteUselessMiddleCode.optimize(middleCode);
 
         // output middle code
-        middleCode.output();  // through MiddleWriter
+        // middleCode.output();  // through MiddleWriter
 
         MipsCode mipsCode = new Translator(middleCode).translate();
 

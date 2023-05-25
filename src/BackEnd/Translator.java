@@ -116,13 +116,13 @@ public class Translator {
             }
             if (sum / funcBlocks.size() >= LEVEL) {
                 MODE = OPT;
-                System.out.println("MODE IS OPT");
+                // System.out.println("MODE IS OPT");
                 currentConflictGraph = null;
                 Registers.globalRegisters = new ArrayList<>(Registers.registersGroup1);
                 Registers.localRegisters = new ArrayList<>(Registers.registersGroup2);
             } else {
                 MODE = GRAPH;
-                System.out.println("MODE IS GRAPH");
+                // System.out.println("MODE IS GRAPH");
                 Registers.globalRegisters = new ArrayList<>(Registers.registersGroup3);
                 Registers.localRegisters = new ArrayList<>(Registers.registersGroup4);
                 // 这句话要放在设置global register的下面

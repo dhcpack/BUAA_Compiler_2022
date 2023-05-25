@@ -14,16 +14,6 @@ public class TestAll {
         TestWriter.print("\n====== Auto Test Begin ======\n");
         TestWriter.print(simpleDateFormat.format(new Date()));
         TestWriter.print("\n");
-        // PUBLIC
-        // for (int i = 0; i <= 94; i++) {
-        //     MipsTest mipsTest = new MipsTest("public",  i);
-        //     if (mipsTest.run()) {
-        //         System.out.printf("\033[1;32;40mAccepted: public-%d \033[0m\n", i);
-        //     } else {
-        //         System.out.printf("\033[1;31;40mWrong Answer: public-%d \033[0m\n", i);
-        //         return;
-        //     }
-        // }
 
         // 2022-C
         for (int i = 1; i <= 30; i++) {

@@ -13,42 +13,24 @@ JUMP FUNC_main
 # func fib : stack size 0x4
 # param: INT(i[sp-0x4])
 FUNC_fib:
-	JUMP L_OR_EXP_0
-L_OR_EXP_0:
-	JUMP L_AND_EXP_1
-L_AND_EXP_1:
-	EQ, INT(ti_0[temp]), INT(i[sp-0x4]), 1
-	JUMP AND_END_2
-AND_END_2:
-	JUMP OR_END_3
-OR_END_3:
-	Branch INT(ti_0[temp]) ? IF_BODY_4 : IF_END_5
-IF_BODY_4:
-	JUMP B_6
-B_6:
+	BRANCH(beq) INT(i[sp-0x4]) 1 ? IF_BODY_0 : IF_END_2
+IF_BODY_0:
+	JUMP B_3
+B_3:
 	RETURN 1
-	JUMP B_7
-B_7:
-	JUMP IF_END_5
-IF_END_5:
-	JUMP L_OR_EXP_8
-L_OR_EXP_8:
-	JUMP L_AND_EXP_9
-L_AND_EXP_9:
-	EQ, INT(ti_1[temp]), INT(i[sp-0x4]), 2
-	JUMP AND_END_10
-AND_END_10:
-	JUMP OR_END_11
-OR_END_11:
-	Branch INT(ti_1[temp]) ? IF_BODY_12 : IF_END_13
-IF_BODY_12:
-	JUMP B_14
-B_14:
+	JUMP B_4
+B_4:
+	JUMP IF_END_2
+IF_END_2:
+	BRANCH(beq) INT(i[sp-0x4]) 2 ? IF_BODY_5 : IF_END_7
+IF_BODY_5:
+	JUMP B_8
+B_8:
 	RETURN 2
-	JUMP B_15
-B_15:
-	JUMP IF_END_13
-IF_END_13:
+	JUMP B_9
+B_9:
+	JUMP IF_END_7
+IF_END_7:
 	SUB, INT(ti_2[temp]), INT(i[sp-0x4]), 1
 	Call FUNC_fib; Params: INT(ti_2[temp]); RET INT(ti_3[temp])
 	SUB, INT(ti_4[temp]), INT(i[sp-0x4]), 2
@@ -77,114 +59,64 @@ FUNC_main:
 	SUB, INT(ti_20[temp]), 1197, INT(ti_19[temp])
 	ADD, INT(j[sp-0x8]), INT(ti_20[temp]), -10091
 	DEF, INT(k[sp-0x14]), -6
-	JUMP L_OR_EXP_20
-L_OR_EXP_20:
-	JUMP L_AND_EXP_21
-L_AND_EXP_21:
-	LE, INT(ti_22[temp]), INT(i[sp-0x4]), 100
-	JUMP AND_END_22
-AND_END_22:
-	JUMP OR_END_23
-OR_END_23:
-	Branch INT(ti_22[temp]) ? DO_BODY_17 : DO_END_19
-	JUMP DO_BODY_17
-DO_BODY_17:
-	JUMP B_24
-B_24:
+	BRANCH(ble) INT(i[sp-0x4]) 100 ? DO_BODY_11 : DO_END_13
+DO_BODY_11:
+	JUMP B_14
+B_14:
 	LOAD INT(ti_23[temp]), 0[ARRAY(a[data+0x4])]
-	MUL, INT(ti_24[temp]), -6, -6
-	ADD, INT(ti_25[temp]), INT(ti_23[temp]), INT(ti_24[temp])
+	ADD, INT(ti_25[temp]), INT(ti_23[temp]), 36
 	STORE INT(ti_25[temp]), 0[ARRAY(a[data+0x4])]
 	LOAD INT(ti_26[temp]), 4[ARRAY(a[data+0x4])]
-	MUL, INT(ti_27[temp]), -6, -6
-	ADD, INT(ti_28[temp]), INT(ti_26[temp]), INT(ti_27[temp])
+	ADD, INT(ti_28[temp]), INT(ti_26[temp]), 36
 	STORE INT(ti_28[temp]), 4[ARRAY(a[data+0x4])]
 	LOAD INT(ti_29[temp]), 8[ARRAY(a[data+0x4])]
-	MUL, INT(ti_30[temp]), -6, -6
-	ADD, INT(ti_31[temp]), INT(ti_29[temp]), INT(ti_30[temp])
+	ADD, INT(ti_31[temp]), INT(ti_29[temp]), 36
 	STORE INT(ti_31[temp]), 8[ARRAY(a[data+0x4])]
 	LOAD INT(ti_32[temp]), 12[ARRAY(a[data+0x4])]
-	MUL, INT(ti_33[temp]), -6, -6
-	ADD, INT(ti_34[temp]), INT(ti_32[temp]), INT(ti_33[temp])
+	ADD, INT(ti_34[temp]), INT(ti_32[temp]), 36
 	STORE INT(ti_34[temp]), 12[ARRAY(a[data+0x4])]
 	LOAD INT(ti_35[temp]), 16[ARRAY(a[data+0x4])]
-	MUL, INT(ti_36[temp]), -6, -6
-	ADD, INT(ti_37[temp]), INT(ti_35[temp]), INT(ti_36[temp])
+	ADD, INT(ti_37[temp]), INT(ti_35[temp]), 36
 	STORE INT(ti_37[temp]), 16[ARRAY(a[data+0x4])]
 	LOAD INT(ti_38[temp]), 20[ARRAY(a[data+0x4])]
-	MUL, INT(ti_39[temp]), -6, -6
-	ADD, INT(ti_40[temp]), INT(ti_38[temp]), INT(ti_39[temp])
+	ADD, INT(ti_40[temp]), INT(ti_38[temp]), 36
 	STORE INT(ti_40[temp]), 20[ARRAY(a[data+0x4])]
 	LOAD INT(ti_41[temp]), 24[ARRAY(a[data+0x4])]
-	MUL, INT(ti_42[temp]), -6, -6
-	ADD, INT(ti_43[temp]), INT(ti_41[temp]), INT(ti_42[temp])
+	ADD, INT(ti_43[temp]), INT(ti_41[temp]), 36
 	STORE INT(ti_43[temp]), 24[ARRAY(a[data+0x4])]
 	LOAD INT(ti_44[temp]), 28[ARRAY(a[data+0x4])]
-	MUL, INT(ti_45[temp]), -6, -6
-	ADD, INT(ti_46[temp]), INT(ti_44[temp]), INT(ti_45[temp])
+	ADD, INT(ti_46[temp]), INT(ti_44[temp]), 36
 	STORE INT(ti_46[temp]), 28[ARRAY(a[data+0x4])]
 	LOAD INT(ti_47[temp]), 32[ARRAY(a[data+0x4])]
-	MUL, INT(ti_48[temp]), -6, -6
-	ADD, INT(ti_49[temp]), INT(ti_47[temp]), INT(ti_48[temp])
+	ADD, INT(ti_49[temp]), INT(ti_47[temp]), 36
 	STORE INT(ti_49[temp]), 32[ARRAY(a[data+0x4])]
 	LOAD INT(ti_50[temp]), 36[ARRAY(a[data+0x4])]
-	MUL, INT(ti_51[temp]), -6, -6
-	ADD, INT(ti_52[temp]), INT(ti_50[temp]), INT(ti_51[temp])
+	ADD, INT(ti_52[temp]), INT(ti_50[temp]), 36
 	STORE INT(ti_52[temp]), 36[ARRAY(a[data+0x4])]
 	ADD, INT(i[sp-0x4]), INT(i[sp-0x4]), 1
-	JUMP B_25
-B_25:
-	JUMP DO_CHECK_18
-DO_CHECK_18:
-	JUMP L_OR_EXP_26
-L_OR_EXP_26:
-	JUMP L_AND_EXP_27
-L_AND_EXP_27:
-	LE, INT(ti_54[temp]), INT(i[sp-0x4]), 100
-	JUMP AND_END_28
-AND_END_28:
-	JUMP OR_END_29
-OR_END_29:
-	Branch INT(ti_54[temp]) ? DO_BODY_17 : DO_END_19
-	JUMP DO_END_19
-DO_END_19:
+	JUMP B_15
+B_15:
+	JUMP DO_CHECK_12
+DO_CHECK_12:
+	BRANCH(ble) INT(i[sp-0x4]) 100 ? DO_BODY_11 : DO_END_13
+DO_END_13:
 	ASS, INT(i[sp-0x4]), 0
-	JUMP L_OR_EXP_33
-L_OR_EXP_33:
-	JUMP L_AND_EXP_34
-L_AND_EXP_34:
-	LT, INT(ti_55[temp]), INT(i[sp-0x4]), 10
-	JUMP AND_END_35
-AND_END_35:
-	JUMP OR_END_36
-OR_END_36:
-	Branch INT(ti_55[temp]) ? DO_BODY_30 : DO_END_32
-	JUMP DO_BODY_30
-DO_BODY_30:
-	JUMP B_37
-B_37:
+	BRANCH(blt) INT(i[sp-0x4]) 10 ? DO_BODY_16 : DO_END_18
+DO_BODY_16:
+	JUMP B_19
+B_19:
 	MUL, INT(ti_56[temp]), INT(i[sp-0x4]), 4
 	ADD, INT(ti_56[temp]), INT(ti_56[temp]), 0
 	LOAD INT(ti_57[temp]), INT(ti_56[temp])[ARRAY(a[data+0x4])]
 	PRINT_INT INT(ti_57[temp])
 	PRINT_STR STR_1
 	ADD, INT(i[sp-0x4]), INT(i[sp-0x4]), 1
-	JUMP B_38
-B_38:
-	JUMP DO_CHECK_31
-DO_CHECK_31:
-	JUMP L_OR_EXP_39
-L_OR_EXP_39:
-	JUMP L_AND_EXP_40
-L_AND_EXP_40:
-	LT, INT(ti_59[temp]), INT(i[sp-0x4]), 10
-	JUMP AND_END_41
-AND_END_41:
-	JUMP OR_END_42
-OR_END_42:
-	Branch INT(ti_59[temp]) ? DO_BODY_30 : DO_END_32
-	JUMP DO_END_32
-DO_END_32:
+	JUMP B_20
+B_20:
+	JUMP DO_CHECK_17
+DO_CHECK_17:
+	BRANCH(blt) INT(i[sp-0x4]) 10 ? DO_BODY_16 : DO_END_18
+DO_END_18:
 	PRINT_STR STR_2
 	PRINT_INT INT(i[sp-0x4])
 	PRINT_STR STR_1
