@@ -33,9 +33,13 @@
 - [x] 后端无用跳转语句删除
 - [x] 后端无用赋值语句删除
 
+--------------
 
 - 总体架构
   ![总体架构](./src/Docs/img/总体架构.jpg)
 
 - 目标代码空间分配策略
-  ![空间分配](./src/Docs/img/空间分配.jpg)
+  ![空间分配](./src/Docs/img/空间分配.png)
+
+- [文档](https://github.com/dhcpack/BUAA_Compiler_2022/tree/main/src/Docs)
+  https://github.com/dhcpack/BUAA_Compiler_2022/tree/main/src/Docs
