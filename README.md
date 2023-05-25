@@ -43,5 +43,8 @@
 - 目标代码空间分配策略
   ![空间分配](./src/Docs/img/空间分配.png)
 
-- [文档](https://github.com/dhcpack/BUAA_Compiler_2022/tree/main/src/Docs)
+- 文档
   https://github.com/dhcpack/BUAA_Compiler_2022/tree/main/src/Docs
+
+- Release
+  https://github.com/dhcpack/BUAA_Compiler_2022/releases
