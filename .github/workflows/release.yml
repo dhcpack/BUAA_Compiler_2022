@@ -38,5 +38,5 @@ jobs:
           draft: false
           tag_name: Tag-${{ steps.datetime.outputs.date }}
           files: |
-            Compiler.jar
+            ./src/Compiler.jar
             LICENSE
