@@ -54,4 +54,7 @@
   
   Example:
       java -jar ./Compiler.jar testfile.txt -o mips.txt
+  
+  # 编译生成的mips代码可通过Mars运行
+  java -jar .\Mars_for_Compile_2022.jar nc .\mips.txt
   ```

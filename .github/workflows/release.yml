@@ -40,3 +40,4 @@ jobs:
           files: |
             ./src/Compiler.jar
             LICENSE
+            Mars_for_Compile_2022.jar
