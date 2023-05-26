@@ -18,10 +18,12 @@ jobs:
         with:
           java-version: "8"
           distribution: "temurin"
+      - name: Change Directory
+        run: cd src
       - name: Compile and Pack
         run: |
           find . -name '*.java' | xargs javac
-          find . -name '*.class' | xargs jar cvmf ./src/META-INF/MANIFEST.MF Compiler.jar
+          find . -name '*.class' | xargs jar cvmf ./META-INF/MANIFEST.MF Compiler.jar
       - name: Set Date Time
         if: ${{ contains(github.event.head_commit.message, 'release') }}
         id: datetime
