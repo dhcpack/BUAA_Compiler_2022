@@ -33,7 +33,7 @@ public class Compiler {
 
     public static void main(String[] args) throws IOException {
         System.out.println("Yuelin's Compiler version 6.0");
-        if (args.length == 0 || parseArgs(args)) {
+        if (parseArgs(args)) {
             Config.mipsRun(Config.inputFile);
             System.out.println("Compile Succeed!");
         } else {

@@ -48,3 +48,10 @@
 
 - Release
   https://github.com/dhcpack/BUAA_Compiler_2022/releases
+  ```shell
+  Usage: <source-file> [-o <target-file>]
+  -o               set target file, default to mips.txt
+  
+  Example:
+      java -jar ./Compiler.jar testfile.txt -o mips.txt
+  ```
